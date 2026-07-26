@@ -1,0 +1,288 @@
+---
+title: "Search and Navigation Tools - Precise Codebase Positioning"
+description: "Parsing Claude Code's search and navigation tools: Glob file matching, Grep content searching, high-performance code retrieval based on ripgrep, helping AI precisely position in millions of lines of code."
+keywords: ["Code Search", "Glob", "Grep", "ripgrep", "File Search"]
+---
+
+## Two Dimensions of Search
+
+| Dimension | Tool | Underlying Implementation | Typical Use Case |
+| ---------------- | ---- | ----------------------------- | ------------------------------------------ |
+| **Find files by name** | Glob | ripgrep `--files` + glob filtering | "Find all test files", "Find files starting with config" |
+| **Find code by content** | Grep | ripgrep regex search | "Where is this function defined?", "Who is calling this API?" |
+
+Both share the same ripgrep engine, implementing different search modes through various parameter combinations.
+
+## Embedding Method of ripgrep
+
+Claude Code does not depend on a system installation of ripgrep—it implements a three-tier fallback strategy in `src/utils/ripgrep.ts`:
+
+```
+Priority 1: System ripgrep (USE_BUILTIN_RIPGREP=false)
+  → Uses the rg binary in PATH
+  → Security consideration: Uses only the command name 'rg', not the full path, to prevent PATH hijacking
+
+Priority 2: Embedded mode (bundled/native build)
+  → process.execPath itself, with argv0='rg'
+  → Bun statically compiles rg into the binary, dispatching via argv0
+
+Priority 3: vendor directory (npm build)
+  → vendor/ripgrep/{arch}-{platform}/rg
+  → macOS requires codesign signature + removal of quarantine xattr
+```
+
+Platform adaptation examples:
+
+```
+vendor/ripgrep/
+  ├── x86_64-darwin/rg      # macOS Intel
+  ├── arm64-darwin/rg        # macOS Apple Silicon
+  ├── x86_64-linux/rg        # Linux Intel
+  ├── arm64-linux/rg         # Linux ARM
+  └── x86_64-win32/rg.exe    # Windows
+```
+
+### macOS Code Signing
+
+The rg binary in vendor mode needs ad-hoc signing to pass Gatekeeper (`codesignRipgrepIfNecessary()`):
+
+```typescript
+// Executed upon first use:
+// 1. Check if it's already a valid signature
+codesign -vv -d <rg-path>
+// 2. If it's only linker-signed, re-sign
+codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime <rg-path>
+// 3. Remove quarantine attributes
+xattr -d com.apple.quarantine <rg-path>
+```
+
+## Design Considerations for Search Results
+
+### head_limit and Token Budget
+
+Search results for large projects can have hundreds of thousands of entries. By default, at most 250 matches are returned—this is not a random choice, but a constraint of the **token budget**:
+
+- Each match line is about 50-100 tokens.
+- 250 matches ≈ 12,500-25,000 tokens.
+- This accounts for about 6-12% of a 200k context window.
+- Exceeding this ratio leads to a decline in AI reasoning quality.
+
+The `head_limit` parameter of the Grep tool allows the AI to adjust as needed—larger values can be used when searching small projects.
+
+### Sorting by Modification Time
+
+Glob defaults to putting **recently modified files first**. This is not a default filesystem sort, but a deliberate design decision:
+
+```
+Design assumption: Recently modified files are most likely relevant to the current task
+Actual effect: AI prioritizes seeing "live" code over dormant historical files
+```
+
+In `packages/builtin-tools/src/tools/GlobTool/`, ripgrep output is sorted by mtime before being returned to the AI.
+
+### ripgrep Error Handling
+
+ripgrep execution has a dedicated error recovery chain (`src/utils/ripgrep.ts`):
+
+| Error | Handling |
+| ----------------------------- | ------------------------------------------ |
+| **EAGAIN** (Insufficient resources) | Automatically retry in single-threaded mode `-j 1` |
+| **Timeout** (Default 20s, WSL 60s) | Return partial results already gathered, discard potentially incomplete last line |
+| **Buffer Overflow** | Truncate to 20MB, return results already collected |
+| **SIGTERM ineffective** | Escalate to SIGKILL after 5 seconds |
+
+## ToolSearch: Discovering Targets Among 50+ Tools
+
+When available tools exceed 50 (including external tools provided by MCP), the AI might not know which one to use. **ToolSearch** (`packages/builtin-tools/src/tools/ToolSearchTool/`) provides a tool discovery mechanism.
+
+### Search Algorithm
+
+ToolSearch implements weighted keyword-based search (`searchToolsWithKeywords()`):
+
+```
+Input: query = "database connection"
+     ↓
+1. Exact Match: Check if any tool name matches exactly (fast path)
+2. MCP Prefix Match: "mcp__postgres" → Matches all postgres-related tools
+3. Keyword Splitting: ["database", "connection"]
+4. Tool Name Parsing:
+   - MCP Tool: "mcp__server__action" → ["server", "action"]
+   - Normal Tool: "FileEditTool" → ["file", "edit", "tool"]
+5. Weighted Scoring:
+   - Tool name exact match: 10 points (MCP: 12 points)
+   - Tool name partial match: 5 points (MCP: 6 points)
+   - searchHint match: 4 points
+   - Description match: 2 points
+6. Mandatory Word Filtering: "+database" prefix means it must be included
+7. Sort by score, return top-N
+```
+
+### `select:` Direct Selection
+
+The AI can also use `select:ToolName` to precisely choose a known tool. This is faster than searching and supports comma-separated batch selection (`select:A,B,C`).
+
+### Deferred Tools
+
+Not all tools reside in memory permanently. MCP tools and low-frequency tools are marked as `isDeferredTool`, only truly loading after being selected by ToolSearch. This reduces the token overhead for each API call (tool descriptions consume many tokens).
+
+### Caching Strategy
+
+Tool description retrieval is memoized—cache is cleared only when the set of deferred tools changes:
+
+```typescript
+// Cache key formed by joining sorted tool names
+function getDeferredToolsCacheKey(deferredTools: Tools): string {
+  return deferredTools
+    .map((t) => t.name)
+    .sort()
+    .join(",");
+}
+```
+
+## Web Search and Fetching
+
+AI information retrieval is not limited to local code:
+
+- **WebSearch** (`packages/builtin-tools/src/tools/WebSearchTool/`): Calls the Anthropic API's `web_search_20250305` server tool to search the internet.
+- **WebFetch** (`packages/builtin-tools/src/tools/WebFetchTool/`): Fetches specific URL content, converting it to Markdown for the AI to read.
+
+This allows the AI to consult documentation, search Stack Overflow, and read GitHub issues—consistent with how human developers work.
+
+### WebSearch Implementation Mechanism
+
+WebSearch supports three search backends via the adapter pattern, selected by the `createAdapter()` factory function in `packages/builtin-tools/src/tools/WebSearchTool/adapters/`:
+
+```
+Adapter Architecture:
+  WebSearchTool.call()
+    → createAdapter() Select backend
+      ├─ ApiSearchAdapter — Anthropic API server-side search (requires official API key)
+      ├─ BingSearchAdapter — Direct scraping of Bing search page (no API key required)
+      └─ BraveSearchAdapter — Calls Brave LLM Context API (requires Brave API key)
+    → adapter.search(query, options)
+    → Converted to unified SearchResult[] format and returned
+```
+
+#### Adapter Selection Logic
+
+The factory function in `adapters/index.ts` selects the backend according to the following priorities:
+
+| Priority | Condition | Adapter |
+| ------ | ----------------------------------- | -------------------- |
+| 1 | Environment variable `WEB_SEARCH_ADAPTER=api` | `ApiSearchAdapter` |
+| 2 | Environment variable `WEB_SEARCH_ADAPTER=bing` | `BingSearchAdapter` |
+| 3 | Environment variable `WEB_SEARCH_ADAPTER=brave` | `BraveSearchAdapter` |
+| 4 | API Base URL points to official Anthropic | `ApiSearchAdapter` |
+| 5 | Third-party proxy / Non-official endpoint | `BingSearchAdapter` |
+
+Adapters are stateless, with cache reused within the same session.
+
+#### ApiSearchAdapter — API Server-side Search
+
+Delegates the search request to the Anthropic API's `web_search_20250305` server tool:
+
+```
+Call Chain:
+  ApiSearchAdapter.search(query, options)
+    → queryModelWithStreaming() Initiates an independent API call
+      → Carries extraToolSchemas: [BetaWebSearchTool20250305]
+      → API server executes search, returns streaming events
+        → server_tool_use / web_search_tool_result / text returned alternately
+    → extractSearchResults() Extracts SearchResult[] from content blocks
+```
+
+| Feature | Implementation |
+| ------------ | ------------------------------------------------------------------------ |
+| **Model Selection** | Feature flag `tengu_plum_vx3` controls using Haiku (forced tool_choice) or the main model |
+| **Search Limit** | Max 8 searches per call (`max_uses: 8`) |
+| **Domain Filtering** | Supports `allowedDomains` / `blockedDomains` |
+| **Progress Tracking** | Streaming parsing of `input_json_delta` to extract query, real-time `onProgress` callbacks |
+
+#### BingSearchAdapter — Bing Search Page Scraping
+
+Directly scrapes the Bing search HTML and extracts results using regex, no API key required:
+
+```
+Call Chain:
+  BingSearchAdapter.search(query, options)
+    → axios.get(bing.com/search?q=...)  — Uses browser-level headers to bypass anti-scraping
+    → extractBingResults(html)
+      → Regex matches <li class="b_algo"> blocks
+      → Extracts <h2><a> title and URL
+      → resolveBingUrl() Decodes Bing redirect links
+      → extractSnippet() Three-tier fallback snippet extraction
+    → Client-side domain filtering (allowedDomains / blockedDomains)
+    → Returns SearchResult[]
+```
+
+**Anti-scraping Strategy**: Bing returns an empty page requiring JS rendering for non-browser UAs. The adapter uses full Edge browser request headers (including `Sec-Ch-Ua`, `Sec-Fetch-*`, and other modern browser headers) to ensure receiving complete HTML. It also uses the `setmkt=en-US` parameter for consistent market targeting, preventing Bing from performing regional redirection based on user IP (e.g., jumping to German/Singapore markets leading to irrelevant results).
+
+**URL Decoding**: URLs in Bing search results are in redirect format (`bing.com/ck/a?...&u=a1aHR0cHM6Ly9...`), `resolveBingUrl()` decodes the real target URL from the `u` parameter using base64 (`a1` prefix = https, `a0` = http).
+
+**Snippet Extraction** (`extractSnippet()`) attempts three sources in priority:
+
+1. `<p class="b_lineclamp...">` — Snippet paragraph with line clamping.
+2. `<p>` within `<div class="b_caption">` — Normal snippet paragraph.
+3. Direct text content of `<div class="b_caption">` — Fallback solution.
+
+| Feature | Implementation |
+| ------------ | ------------------------------------------------------ |
+| **Timeout** | 30 seconds (`FETCH_TIMEOUT_MS`) |
+| **Domain Filtering** | Supports `allowedDomains` / `blockedDomains`, including subdomain matching |
+| **Progress Tracking** | Sends query_update and search_results_received callbacks |
+| **Abortion Support** | External AbortSignal propagated to axios request |
+
+### WebSearchTool Unified Interface
+
+`WebSearchTool` (`packages/builtin-tools/src/tools/WebSearchTool/WebSearchTool.ts`) is the tool definition facing the main loop, usable by all providers (`isEnabled()` always returns true). It converts the `SearchResult[]` returned by the adapter into an internal `Output` format, and `mapToolResultToToolResultBlockParam` formats the search results into text with markdown hyperlinks, appending a "REMINDER" requiring the main model to include Sources in its response.
+
+### WebFetch Implementation Mechanism
+
+WebFetch is a full HTTP client + content processing pipeline:
+
+```
+Call Chain:
+  WebFetchTool.call({ url, prompt })
+    → getURLMarkdownContent(url)
+      → validateURL() — Length ≤ 2000, no username/password, public domain
+      → URL_CACHE hit check (15-minute TTL LRU, 50MB limit)
+      → checkDomainBlocklist() — Pre-check by calling api.anthropic.com/api/web/domain_info
+      → getWithPermittedRedirects() — axios request, custom redirect handling
+        → HTML → Turndown to Markdown (lazy-loaded singleton, ~1.4MB)
+        → Non-HTML → Raw text
+        → Binary (PDF, etc.) → persistBinaryContent() Save to disk
+    → applyPromptToMarkdown()
+      → Truncate to 100K characters
+      → queryHaiku() Uses a small model to extract information per prompt
+    → Returns processed results
+```
+
+Multi-layered security design:
+
+| Layer | Mechanism | Description |
+| --------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| **Domain Pre-check** | `checkDomainBlocklist()` | Calls `api.anthropic.com/api/web/domain_info?domain=…`, 5-minute cache |
+| **Redirect Control** | `isPermittedRedirect()` | Only same-host (±www) redirects allowed; cross-domain redirects return prompt for AI to re-call |
+| **Redirect Depth** | `MAX_REDIRECTS = 10` | Prevents infinite hangs from redirect loops |
+| **Content Size** | `MAX_HTTP_CONTENT_LENGTH = 10MB` | Single response upper limit |
+| **Request Timeout** | `FETCH_TIMEOUT_MS = 60s` | Main request timeout; domain pre-check 10s |
+| **URL Validation** | `validateURL()` | Length, protocol, username/password, public domain checks |
+| **egress Detection** | `X-Proxy-Error: blocked-by-allowlist` | Detects corporate proxy interception |
+
+Pre-approved domains (`packages/builtin-tools/src/tools/WebFetchTool/preapproved.ts`):
+
+A list of domain names that users can scrape without manual authorization, including ~90 mainstream technical documentation sites (MDN, Python docs, React docs, AWS docs, etc.). The list is divided into hostname-only and path-prefix categories, with O(1) lookup complexity.
+
+For pre-approved domains, WebFetch skips the Haiku snippet step (if content is Markdown and < 100K characters), returning the original text directly—as technical documentation is already sufficiently structured.
+
+In terms of permission model, WebFetch generates `domain:xxx` rules by hostname to match user allow/deny/ask rules, supporting persistent allow or deny configuration for specific domains by users.
+
+### Streaming Output of ripgrep
+
+For interactive scenarios (such as QuickOpen), ripgrep supports **streaming output** (`ripGrepStream()`):
+
+```
+rg --files → Chunks arrive sequentially → Split by line → onLines(lines) callback
+```
+
+There is no need to wait for ripgrep to complete the entire search—the first batch of results is displayed while rg is still traversing the directory tree. Callers can terminate the search early via AbortSignal (e.g., after finding enough results).

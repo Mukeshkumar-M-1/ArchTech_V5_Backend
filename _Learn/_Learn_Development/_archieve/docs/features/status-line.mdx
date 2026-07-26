@@ -1,0 +1,221 @@
+---
+title: "StatusLine — Custom Shell Rendering Pipeline"
+description: "A deep dive into the Claude Code StatusLine: custom shell scripts with JSON stdin protocol, three trigger sources (events/settings/time), debounce + abort mechanisms, security gateways, and the refreshInterval fix implemented in this repository."
+keywords: ["statusLine", "status bar", "custom prompt", "refreshInterval", "Hooks"]
+---
+
+{/* Goal: Explain the StatusLine rendering pipeline, trigger model, protocol contract, and security gateway, while documenting the gaps and fixes in this repository compared to the official version. */}
+
+## Overview
+
+The StatusLine is a line of custom text displayed at the bottom of the Claude Code REPL, rendered by a **user-provided shell command**. The main process packages runtime state (model, working directory, tokens, rate limits, session metadata, etc.) into a JSON object and feeds it to the script via `stdin`. The script outputs a string to `stdout`, which Ink renders as ANSI text in the footer.
+
+Core Philosophy: **Language Agnostic + Process Isolation + Unix Pipes**. Users can write scripts in Bash, Python, Node, or any other language; a script crash does not affect the main process; inputs and outputs are plain text, allowing for offline testing (`echo '{...}' | ./script.sh`).
+
+## Configuration
+
+Add the `statusLine` field to your `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh",
+    "refreshInterval": 1,
+    "padding": 0
+  }
+}
+```
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `type` | `"command"` | Currently, only "command" is supported. |
+| `command` | `string` | The shell command string; executed by the system shell. |
+| `refreshInterval` | `number` (seconds) | Periodic refresh interval; 0 or omitted means no timed refreshes. |
+| `padding` | `number` | Left and right padding in Ink cells. |
+
+The schema is defined in `src/utils/settings/types.ts:550` (the `statusLine` Zod object).
+
+## Rendering Pipeline
+
+```
+┌─────────────────────── Ink Side ───────────────────────┐     ┌──────── User Side ────────┐
+│                                                        │     │                          │
+│  buildStatusLineCommandInput()  ──┐                    │     │  ~/.claude/              │
+│     Collects runtime state         │                    │     │   statusline-*.sh        │
+│                                   ▼                    │     │                          │
+│  executeStatusLineCommand()  ─── JSON via stdin ────────────►  jq '.model...'           │
+│     execCommandHook() spawns shell                     │     │  Calc & Format           │
+│                                   ▲                    │     │                          │
+│     stdout ◄──────────────────── One line of text ─────────── printf '...'              │
+│                                   │                    │     │                          │
+│  setAppState({ statusLineText }) ─┘                    │     └──────────────────────────┘
+│     Zustand state + component memo subscription        │
+│                                                        │
+│  <StatusLine /> → <Text><Ansi>{text}</Ansi></Text>     │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+## Input Protocol: Main Process → Script
+
+The JSON object constructed by `buildStatusLineCommandInput` (`src/components/StatusLine.tsx:53`) contains the following fields—**this is everything the script can read via `jq`**:
+
+| Field | Source | Notes |
+| :--- | :--- | :--- |
+| `session_id` | `getSessionId()` | UUID; used for per-session state isolation in scripts. |
+| `session_name` | `getCurrentSessionTitle()` | Optional user-defined session title. |
+| `model.id` / `model.display_name` | `getRuntimeMainLoopModel()` | Real model at runtime (includes permission mode downgrades or 200k upgrades). |
+| `workspace.current_dir` / `project_dir` / `added_dirs` | `getCwd()` / Permission context | `current_dir` updates with `cd`. |
+| `version` | `MACRO.VERSION` | Injected at build time (e.g., `2.1.888`). |
+| `output_style.name` | `settings.outputStyle` | Defaults to `DEFAULT_OUTPUT_STYLE_NAME`. |
+| `cost.total_cost_usd` / `total_duration_ms` / `total_api_duration_ms` / `total_lines_added` / `total_lines_removed` | `cost-tracker.js` | Cumulative session statistics. |
+| `context_window.total_input_tokens` / `total_output_tokens` | `cost-tracker.js` | Cumulative tokens. |
+| `context_window.context_window_size` | `getContextWindowForModel()` | Maximum context window for the model. |
+| `context_window.current_usage` | Latest assistant message usage | Includes `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, and `output_tokens`. |
+| `context_window.used_percentage` / `remaining_percentage` | `calculateContextPercentages()` | 0–100 float. |
+| `exceeds_200k_tokens` | Check of latest assistant message | Used for displaying 1M context models. |
+| `rate_limits.five_hour` / `seven_day` | `getRawUtilization()` | `{ used_percentage, resets_at }` from the Claude.ai rate limit API. |
+| `vim.mode` | If Vim mode is enabled | `INSERT`, `NORMAL`, etc. |
+| `agent.name` | Main thread agent type | Non-empty when a sub-agent is forked. |
+| `remote.session_id` | Bridge / Remote Control Mode | Remote session identifier. |
+| `worktree` | Current worktree metadata | `name`, `path`, `branch`, `original_cwd`, `original_branch`. |
+
+> [!NOTE]
+> The type signature in `src/types/statusLine.ts` is currently an `any` stub; use the table above for actual field names.
+
+## Output Protocol: Script → Main Process
+
+`executeStatusLineCommand` (`src/utils/hooks.ts:4752`) processes the script's `stdout` as follows:
+1. Trims leading and trailing whitespace.
+2. Splits into lines via `\n` and trims each line.
+3. Discards empty lines and rejoins the rest with `\n`.
+
+Multi-line output is **preserved** (Ink's `<Text>` component supports newlines), but **single-line** output is recommended as multi-line output consumes REPL height and may displace lines in fullscreen mode.
+
+**Exit Code Contract:**
+- `exit 0` + stdout present → Displays text.
+- `exit 0` + empty stdout → Clears StatusLine (displays as empty).
+- **Non-zero exit** → Ignored; retains previous content (logged as a warning if `logResult=true`).
+- **Timeout** (default 5000ms) → Ignored.
+- **Aborted** (via `AbortController`) → Ignored.
+
+ANSI colors are supported; Ink parses SGR sequences via the `<Ansi>` component.
+
+## Trigger Sources
+
+StatusLine recalculation is driven by **three types of events**, all funneling into the same debounce queue:
+
+### 1. Event-Driven (`src/components/StatusLine.tsx:275`)
+Listens for state changes and triggers `scheduleUpdate()`:
+- `lastAssistantMessageId`: A new assistant reply appears.
+- `permissionMode`: `/mode` switches permission modes.
+- `vimMode`: Vim switches between insert/normal.
+- `mainLoopModel`: `/model` switches models.
+
+### 2. Settings-Driven (`src/components/StatusLine.tsx:294`)
+When the `settings.statusLine.command` string changes (e.g., hot-reloading `settings.json`), it logs the next result and immediately calls `doUpdate()`.
+
+### 3. Time-Driven (`src/components/StatusLine.tsx:292` — Repository Patch)
+Reads `settings.statusLine.refreshInterval` (in seconds). A `setInterval` calls `scheduleUpdate()` at every tick. If set to 0 or omitted, the timer is not started (zero overhead).
+
+> [!IMPORTANT]
+> **Historical Gap**: The decompiled `StatusLine.tsx` originally lacked the time-driven trigger path, and the `refreshInterval` field was missing from the Zod schema. Consequently, dynamic content like TTL countdowns or clocks would not update every second. This was fixed on 2026-05-06.
+
+## Debounce + Abort
+
+All trigger sources call `scheduleUpdate()` (`src/components/StatusLine.tsx:259`):
+```
+scheduleUpdate() → setTimeout(300ms) → doUpdate()
+                   │
+                   └─ Submitting another schedule clears the previous timer
+```
+A 300ms debounce merges rapid events (e.g., switching Vim and permission modes simultaneously).
+
+In `doUpdate()`:
+```javascript
+abortControllerRef.current?.abort();   // Abort the previous in-flight shell
+controller = new AbortController();
+executeStatusLineCommand(..., controller.signal, ...);
+```
+**Single-flight Semantics**: Any new trigger aborts the previous unfinished shell call, ensuring a maximum of one subprocess at a time. This is critical for `refreshInterval: 1`—if a script takes >1 second, the old process is killed when the new tick arrives, preventing process stacking.
+
+## Security Gateway
+
+`executeStatusLineCommand` (`src/utils/hooks.ts:4752`) features **three layers of interception** before execution:
+1. `shouldDisableAllHooksIncludingManaged()`: Returns immediately if hooks are globally disabled.
+2. `shouldSkipHookDueToTrust()`: **Skips if the workspace has not been trusted**, protecting against RCE when opening unknown repositories.
+3. `shouldAllowManagedHooksOnly()`: If hooks are disabled but managed hooks are allowed, it only reads from `policySettings` sources.
+
+The component-side (`src/components/StatusLine.tsx:318`) displays a notification: `"statusline skipped · restart to fix"` if trust is not granted. Additionally, `statusLineShouldDisplay` returns `false` in **Kairos assistant mode** to avoid misleading the user with REPL/daemon process states.
+
+## Rendering Details
+
+### Memoization
+```tsx
+export const StatusLine = memo(StatusLineInner);
+```
+The parent `PromptInputFooter` rerenders on every `setMessages`. `memo` prevents unnecessary StatusLine rerenders unless `lastAssistantMessageId` changes.
+
+### Subscription Granularity
+```tsx
+const statusLineText = useAppState(s => s.statusLineText);
+```
+`useAppState` uses selector subscription, triggering a rerender only when `statusLineText` changes. `doUpdate()` also performs an idempotency check—if the text hasn't changed, the Zustand state is not updated, saving a notification cycle.
+
+### Fullscreen Placeholder
+In fullscreen mode, the footer has `flexShrink: 0`. Changing from 0 lines to 1 line for the status bar would cause a jittering effect in the `ScrollBox`. Before the script returns, a space character is used to hold the height.
+
+## Built-in `/statusline` Slash Command
+
+`src/commands/statusline.tsx` defines a **prompt-type command** that expands into instructions for the main agent:
+```
+Create an AgentTool with subagent_type "statusline-setup" and the prompt "<user-args>"
+```
+The default prompt is `"Configure my statusLine from my shell PS1 configuration"`. This launches the `statusline-setup` sub-agent with restricted tools (only `Read` and `Edit`) and paths (restricted to `settings.json`). It **cannot write new files or run Bash**.
+
+## Scripting Best Practices
+
+1.  **Statelessness**: Every tick forks a new shell; variables do not persist. Use files in `~/.claude/statusline-state/<hash>.state` for persistent state (e.g., last timestamp).
+2.  **Session Isolation**: Hash the `session_id` to create unique state files for multiple concurrent sessions.
+3.  **Defensive Reading**: Validate state files before use.
+4.  **Refresh Interval ≠ Execution Period**: Due to debouncing, actual execution frequency varies slightly.
+5.  **Execution Budget**: Scripts should finish within 100ms. Use caching for heavy operations like `curl` or `git log`.
+6.  **ANSI Escape Sequences**: Do not rely on the `TERM` environment variable; use standard SGR sequences.
+7.  **Single Line**: Stick to a single line of output to avoid REPL layout issues.
+8.  **Handle Null Usage**: `context_window.current_usage` may be null before the first response.
+
+### Example: Cache Hit Rate + TTL Countdown
+A sample script `~/.claude/statusline-command.sh` might output: `<dir> | <model> | ctx:N% | Cache 97% 59:43`.
+- **Hit Rate**: `cache_read / (input + cache_creation + cache_read)`.
+- **TTL**: 60-minute countdown that resets only when the token signature changes.
+- **Color Coding**: Green for high hit rates, yellow/red for TTL warnings.
+
+## Known Gaps and Fixes (This Repository)
+
+The decompiled version had functional gaps compared to the official version:
+
+| Item | Official Claude Code | Original (Decompiled) | Current State |
+| :--- | :--- | :--- | :--- |
+| `refreshInterval` Zod Field | ✅ Yes | ❌ No | ✅ Added |
+| Time-driven Trigger | ✅ Yes | ❌ No | ✅ Added |
+| Event-driven Trigger | ✅ Yes | ✅ Yes | — |
+| Settings-driven Trigger | ✅ Yes | ✅ Yes | — |
+| Debounce + Abort | ✅ Yes | ✅ Yes | — |
+| Trust Gateway | ✅ Yes | ✅ Yes | — |
+
+**Fix Details (2026-05-06):**
+1.  **`src/utils/settings/types.ts`**: Added `refreshInterval: z.number().optional()` to the schema.
+2.  **`src/components/StatusLine.tsx`**: Implemented the time-driven `useEffect` with `setInterval`.
+
+## Related Source Files
+
+| File | Responsibility |
+| :--- | :--- |
+| `src/components/StatusLine.tsx` | UI component, trigger logic, and input builder. |
+| `src/utils/hooks.ts` | `executeStatusLineCommand`: Shell execution and security. |
+| `src/utils/settings/types.ts` | Zod schema for `statusLine`. |
+| `src/types/statusLine.ts` | `StatusLineCommandInput` type definition (stub). |
+| `src/commands/statusline.tsx` | `/statusline` slash command definition. |
+| `src/state/AppStateStore.ts` | Declaration of the `statusLineText` state field. |
+| `src/components/PromptInput/PromptInputFooter.tsx` | Mounting point for the StatusLine component. |

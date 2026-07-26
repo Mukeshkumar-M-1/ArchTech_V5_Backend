@@ -1,0 +1,96 @@
+Here's the detailed comparison between Claude Code's memory system and your ArchTech implementation:
+
+1. Memory Storage Format
+Aspect	Claude Code	ArchTech	Why Different
+Storage format	.md files with frontmatter	.json files	JSON is machine-queryable; MD is human-readable
+Index file	MEMORY.md — plain text index	MEMORY.md — plain text index	Same pattern, shared from Claude Code
+Content storage	Text content in .md files	Structured JSON in knowledge_base/*.json	ArchTech needs to search/filter by category, confidence
+Memory typing	4 types: user, feedback, project, reference	Same 4 types for user memory	ArchTech borrows this taxonomy directly
+Project knowledge	Not applicable (no document extraction)	all_requirements.json, category_stats.json	ArchTech stores extracted requirements as structured data
+2. Memory Management
+Aspect	Claude Code	ArchTech	Why Different
+Entry point	~/.claude/projects/<slug>/memory/	backend/memory/projects/<project_id>/	Same pattern, adapted for Python backend
+Path validation	validateMemoryPath() — rejects ../, root, UNC, null bytes	Same function, ported to Python	Security pattern reused from Claude Code
+Index truncation	MAX_ENTRYPOINT_LINES=200, MAX_ENTRYPOINT_BYTES=25000	Same limits, truncate_content()	Prevents context window overflow
+Lazy loading	Reads MEMORY.md first, then loads only referenced files	Same lazy-loading pattern	Efficiency — don't load all memories at once
+Auto-compaction	Background forked agent triggers compaction	needs_compaction() checks threshold, then compacts	Same pattern, synchronous instead of forked
+3. Query Execution
+Aspect	Claude Code	ArchTech	Why Different
+Query trigger	User types in CLI	HTTP POST request	Claude Code is interactive; ArchTech is API
+Query parsing	LLM parses query in context	query_engine.py parses intent first	ArchTech needs structured parsing before LLM
+Memory loading	System prompt injection (all relevant memories)	API returns structured JSON	Claude Code injects into LLM; ArchTech returns to caller
+Response format	Natural language text	Structured JSON + optional LLM summary	ArchTech users may want data, not prose
+Conversation context	Last N messages in API call	JSONL file, last N messages loaded	Same pattern, different storage
+4. Context Window Management
+Aspect	Claude Code	ArchTech	Why Different
+Primary concern	Token budget (10K-40K tokens)	File size (200 lines / 25KB)	Claude Code manages LLM context; ArchTech manages file size
+Compression	Session memory auto-summarization	Knowledge base aggregation	Same concept, different implementation
+Threshold	Token count triggers compaction	Doc count triggers compaction	Claude Code uses tokens; ArchTech uses doc count
+Micro-compaction	Per-message compression	Stage 2 segmenter	Claude Code compresses messages; ArchTech splits pages
+5. Memory Extraction
+Aspect	Claude Code	ArchTech	Why Different
+Extraction trigger	After each API call (forked agent)	After Stage 8 dedup (synchronous)	Claude Code uses forked subagent; ArchTech uses synchronous pipeline
+Extraction agent	Forked LLM agent (2-4 turns)	Python function	Claude Code uses LLM to decide what to save; ArchTech saves everything
+Tool permissions	Read/Grep/Glob unrestricted, Edit/Write restricted	No restriction needed (Python runs directly)	Forked agent needs sandboxing; Python doesn't
+Memory files written	user.md, feedback.md, project.md, reference.md	all_requirements.json, session_summary.md	Claude Code writes human-readable text; ArchTech writes structured JSON
+6. Directory Structure
+Path	Claude Code	ArchTech	Purpose
+Root memory dir	~/.claude/projects/<slug>/memory/	backend/memory/projects/<project_id>/	Per-project isolated storage
+Knowledge base	N/A	knowledge_base/	Aggregated extracted requirements
+Per-doc storage	N/A	extracted_docs/	Per-document requirement files
+Session memory	session_memory/<timestamp>.md	session_memory/<timestamp>.md	Auto-summarized session notes
+Conversation log	N/A	conversation_<user_id>.jsonl	Chat history per project/user
+User memory root	~/.claude/CLAUDE.md	user_memory/<user_id>/	Per-user persistent memories
+User memory index	MEMORY.md	MEMORY.md	Index of all user memories
+User memory files	~/.claude/memory/*.md	user_memory/<user_id>/memories/*.md	Individual typed memory files
+7. API vs CLI Interface
+Aspect	Claude Code	ArchTech	Why Different
+Interface	Interactive CLI (stdin/stdout)	HTTP API (FastAPI)	Claude Code is a CLI tool; ArchTech is a backend service
+Authentication	OAuth via Anthropic account	API key / JWT per user	Different auth models
+Session management	Session ID in config	project_id + user_id in URL path	Different session tracking
+Real-time	Streaming response via SSE	JSON response (or SSE for streaming)	Claude Code streams LLM output; ArchTech can stream or batch
+Error handling	Terminal output + retry	HTTP status codes + JSON error body	Different error models
+8. What's Exactly the Same (Direct Port from Claude Code)
+Component	Claude Code	ArchTech
+MEMORY.md index format	- [name] description → type	Same format
+Memory type taxonomy	user, feedback, project, reference	Same types
+Frontmatter format	---\nname: ...\ndescription: ...\ntype: ...\n---	Same format
+Path validation	Rejects ../, root, UNC, null bytes	Same validation logic
+Index truncation	200 lines / 25KB caps	Same caps
+Compaction threshold	Token count triggers compaction	Doc count triggers compaction
+Lazy loading	Read index first, then load files	Same pattern
+Session summary	Auto-generate after extraction	Auto-generate after Stage 8
+9. What's Unique to ArchTech (No Claude Code Equivalent)
+Component	Description
+Knowledge base aggregation	Merges requirements from all documents in a project
+Structured search	Filter by category, confidence, doc_name, keywords
+JSON storage	Requirements stored as JSON, not text
+HTTP API	REST endpoints for all memory operations
+Category stats	Tracks {"Hardware/Power": 12, "Software/Driver": 5} counts
+High-confidence filter	Separate file for requirements with confidence >= 0.7
+Cross-document dedup	Stage 8 runs globally across all pages/documents
+10. What's Unique to Claude Code (No ArchTech Equivalent)
+Component	Description
+Forked subagent extraction	Background LLM agent extracts memories after each turn
+Real-time streaming	Response streams token-by-token to terminal
+Tool permissions	Sandbox for forked agent (read-only vs read-write)
+Prompt cache sharing	Forked agent shares cache key with parent
+CLI interaction	Interactive input loop with keyboard shortcuts
+Terminal UI	Ink-based React terminal components
+Git status integration	Git diff/status injected into system prompt
+Summary
+Claude Code's memory system is designed for an interactive CLI where an LLM agent reads and writes memories in real-time. ArchTech's memory system is designed for an API backend where extracted requirements are stored as structured JSON and queried via REST endpoints.
+
+The key patterns shared between them are:
+
+MEMORY.md index with truncation
+Typed memories with frontmatter
+Lazy loading (read index first)
+Compaction thresholds (doc count instead of token count)
+Per-project isolation
+The key differences are:
+
+Storage format (.md vs .json)
+Query mechanism (LLM parses vs structured filter)
+Extraction (forked agent vs synchronous pipeline)
+Interface (CLI vs HTTP API)

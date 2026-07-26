@@ -1,0 +1,5 @@
+@_Learn/API.md  explore this project  and tell me how it usedby like this 
+1. How the tools are choiced by agents.
+2. How the error are occured then the errors can be solved by the next agents to keep it in the loop to solve the tasks.
+3. How the indent of the task is identified and processed in the loop.
+4. How the tools are failed then how the remaining tools are waited to process the failed tool is processed again to solved to process the next tool

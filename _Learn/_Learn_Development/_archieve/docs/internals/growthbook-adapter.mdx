@@ -1,0 +1,169 @@
+---
+title: "GrowthBook Adapter - Custom Feature Flag Server Access"
+description: "Connect to a custom GrowthBook server via environment variables for remote feature flag control. Automatically falls back to code defaults when no configuration is present."
+keywords: ["growthbook", "feature flags", "remote config", "adapter", "environment variables"]
+---
+
+## Overview
+
+Claude Code's GrowthBook system supports connecting to a custom GrowthBook server via environment variables for remote feature flag control.
+
+- **When configured**: Connects to your GrowthBook instance, pulls, and caches feature values.
+- **When not configured**: All feature reads directly return default values from the code, with zero network requests.
+
+## Environment Variables
+
+| Variable | Required | Description |
+| ----------------------- | ---- | ------------------------------------------------- |
+| `CLAUDE_GB_ADAPTER_URL` | Yes | GrowthBook API address, e.g., `https://gb.example.com/` |
+| `CLAUDE_GB_ADAPTER_KEY` | Yes | GrowthBook SDK Client Key, e.g., `sdk-xxxxx` |
+
+Enable adapter mode when both variables are set, otherwise completely skip GrowthBook.
+
+## Usage
+
+### Basic Usage
+
+```bash
+CLAUDE_GB_ADAPTER_URL=https://gb.example.com/ \
+CLAUDE_GB_ADAPTER_KEY=sdk-abc123 \
+bun run dev
+```
+
+### Without GrowthBook (Default Behavior)
+
+```bash
+bun run dev
+# All getFeatureValue_CACHED_MAY_BE_STALE("xxx", defaultValue) calls directly return defaultValue
+```
+
+## GrowthBook Server Configuration
+
+### Steps
+
+1. **Deploy GrowthBook Server** (Self-hosted via Docker or Cloud version)
+2. **Create Environment** (e.g., `production`)
+3. **Create SDK Connection** to obtain the SDK Key (i.e., `CLAUDE_GB_ADAPTER_KEY`)
+4. **Add Features as needed**, see the list below for keys and types
+
+### Core Principles
+
+- **Runs normally even without configuring any features**—every call in the code provides a default value.
+- Only create features you want to control remotely; the rest will use code defaults.
+- Once a feature is configured on GrowthBook, its value will override the default value in the code.
+
+## Feature Key List
+
+### High Frequency Use
+
+| Feature Key | Type | Code Default | Purpose |
+| ------------------------------ | ------- | ---------- | -------------------- |
+| `tengu_hive_evidence` | boolean | `false` | Task evidence system |
+| `tengu_quartz_lantern` | boolean | `false` | File write/edit protection |
+| `tengu_auto_background_agents` | boolean | `false` | Automatic background Agents |
+| `tengu_agent_list_attach` | boolean | `false` | Agent list attachment |
+| `tengu_amber_stoat` | boolean | `true` | Built-in Agents |
+| `tengu_slim_subagent_claudemd` | boolean | `true` | Sub-agent CLAUDE.md |
+| `tengu_attribution_header` | boolean | `true` | API attribution Header |
+| `tengu_cobalt_harbor` | boolean | `false` | Bridge mode |
+| `tengu_ccr_bridge` | boolean | `false` | CCR Bridge |
+| `tengu_cicada_nap_ms` | number | `0` | Background refresh throttling (ms) |
+| `tengu_miraculo_the_bard` | boolean | `false` | Startup welcome message |
+
+### Agent / Tool Control
+
+| Feature Key | Type | Code Default | Purpose |
+| ----------------------------------- | ------- | ---------- | --------------------- |
+| `tengu_surreal_dali` | boolean | `false` | Remote trigger tools |
+| `tengu_glacier_2xr` | boolean | `false` | Tool search enhancement |
+| `tengu_plum_vx3` | boolean | `false` | Web Search using Haiku |
+| `tengu_destructive_command_warning` | boolean | `false` | Dangerous command warning |
+| `tengu_birch_trellis` | boolean | `true` | Bash permission control |
+| `tengu_harbor_permissions` | boolean | `false` | Harbor permission mode |
+
+### Bridge / Remote Connection
+
+| Feature Key | Type | Code Default | Purpose |
+| ---------------------- | ------- | ---------- | -------------- |
+| `tengu_bridge_repl_v2` | boolean | `false` | Bridge REPL v2 |
+| `tengu_copper_bridge` | boolean | `false` | Copper Bridge |
+| `tengu_ccr_mirror` | boolean | `false` | CCR Mirror |
+
+### Memory / Context
+
+| Feature Key | Type | Code Default | Purpose |
+| ------------------------- | ------- | ---------- | ------------- |
+| `tengu_coral_fern` | boolean | `false` | Memory directory feature |
+| `tengu_passport_quail` | boolean | `false` | Memory path configuration |
+| `tengu_slate_thimble` | boolean | `false` | Slate Thimble |
+| `tengu_herring_clock` | boolean | `false` | Skip indexing |
+| `tengu_session_memory` | boolean | `false` | Session memory |
+| `tengu_pebble_leaf_prune` | boolean | `false` | Memory pruning |
+
+### UI / Experience
+
+| Feature Key | Type | Code Default | Purpose |
+| ------------------------------- | ------- | ---------- | --------------- |
+| `tengu_terminal_sidebar` | boolean | `false` | Terminal sidebar |
+| `tengu_terminal_panel` | boolean | `false` | Terminal panel |
+| `tengu_willow_mode` | boolean | `false` | Willow mode |
+| `tengu_collage_kaleidoscope` | boolean | `false` | UI effects |
+| `tengu_chrome_auto_enable` | boolean | `false` | Auto-enable Chrome |
+| `tengu_immediate_model_command` | boolean | `false` | Immediate model switching |
+| `tengu_remote_backend` | boolean | `false` | Remote backend |
+
+### Configuration Objects (Dynamic Config)
+
+| Feature Key | Type | Code Default | Purpose |
+| ------------------------- | ------ | ---------- | ---------------- |
+| `tengu_file_read_limits` | object | `null` | File read limit configuration |
+| `tengu_cobalt_raccoon` | object | `null` | Cobalt configuration |
+| `tengu_cobalt_lantern` | object | `null` | Lantern configuration |
+| `tengu_desktop_upsell` | object | `null` | Desktop version upsell |
+| `tengu_marble_sandcastle` | object | `null` | Marble configuration |
+| `tengu_marble_fox` | object | `null` | Marble Fox configuration |
+| `tengu_ultraplan_model` | string | `null` | Ultraplan model name |
+
+### Gate (Boolean Gating)
+
+| Gate Key | Code Default | Purpose |
+| -------------------- | ---------- | -------------- |
+| `tengu_chair_sermon` | `false` | Feature gating |
+| `tengu_scratch` | `false` | Scratch feature |
+| `tengu_thinkback` | `false` | Thinkback feature |
+| `tengu_tool_pear` | `false` | Tool Pear feature |
+
+## Reading Priority Chain
+
+The value of each feature is resolved in the following order, returning the first hit:
+
+```
+1. CLAUDE_INTERNAL_FC_OVERRIDES environment variable (JSON object override)
+   ↓ No hit
+2. growthBookOverrides configuration (~/.claude.json, ant build only)
+   ↓ No hit
+3. Memory cache (remoteEvalFeatureValues, pulled from server in current process)
+   ↓ No hit
+4. Disk cache (cachedGrowthBookFeatures in ~/.claude.json)
+   ↓ No hit
+5. defaultValue parameter in code
+```
+
+## Cache and Refresh Mechanism
+
+| Mechanism | Description |
+| -------------- | ----------------------------------------------------------------- |
+| **Disk Cache** | `cachedGrowthBookFeatures` field in `~/.claude.json`, persistent across processes |
+| **Periodic Refresh** | Automatically pulls latest values from server every 6 hours (`setInterval` + `unref`) |
+| **Initialization Timeout** | 5-second timeout for first connection; falls back to disk cache or default values |
+| **Auth Changes** | Automatically destroys and rebuilds client upon login/logout |
+
+## Implementation Details
+
+Modified 3 locations across 2 files:
+
+1. **`src/constants/keys.ts`** — `getGrowthBookClientKey()` prioritizes reading `CLAUDE_GB_ADAPTER_KEY`
+2. **`src/services/analytics/growthbook.ts`** — `isGrowthBookEnabled()` enables directly in adapter mode
+3. **`src/services/analytics/growthbook.ts`** — Base URL prioritizes `CLAUDE_GB_ADAPTER_URL`
+
+No modification needed for all 130+ calling files.

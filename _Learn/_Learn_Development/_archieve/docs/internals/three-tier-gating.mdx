@@ -1,0 +1,99 @@
+---
+title: "Three-Tier Gating System - Feature Visibility Control Architecture"
+description: "Detailed explanation of Claude Code's three-tier gating system: Build-time feature(), runtime GrowthBook, and identity-layer USER_TYPE, and how they control feature visibility and grayscale releases."
+keywords: ["gating system", "feature gating", "feature flag", "grayscale release", "visibility control"]
+---
+
+{/* Chapter Goal: Establish a global understanding of the three-tier gating system, setting the coordinate system for the four subsequent deep-dive articles */}
+
+## Tip of the Iceberg
+
+The Claude Code you use daily is just the tip of the iceberg of the complete codebase.
+
+Reverse engineering has revealed a fact: a large number of features are carefully "hidden" behind three independent gating systems. Some are experimental features undergoing A/B testing, some are internal tools for Anthropic employees only, and others are next-generation capabilities not yet released to the public.
+
+> We discovered 88+ build-time feature flags, 500+ runtime A/B testing markers, and a complete identity gating mechanism in `src/`.
+
+## Three-Tier Gating Overview
+
+| Dimension | Tier 1: Build-time `feature()` | Tier 2: Runtime GrowthBook | Tier 3: Identity `USER_TYPE` |
+| -------------- | ------------------------------- | ------------------------- | ---------------------------- |
+| **Control Method** | `bun:bundle` compile-time macro | GrowthBook SDK remote evaluation | Build-time `--define` constant |
+| **Decision Timing** | At bundle time (code is directly deleted) | At startup + periodic refresh | At bundle time (constant folding) |
+| **Granularity** | All or nothing | Targeted by user/device/organization | By build version (ant / external) |
+| **Marker Count** | 88+ | 500+ (`tengu_*` prefix) | 1 (`ant` vs `external`) |
+| **Reverse Visibility** | Code remains, but always takes `false` branch | Full SDK code is readable | Conditional branches are clearly visible |
+
+## Decision Flow
+
+When a feature request enters Claude Code, it passes through the checks of the three gating tiers sequentially:
+
+```
+Feature Request
+  │
+  ▼
+┌─────────────────────────┐
+│  Tier 1: feature('X')    │ ──── Decided at compile-time ──→ false → Code removed via DCE
+│  (Build-time Feature Flag)│
+└─────────┬───────────────┘
+          │ true (Internal build only)
+          ▼
+┌─────────────────────────┐
+│  Tier 2: tengu_xxx       │ ──── Runtime by user attributes ──→ Not in experiment group → Feature off
+│  (GrowthBook A/B Testing)│
+└─────────┬───────────────┘
+          │ In experiment group
+          ▼
+┌─────────────────────────┐
+│  Tier 3: USER_TYPE       │ ──── ant? external? ──→ external → Feature unavailable
+│  (Identity Gating)       │
+└─────────┬───────────────┘
+          │ ant
+          ▼
+      Feature Available ✓
+```
+
+The three tiers are **independent of each other**, and a feature may be controlled by multiple tiers simultaneously. For example, the KAIROS assistant mode requires both `feature('KAIROS')` to be enabled at build-time **and** a hit on the `tengu_kairos` runtime experiment.
+
+## What Reverse Engineering Reveals
+
+In this decompiled version:
+
+- **Tier 1** is completely transparent—`feature()` is shimmed as `() => false`. All 88+ flag code paths can be read, they just never execute.
+- **Tier 2** is fully preserved—the 1156 lines of GrowthBook SDK code are completely readable, including user targeting attributes, caching strategies, and override mechanisms.
+- **Tier 3** is clearly visible—`process.env.USER_TYPE === 'ant'` appears in 60+ locations, each marking an "internal-only" functional boundary.
+
+<Note>
+  These three gating tiers are not security mechanisms—they are product release strategies. The goal is to allow Anthropic to progressively test and release features across different user groups, rather than to prevent reverse engineering.
+</Note>
+
+## Next Up
+
+The subsequent four articles will delve into the details of each gating tier:
+
+<CardGroup cols={2}>
+  <Card title="88 Flags" icon="flag" href="/docs/internals/feature-flags">
+    Complete classification and interpretation of build-time Feature Flags
+  </Card>
+  <Card
+    title="Thousands of Faces"
+    icon="flask"
+    href="/docs/internals/growthbook-ab-testing"
+  >
+    Operation mechanism of the GrowthBook A/B testing system
+  </Card>
+  <Card
+    title="Hidden Features Tour"
+    icon="eye"
+    href="/docs/internals/hidden-features"
+  >
+    In-depth analysis of 8 major hidden features like KAIROS and PROACTIVE
+  </Card>
+  <Card
+    title="Ant's Privileged World"
+    icon="shield"
+    href="/docs/internals/ant-only-world"
+  >
+    Exclusive tools, commands, and APIs for Anthropic employees
+  </Card>
+</CardGroup>

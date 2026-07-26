@@ -1,0 +1,151 @@
+The Complete Query Execution Flow
+Scenario: User asks "What hardware requirements were extracted from my project?"
+
+Step 1: User sends request
+POST /api/batch_abc123/query
+Body: {"query": "What hardware requirements were extracted?"}
+
+Step 2: API extracts project_id from URL path
+project_id = "batch_abc123"
+
+Step 3: Load project knowledge base
+Memory_Management/project_memory.py → search_requirements()
+  → loads knowledge_base/all_requirements.json
+  → filters: category=Hardware
+  → returns 23 matching requirements
+
+Step 4: Load user memories (if user_id provided)
+Memory_Management/user_memory.py → load_all_user_memories("user_001")
+  → reads user_memory/user_001/MEMORY.md
+  → resolves: user_role.md, project_context.md, etc.
+  → returns: [{"type": "project", "content": "This project targets Xilinx Kintex..."}]
+
+Step 5: Load conversation history
+Memory_Management/conversation.py → get_conversation("batch_abc123", "user_001", last_n=5)
+  → returns last 5 messages for context
+
+Step 6: Build response
+  {
+    "query": "What hardware requirements were extracted?",
+    "total_matches": 23,
+    "results": [...],
+    "stats": {"avg_confidence": 0.82, "categories": {...}},
+    "user_context": "This project targets Xilinx Kintex..."
+  }
+
+Step 7: Store the interaction
+Memory_Management/conversation.py → add_message("batch_abc123", "user_001", "user", "...")
+Memory_Management/conversation.py → add_message("batch_abc123", "user_001", "assistant", "...")
+How Claude Code Does It (The Pattern You Should Follow)
+Claude Code doesn't have an API — it's an interactive CLI. But the query execution happens the same way, just driven by the agent instead of HTTP:
+
+
+Step 1: User types query
+"Show me what you learned about my project"
+
+Step 2: System loads MEMORY.md index
+Reads ~/.claude/projects/<project>/memory/MEMORY.md
+  → finds: user.md, project.md, feedback.md
+
+Step 3: System loads relevant memory files
+For each line in MEMORY.md:
+  - Read the referenced .md file
+  - Add content to system prompt context
+
+Step 4: Agent processes query
+The LLM receives:
+  [System prompt]
+  [User memory: "User is a senior FPGA engineer..."]
+  [Project memory: "This project targets Xilinx Kintex..."]
+  [User query: "Show me what you learned about my project"]
+
+Step 5: Agent responds
+"I know that:
+ - You're a senior FPGA engineer
+ - This project targets Xilinx Kintex UltraScale+
+ - You prefer terse responses
+ - Requirements extracted: 47 from doc_A.pdf, 52 from doc_B.pdf"
+Key Detail: The Forked Agent Pattern (extractMemories.ts)
+Claude Code uses a forked subagent to extract memories after each conversation turn. Here's the exact pattern:
+
+
+# Pseudocode based on extractMemories.ts:
+
+# 1. After each API call completes (main agent finishes)
+# 2. Check if new messages need memory extraction
+new_message_count = countModelVisibleMessagesSince(lastMemoryMessageUuid)
+
+# 3. If new messages exist AND no extraction in progress
+# 4. Fork a subagent with:
+#    - Same prompt cache as parent (shares system prompt)
+#    - Tool permissions: Read/Grep/Glob unrestricted, Edit/Write only for memory dir
+#    - Max 5 turns, max 2-4 minutes
+# 5. The forked agent:
+#    a. Reads existing MEMORY.md index
+#    b. Scans memory directory for new entries
+#    c. Analyzes new conversation messages
+#    d. Decides what's worth saving
+#    e. Writes new memory files + updates MEMORY.md index
+# 6. Main agent never waits for fork (fire-and-forget)
+The forked agent uses tool permissions (lines 170-221 of extractMemories.ts):
+
+
+# Forked agent can ONLY:
+- Read/Grep/Glob (unrestricted)
+- Bash (read-only commands: ls, find, grep, cat, stat, wc, head, tail)
+- Edit/Write (only within the memory directory)
+
+# Forked agent CANNOT:
+- Write outside the memory directory
+- Execute write shell commands
+- Access other users' memory
+How This Maps to Your ArchTech API
+For your API, the flow is simpler because you don't need a forked agent — the Python code runs synchronously:
+
+
+# In your FastAPI route handler:
+
+async def query_project(request: QueryRequest, project_id: str, user_id: str | None):
+    # 1. Load knowledge base
+    kb = project_memory.load_knowledge_base(project_id)
+    
+    # 2. Search requirements
+    results = project_memory.search_requirements(kb, request.filters)
+    
+    # 3. Load user memories
+    if user_id:
+        user_mems = user_memory.load_all_user_memories(user_id)
+    else:
+        user_mems = []
+    
+    # 4. Load conversation context
+    history = conversation.get_conversation(project_id, user_id)
+    
+    # 5. Build response
+    return {
+        "results": results,
+        "stats": project_memory.get_stats(project_id),
+        "user_context": [m["content"] for m in user_mems],
+        "conversation_context": history[-5:]  # last 5 messages
+    }
+Key Difference from Claude Code
+Claude Code's approach is lazy loading — it reads MEMORY.md first, then only loads the specific files referenced. For your API, this translates to:
+
+
+# Lazy loading pattern (Claude Code style)
+def load_user_memories_lazy(user_id: str) -> list[dict]:
+    # Step 1: Read just the index
+    index = read_file(f"user_memory/{user_id}/MEMORY.md")
+    
+    # Step 2: Parse index lines to get file names
+    entries = parse_memory_index(index)
+    
+    # Step 3: Only load files that are referenced
+    memories = []
+    for entry in entries:
+        if should_include(entry, query_context):  # filter based on query
+            content = read_file(f"user_memory/{user_id}/memories/{entry.file}")
+            memories.append({"type": entry.type, "content": content})
+    
+    return memories
+This is critical for large conversations — you don't want to load 1000+ message pairs into context. You load only what's relevant.

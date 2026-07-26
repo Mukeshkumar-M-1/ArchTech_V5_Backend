@@ -1,0 +1,573 @@
+---
+title: "Sandbox Mechanism - The Second Line of Defense Beyond the Permission System"
+description: "Systematic overview of Claude Code's sandbox design: when it enters the sandbox, when it doesn't, how it interacts with the permission system, what it limits by default, differences in behavior across platforms, and what users see when intercepted."
+keywords:
+  [
+    "sandbox",
+    "permissions",
+    "Bash",
+    "PowerShell",
+    "bubblewrap",
+    "sandbox-exec",
+    "defense in depth",
+  ]
+---
+
+## Definition in One Sentence
+
+The sandbox in this project is not meant to replace the permission system, but to wrap another layer of OS-level capability boundaries around **shell commands**:
+
+- The permission system decides: whether this tool call should be executed.
+- The sandbox decides: even if executed, which files and network targets this sub-process can touch at most.
+
+Only when combined do they constitute true Defense-in-Depth.
+
+## Implementation Layers: Adapters in the Repository plus Underlying Runtime
+
+The "sandbox implementation" of this project is actually divided into two layers:
+
+- This layer is the responsibility of the repository itself: policy, configuration conversion, start/stop judgment, command wrapping, cleanup, and permission linkage.
+- The one that truly performs OS-level isolation is the external runtime `@anthropic-ai/sandbox-runtime`.
+
+In `src/utils/sandbox/sandbox-adapter.ts`, this boundary is very clear: the project imports runtime objects such as `SandboxManager as BaseSandboxManager` and `SandboxViolationStore`, and then wraps another layer of adapters around them that conform to Claude Code's own permission model.
+
+The realization of underlying isolation on different platforms is also not a single implementation:
+
+- macOS uses `sandbox-exec`.
+- Linux / WSL2 uses `bubblewrap + seccomp`.
+- Windows does not natively support this set of shell sandboxes.
+
+So if you only look at this repository, it's easy to mistakenly believe that "the sandbox is all done by itself." A more accurate statement would be: this repository decides **whether it should be enabled, how it should be configured, and how it should be connected into the toolchain**, while the true OS-level constraints are executed by the external runtime.
+
+## What Problem Does It Solve Exactly?
+
+If there were only an application-layer permission system, Claude Code would need to try to judge before command execution:
+
+- Whether this command is read-only.
+- Whether it will write to dangerous paths.
+- Whether it will connect to the external network.
+- Whether it will bypass checks via composite commands, redirection, sub-processes, or interpreter scripts.
+
+These checks are valuable, but they are essentially "pre-execution inference." The true side effects of shell commands often depend on runtime behavior:
+
+- `bash script.sh`
+- `python -c "..."`
+- `make`
+- `npm install`
+- A command starts another sub-process.
+
+The role of the sandbox is to compress the range of capabilities of these runtime behaviors within a clear boundary. Even if the application-layer checks are missed, the command cannot freely write to system directories or access disallowed network targets.
+
+## Why "Blocking It" Is Value in Itself
+
+Many people, seeing the sandbox for the first time, would intuitively feel:
+
+> If files like `/etc/hosts` are not allowed to be modified by me by default, then is the sandbox somewhat useless?
+
+The project's answer is exactly the opposite. The sandbox is not meant to allow system paths like `/etc/...` to be changed at will, but to compress the capabilities of shell commands into an acceptable security boundary:
+
+- The permission system is responsible for judging "whether to execute."
+- The sandbox is responsible for limiting "even if executed, what can be done at most."
+
+The fact that `/etc/...` is blocked by default shows that this boundary is truly in effect, rather than showing that the sandbox has no value. More specifically, the sandbox at least makes up for 4 things that the permission system alone cannot do well.
+
+### 1. Providing an OS-level Fallback for Shell
+
+The beginning of `src/utils/bash/ast.ts` is written very clearly: Bash AST analysis is not a sandbox; it is only judging whether we can reliably understand the command structure and cannot prevent dangerous commands from truly running.
+
+This is why, no matter how smart the application layer is, it is difficult to cover the full risk profile solely by "pre-execution inference." For commands like those below, the true side effects are not fully unfolded until runtime:
+
+- `bash script.sh`
+- `python -c "..."`
+- `make`
+- `npm install`
+- A command starts a new sub-process.
+
+The value of the sandbox lies here. Even if the previous analysis was missed, after the process reaches the OS layer, it still can only write to allowed directories and access allowed domains, truly compressing the capabilities of the shell into runtime boundaries.
+
+### 2. Allowing Commands "Within the Security Boundary" to Have Fewer Pop-ups or Even Auto-release
+
+The default sandbox whitelist already includes the current working directory and Claude's temporary directory, which is why most development commands within the workspace can run smoothly:
+
+- `npm test`
+- `rg`
+- `git status`
+- Build, test, and generation of files within the workspace.
+
+The project specifically provides `autoAllowBashIfSandboxed`. Its core idea is not "to trust the model more boldly," but "since the command has been tightened by OS-level boundaries, there's no need to repeatedly let users click confirm for a large number of low-risk Bash commands."
+
+In other words, without a sandbox, the system usually has only two choices, neither of which is ideal:
+
+- Frequent pop-ups, making the workflow very fragmented.
+- More aggressively trusting application-layer judgment, putting all the risk on static analysis.
+
+### 3. Reducing the Consequences of "Errors" from System-level Destruction to a Limited Failure
+
+This is also the most practical layer of benefit of Defense-in-Depth. Models occasionally make errors, and application-layer rules may also have missed judgments. The significance of the sandbox is not to assume the front is always correct, but to ensure that even if the front occasionally misjudges, the consequences are as controllable as possible.
+
+For example, commands of this type:
+
+- `sudo tee /etc/hosts`
+- `mv ... ~/.ssh/...`
+- `curl external_network | bash`
+
+If they occur in an environment without runtime constraints, they might directly modify the system, user configurations, or drop unknown scripts onto the machine. After being put into a sandbox, the more common result would be: failure because write permissions or network permissions are not met. It's not that "nothing happened," but that a potential system-level destruction is reduced to a limited failure.
+
+### 4. Intercepting Runtime Bypass and Escape Paths
+
+This repository specifically adds some high-risk paths to `denyWrite` in `src/utils/sandbox/sandbox-adapter.ts`, such as:
+
+- `settings.json`
+- `.claude/skills`
+- Some bare git repo related paths.
+
+It also specifically handles attack surfaces like bare git repo escape. Their significance is not "to let more commands pass," but "even if the command has been executed, don't let it conveniently tear down the guardrails themselves," avoiding the expansion of subsequent permissions by modifying configurations, skills, or git structures.
+
+So a more accurate statement is not:
+
+- "The sandbox blocked `/etc`, so it's useless."
+
+But rather:
+
+- "The sandbox shrinks the default permissions of the shell to the workspace and whitelist, so system-level paths cannot be written to by default; precisely because of this, the project dares to automatically release a large number of commands within the workspace."
+
+## Design Boundaries: What It Protects and What It Does Not
+
+### Protected Objects
+
+- Bash / shell command execution.
+- PowerShell execution on supported platforms.
+- Filesystem write range of shell sub-processes.
+- Network access range of shell sub-processes.
+- Some known high-risk paths and sandbox escape vectors.
+
+### Objects Not Directly Protected
+
+- Direct file tools like `FileEditTool` / `FileWriteTool`.
+- Pure application-layer permission pop-ups and rule matching.
+- Bash AST parsing itself.
+
+Pay special attention to one point: Bash AST analysis is not a sandbox. The source code itself clearly states that it only answers "can we trustfully extract the argv structure" and is not responsible for preventing dangerous commands from truly running.
+
+## Which Scenarios Will Go Through the Sandbox?
+
+### 1. The Startup Phase First Judges "Can the Sandbox Be Used?"
+
+The sandbox is not temporarily judged until the first command is executed. When the REPL / CLI starts, it first checks whether the current environment truly possesses the conditions for a sandbox. Core judgments include:
+
+1. Whether the current platform is supported by the underlying runtime.
+2. Whether dependencies are complete.
+3. Whether `sandbox.enabled` is turned on.
+4. Whether the current platform falls within the `enabledPlatforms` range.
+
+If the user has explicitly turned on the sandbox, but the current environment does not meet the conditions, a warning will be given during startup; if `sandbox.failIfUnavailable` is also configured, it will directly refuse to start, rather than quietly degrading to a no-sandbox mode.
+
+Furthermore, startup is not just "taking a look at whether it can be used," but actually calling the initialization process, converting current settings into runtime configurations and handing them over to the underlying `BaseSandboxManager.initialize(...)`. Subsequently, if settings change, they will be updated via `updateConfig(...)` hot updates, rather than requiring a restart of the entire session.
+
+### 2. BashTool Goes by Default
+
+As long as the following conditions are met, Bash commands will enter the sandbox by default:
+
+1. The current platform supports the sandbox.
+2. Sandbox dependencies are complete.
+3. `sandbox.enabled` is turned on.
+4. The current platform is within the `enabledPlatforms` range.
+5. This command has not been explicitly excluded.
+6. This call has not been allowed to bypass with `dangerouslyDisableSandbox`.
+
+Corresponding entries are in `packages/builtin-tools/src/tools/BashTool/shouldUseSandbox.ts` and `src/utils/sandbox/sandbox-adapter.ts`.
+
+### 3. PowerShell Only Goes on Supported Platforms
+
+The handling of PowerShell is a bit more granular:
+
+- Linux / macOS / WSL2: Can go through the sandbox.
+- Native Windows: Does not support the sandbox, returns `shouldUseSandbox: false` directly.
+
+In other words, PowerShell on native Windows can only rely on the permission system and will not have an OS-level sandbox fallback.
+
+### 4. Hook Commands Reuse a "Network-only Sandbox"
+
+Hooks do not fully reuse that set of filesystem limitations from Bash, but instead wrap another layer of **network-only sandbox**:
+
+- The focus is on blocking network access.
+- The filesystem is not additionally tightened to the extent of Bash.
+
+This is because Hooks are often not Bash tool calls directly issued by the model, but rather external extension points of the system/plugin.
+
+## Which Scenarios Will NOT Go Through the Sandbox?
+
+### 1. FileEditTool / FileWriteTool
+
+These types of tools do not modify files via a shell, but instead perform file I/O directly at the application layer, so they do not go through `Shell.exec()` and naturally will not be wrapped by `wrapWithSandbox()`.
+
+They go through another chain:
+
+- `checkWritePermissionForTool()`
+- `checkPathSafetyForAutoEdit()`
+- Working directory check.
+- allow/ask/deny rules.
+
+Therefore:
+
+- "Shell modifying `/etc/hosts`" is usually blocked by the sandbox at the OS layer.
+- "FileEdit modifying `/etc/hosts`" is usually blocked by the permission system at the application layer.
+
+### 2. Explicitly Excluded Commands
+
+If hit by `sandbox.excludedCommands`, this command will skip the sandbox directly.
+
+Three types of patterns are supported:
+
+- Exact match.
+- Prefix match.
+- Wildcard match.
+
+### 3. Commands Allowing Unsandboxed Fallback
+
+If:
+
+- This call explicitly sets `dangerouslyDisableSandbox: true`.
+- And the policy allows `allowUnsandboxedCommands`.
+
+Then it can also not enter the sandbox.
+
+This design is intentionally retained, but the naming is also intentionally heavy: `dangerouslyDisableSandbox`, reminding that this is an exception path and should not become a default habit.
+
+## Complete Execution Chain
+
+The entire process can be viewed in two segments: the startup phase prepares the sandbox, and the command phase decides "whether this command should enter."
+
+### Startup Phase Chain
+
+```text
+REPL / CLI Startup
+  -> isSandboxingEnabled()
+  -> convertToSandboxRuntimeConfig(settings)
+  -> BaseSandboxManager.initialize(runtimeConfig, callback)
+  -> BaseSandboxManager.updateConfig(newConfig) when settings change
+```
+
+This segment answers: Is there an available, initialized sandbox runtime capable of handling network authorization callbacks in the current session?
+
+### Command Phase Chain
+
+The typical Bash execution chain is as follows:
+
+```text
+User Request
+  -> BashTool.checkPermissions()
+  -> shouldUseSandbox(input)
+  -> Shell.exec(command, { shouldUseSandbox: true/false })
+  -> SandboxManager.wrapWithSandbox(...)
+  -> spawn(wrapped command)
+  -> cleanupAfterCommand() after execution
+```
+
+The key point that truly "wraps the command into the sandbox" here is `Shell.exec()`. It calls `SandboxManager.wrapWithSandbox(...)` before the actual `spawn(...)`, rewriting the original command into a sandbox command string executable by the underlying runtime. After the command ends, if this was a sandboxed execution, `cleanupAfterCommand()` is called to clean up runtime residuals.
+
+There are two easily confused decision points:
+
+### Decision Point A: Whether to Enter the Sandbox
+
+This is the responsibility of `shouldUseSandbox()`.
+
+It answers:
+
+> Should this command be wrapped in an OS-level sandbox for execution?
+
+### Decision Point B: Whether This Command Should Pop Up Permission Confirmation
+
+This is the responsibility of the permission system and Bash permission checks.
+
+It answers:
+
+> From the application layer's perspective, is this command `allow`, `ask`, or `deny`?
+
+These two decision points work in parallel and are not substitutes for each other.
+
+## What Does the Default Sandbox Actually Limit?
+
+The final sandbox runtime configuration is generated by `convertToSandboxRuntimeConfig()`. It converts the project's own settings, permission rules, and security hardening logic into configurations required by the underlying runtime.
+
+This step is critical because the sandbox configuration of this project is not a static table, but is "translated" from Claude Code's own permission system.
+
+### How are These Limits Derived from the Permission System?
+
+- `WebFetch(domain:...)` and `sandbox.network.allowedDomains` are merged into a network whitelist.
+- Permission rules like `Edit(...)` / `Read(...)` are translated into filesystem read/write limits.
+- `sandbox.filesystem.allowWrite` / `allowRead` / `denyWrite` / `denyRead` continue to overlay onto the final runtime configuration.
+
+In other words, the sandbox does not independently maintain another set of completely parallel security policies, but instead lands "which paths or domains Claude thinks should be allowed" as OS-level constraints.
+
+### Default Filesystem Write Range
+
+There are only two types of default `allowWrite`:
+
+- The current working directory `.`.
+- Claude's temporary directory.
+
+This means:
+
+- Builds, tests, and generation of temporary files within the workspace can usually run normally.
+- Root paths such as `/etc/...`, `/usr/...`, and `/var/...` are not in the write whitelist by default.
+
+### Sources of Additional Filesystem Writes
+
+Paths additionally allowed for writing mainly come from these sources:
+
+- `sandbox.filesystem.allowWrite`.
+- Paths derived from `Edit(...)` rules.
+- Directories added by `/add-dir` or `--add-dir`.
+- Paths required by the git worktree main repository.
+
+There is also an easily missed detail here: the adapter layer specifically handles special repository-level paths like the worktree main repository and bare git repos, avoiding accidental harm to normal development processes after isolation, or conversely, leaving escape surfaces.
+
+### Paths Forcibly Denied
+
+Even with other configurations, the project additionally hardens some high-risk paths, for example:
+
+- settings files.
+- `.claude/skills`.
+- Some bare git repo related paths.
+
+The reason for doing this is: once these paths are writable, an attacker could conversely modify Claude Code's own configuration, skills, or git behavior, thereby expanding permissions.
+
+### Network Limits
+
+The network whitelist comes from two parts:
+
+- `sandbox.network.allowedDomains`.
+- Permission rules like `WebFetch(domain:...)`.
+
+Allowed domains enter the sandbox network configuration; accesses not in the whitelist will be intercepted at runtime or trigger an additional network authorization process.
+
+## The Real Significance of `autoAllowBashIfSandboxed`
+
+This is one of the most noteworthy switches in sandbox design.
+
+It expresses a trust assumption like this:
+
+> If the command has already been constrained within a security boundary by an OS-level sandbox, then there is no need for the application layer to pop up confirmation boxes for a large number of low-risk Bash commands one by one.
+
+Therefore, when this switch is on:
+
+- The command first checks for explicit `deny` / `ask` rules.
+- If no such hard rules are hit.
+- And the command will indeed be executed in a sandbox.
+- Then BashTool can directly automatically allow it to run.
+
+There is also a boundary condition here that is particularly worth writing clearly: it only takes effect for "commands that will truly enter the sandbox." For situations like these, this shortcut still cannot be taken:
+
+- Hits `excludedCommands`.
+- `dangerouslyDisableSandbox: true` is explicitly used.
+- The current platform does not support the sandbox at all.
+
+These commands still have to comply with normal `ask` rules because they haven't received that layer of security fallback brought by OS-level constraints.
+
+This is also a core product value of the sandbox's existence: not to let more dangerous operations pass, but to allow more **routine commands within a limited range** to run seamlessly.
+
+## Why "the Sandbox Blocking `/etc`" Conversely Shows It's Useful
+
+The previous "four core values" explained the principles; here the conclusion is brought back to the most common intuitive doubt: why is a system that by default doesn't let you write to `/etc` conversely more trustworthy?
+
+Because what Claude Code runs most often on a daily basis are not system administration commands, but development commands. For example:
+
+- `npm test`
+- `npm install`
+- `cargo build`
+- `pytest`
+- `rg`
+- `git status`
+
+These commands were originally supposed to only operate within the workspace and a few temporary directories. After the sandbox shrinks the default capabilities of the shell to this range, the project dares to reduce pop-ups at the application layer, enable `autoAllowBashIfSandboxed`, and increase the degree of automation.
+
+So the correct landing point of this question is not "why it doesn't help me change `/etc`," but "whether it can, on the premise of not touching `/etc`, let a large number of normal development commands run more safely and smoothly." From this perspective, the fact that `/etc` cannot be written to by default is not a shortcoming, but the premise on which the entire automation experience stands.
+
+## Platform Differences
+
+### macOS
+
+- Uses `sandbox-exec` at the bottom layer.
+- Path and network rules are landed via Seatbelt profiles.
+- Belongs to native OS-level process isolation.
+
+### Linux
+
+- Uses `bubblewrap + seccomp` at the bottom layer.
+- Isolation of mounts / PID / network, etc., will be established.
+- Support for glob paths on Linux is somewhat weaker than on macOS.
+- Some residuals after running need to be cleaned up in `cleanupAfterCommand()`.
+
+### WSL
+
+- Only WSL2 is supported.
+- WSL1 is regarded as an unsupported platform.
+
+### Native Windows
+
+- Native PowerShell/Bash does not support this sandbox system.
+- Therefore, one can only rely on the permission system and tool-level checks.
+
+This is why, when you asked earlier "whether modifying files on the C drive will go through the sandbox," the answer is divided into:
+
+- Native Windows: Usually does not go.
+- Linux/macOS/WSL2: Only shell might go.
+
+## Inside and Outside the Workspace: How the Application Layer and Sandbox Layer Cooperate
+
+### Paths Within the Workspace
+
+Paths within the workspace usually have two layers of protection:
+
+1. Application-layer permission check.
+2. The sandbox allows writing to the current working directory by default.
+
+This makes "build/test/format/file generation within the workspace" the smoothest path.
+
+### Paths Outside the Workspace
+
+Paths outside the workspace are stricter:
+
+- The application layer usually regards them as high-risk, requiring confirmation or blocking.
+- Even if the application layer allows it, if it's not in the sandbox whitelist, it will also fail at runtime.
+
+This forms double insurance.
+
+### Linux Root Path `/etc/...`
+
+For root path files on Linux, two situations usually occur:
+
+- **Shell path**: The command enters the sandbox, but the sandbox does not have `/etc` write permission by default, so it's blocked at runtime.
+- **File tool path**: It doesn't go through the sandbox, but is instead blocked at the application layer by file permission checks directly.
+
+## What the User Will Really See
+
+Being intercepted is not a single experience; there are at least three types.
+
+### 1. Permission Confirmation Before Execution
+
+If the application layer judges it as `ask` before execution, the user will see a standard permission dialog:
+
+- Bash permission confirmation.
+- FileEdit / FileWrite permission confirmation.
+- Permission confirmation UI of other tools themselves.
+
+This prompt occurs before the command has truly run.
+
+### 2. Sandbox Violation During Execution
+
+If the command has already entered the sandbox and a violation is triggered during runtime:
+
+- The command will fail.
+- stderr will be appended with a `<sandbox_violations>` tag for the model to understand.
+- The UI will clean these tags before displaying to the user.
+- Meanwhile, the `SandboxViolationStore` will record the violation event.
+
+This means users can usually see:
+
+- The command failure itself.
+- And interface prompts such as "how many sandbox blocks recently."
+
+### 3. Out-of-Bounds Network Request
+
+Network is a special case.
+
+When an access from a host outside the sandbox requires additional confirmation, the project will pop up a dedicated network authorization dialog, for example:
+
+- `Network request outside of sandbox`
+
+Here, unlike filesystem runtime interception, it has a clear interactive authorization UI.
+
+## Why Filesystem Out-of-Bounds Usually Does Not Pop Up "Allow Once More"
+
+This is a very intentional design choice.
+
+For the filesystem, the project prefers:
+
+- ask at the application layer before execution.
+- Or let the command directly fail due to the sandbox after execution.
+
+Rather than popping up a new dialog box like "whether to allow writing to this system path" halfway through execution.
+
+The benefits of doing this are:
+
+- The boundary is more stable.
+- The user's mental model is clearer.
+- It's not easy to gradually upgrade the shell runtime into an increasingly loose environment.
+
+Network access is more suitable for temporary authorization by host, so a separate authorization dialog was made.
+
+## Common Misconceptions
+
+### Misconception 1: The Sandbox Protects All File Modifications
+
+No. It primarily protects **shell sub-processes**.
+
+Direct file editing tools go through the application-layer permission system, not the shell sandbox.
+
+### Misconception 2: As Long as the Sandbox is Enabled, the Permission System Will No Longer be Needed
+
+No. The sandbox only limits process capabilities and is not responsible for interpreting user intent, path security semantics, tool patterns, or approval experiences.
+
+The reason the project still retains the complex `allow / ask / deny` system is that the two have different responsibilities.
+
+### Misconception 3: If a Dangerous Operation is Blocked by the Sandbox, it Shows that Application-layer Checks Have No Value
+
+No. The value of application-layer checks lies in:
+
+- Earlier prompting.
+- Better user experience.
+- Finer semantic judgment.
+- Taking effect for tools that do not go through a shell.
+
+While the sandbox is responsible for the final fallback.
+
+## Recommended Reading Path
+
+If you want to continue following the source code in depth, it is recommended to look in the following order:
+
+1. `packages/builtin-tools/src/tools/BashTool/shouldUseSandbox.ts`
+2. `src/utils/Shell.ts`
+3. `src/utils/sandbox/sandbox-adapter.ts`
+4. `src/utils/permissions/permissions.ts`
+5. `packages/builtin-tools/src/tools/BashTool/bashPermissions.ts`
+6. `src/utils/permissions/pathValidation.ts`
+7. `src/utils/permissions/filesystem.ts`
+
+Reading along this line will make it easier to separate the "permission system" and the "sandbox system" in your mind.
+
+## FAQ
+
+### Q1: What happens with `echo hi > /etc/hosts` under Linux?
+
+If it's BashTool:
+
+- It usually enters the sandbox.
+- The default sandbox does not allow writing to `/etc`.
+- So the command fails at runtime.
+
+If it's FileEditTool:
+
+- It doesn't enter the sandbox.
+- It's usually blocked first by file permission checks at the application layer.
+
+### Q2: What happens with modifying `C:\Windows\System32\drivers\etc\hosts` under native Windows?
+
+In a native Windows environment, there is usually no such shell sandbox fallback, so it primarily relies on the application-layer permission system and the tool's own check logic.
+
+### Q3: Since the sandbox is so strong, why is `dangerouslyDisableSandbox` still retained?
+
+Because some real development tasks indeed need to cross the default boundaries, for example:
+
+- Accessing toolchain directories not added to the whitelist.
+- Debugging system-level environments.
+- Performing exceptional operations explicitly allowed by the administrator.
+
+But the project made this entry very prominent and also allows administrators to directly disable it via policy, avoiding it becoming the default path.
+
+### Q4: When can the value of the sandbox be felt most?
+
+It's most obvious when you turn on `autoAllowBashIfSandboxed`.
+
+At this time, a large number of commands within the workspace can have fewer or even no pop-ups, but even if the model occasionally gives out-of-bounds commands, the system-level write and network capabilities are still limited by the boundaries.

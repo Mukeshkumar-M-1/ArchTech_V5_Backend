@@ -1,0 +1,168 @@
+---
+title: "Command Execution Tools - BashTool Safety Design and Implementation"
+description: "Source-level analysis of Claude Code BashTool: read-only command determination, AST safety parsing, automatic backgrounding, output truncation, and design trade-offs between dedicated tools vs. shell commands."
+keywords: ["Bash Tool", "Command Execution", "Shell Execution", "Safe Command", "AI Command Execution"]
+---
+
+{/* Chapter Goal: Reveal BashTool's safety design, execution chain, and key engineering decisions from a source code perspective */}
+
+## Overview of the Execution Chain
+
+The complete path of a Bash command from AI decision to actual execution:
+
+```
+AI generates tool_use: { command: "npm test" }
+  ↓
+BashTool.validateInput()         ← Basic input validation
+  ↓
+BashTool.checkPermissions()      ← Permission check (see Safety Architecture chapter)
+  ├── isReadOnly()? → auto allow (read-only commands approval-free)
+  ├── bashToolHasPermission()    ← AST parsing + semantic check + rule matching
+  └── No match → Pop-up confirmation
+  ↓
+BashTool.call() → runShellCommand()
+  ↓
+shouldUseSandbox(input)          ← Whether sandbox wrapping is needed
+  ↓
+Shell.exec(command, { shouldUseSandbox, shouldAutoBackground })
+  ↓
+spawn(wrapped_command)           ← Actual process creation
+```
+
+## Determination of Read-only Commands: Why Read is Approval-free while Bash is Not Necessarily
+
+The `isReadOnly()` method of BashTool (`packages/builtin-tools/src/tools/BashTool/BashTool.tsx:655`) determines whether a command is considered "read-only":
+
+```typescript
+isReadOnly(input) {
+  const compoundCommandHasCd = commandHasAnyCd(input.command)
+  const result = checkReadOnlyConstraints(input, compoundCommandHasCd)
+  return result.behavior === 'allow'
+}
+```
+
+The determination logic is based on 4 command sets (`BashTool.tsx:120-166`):
+
+| Set | Command | Nature |
+| -------------------------------- | ------------------------------------------------------- | ---------------------- |
+| `BASH_SEARCH_COMMANDS` | find, grep, rg, ag, ack, locate, which, whereis | Search-related |
+| `BASH_READ_COMMANDS` | cat, head, tail, wc, stat, file, jq, awk, sort, uniq... | Read/Analysis-related |
+| `BASH_LIST_COMMANDS` | ls, tree, du | List-related |
+| `BASH_SEMANTIC_NEUTRAL_COMMANDS` | echo, printf, true, false, : | Semantically neutral (no effect on determination) |
+
+For compound commands (`ls dir && echo "---" && ls dir2`), the system checks segment by segment after splitting—**all non-neutral segments must belong to the above sets** for the entire command to be considered read-only.
+
+```typescript
+// BashTool.tsx — Simplified determination logic
+for (const part of partsWithOperators) {
+  if (BASH_SEMANTIC_NEUTRAL_COMMANDS.has(baseCommand)) continue; // Skip neutral segment
+  if (!isPartSearch && !isPartRead && !isPartList) {
+    return { isSearch: false, isRead: false, isList: false }; // Any failing segment → not read-only
+  }
+}
+```
+
+## AST Safety Parsing: tree-sitter bash Parsing
+
+`preparePermissionMatcher()` (`BashTool.tsx:663`) parses the command structure using `parseForSecurity()` before permission checks:
+
+```typescript
+async preparePermissionMatcher({ command }) {
+  const parsed = await parseForSecurity(command)
+  if (parsed.kind !== 'simple') {
+    return () => true  // Parsing failure → fail-safe, trigger all hooks
+  }
+  // Extract subcommand list, strip VAR=val prefix
+  const subcommands = parsed.commands.map(c => c.argv.join(' '))
+  return pattern => {
+    return subcommands.some(cmd => matchWildcardPattern(pattern, cmd))
+  }
+}
+```
+
+Key safety point: For compound commands like `ls && git push`, they are split into `["ls", "git push"]` after parsing, ensuring `git push` does not bypass permission checks just because the first half is a read-only command. A fail-safe strategy is adopted when parsing fails—assuming it's unsafe and triggering all safety hooks.
+
+## Timeout Control: Tiered Strategy
+
+```
+User specifies timeout → Use directly
+  ↓ Not specified
+getDefaultTimeoutMs()
+  ├── Default upper limit: 120,000ms (2 minutes)
+  └── Max upper limit: 600,000ms (10 minutes, when explicitly set by user)
+```
+
+The system doesn't kill the process directly after timeout—`ShellCommand` (`src/utils/ShellCommand.ts:144`) notifies the caller via the `onTimeout` callback, and the caller decides whether to terminate or background it.
+
+## Automatic Backgrounding
+
+Long-running commands can be automatically converted to background tasks without blocking the AI's agentic loop:
+
+```typescript
+// BashTool.tsx:1158
+const shouldAutoBackground =
+  !isBackgroundTasksDisabled && isAutobackgroundingAllowed(command);
+```
+
+The complete chain of automatic backgrounding:
+
+```
+Command starts execution
+  ↓ Progress polling
+Not finished within 15 seconds (ASSISTANT_BLOCKING_BUDGET_MS)
+  ↓
+Check isAutobackgroundingAllowed(command)
+  ↓ Allowed
+Convert foreground task to background task (backgroundExistingForegroundTask)
+  ↓
+shellCommand.onTimeout → spawnBackgroundTask()
+  ↓
+Return taskId to AI, allowing it to continue other tasks
+  ↓
+Report results via notification mechanism after background task completion
+```
+
+The main thread Agent has a blocking budget of 15 seconds—beyond this time, the system automatically backgrounds the command. This prevents an `npm install` from blocking the entire agentic loop for several minutes.
+
+## Output Truncation Strategy
+
+Output truncation is triggered when command output is too long, preventing massive logs from being stuffed into the AI's context window:
+
+| Truncation Point | Location | Behavior |
+| -------------------- | ------------------------ | -------------------------- |
+| `maxResultSizeChars` | Tool level (usually 100K chars) | Overly long output truncated before writing to message |
+| Progress polling truncation | `onProgress` callback | Only last few lines passed for progress display |
+| `totalBytes` marker | `isIncomplete` parameter | Inform AI that output was truncated |
+
+Truncation is not just simple tail-chopping—the `isIncomplete` marker ensures the AI knows the output is incomplete and can decide whether it needs to re-fetch using a more precise command.
+
+## Why Use Dedicated Tools Instead of Directly Calling shell
+
+Claude Code provides dedicated tools (Read, Grep, Glob) for operations like file read/write and code search, rather than letting the AI use shell commands like `cat`, `grep`, etc. This is not just a user experience choice, but an architectural design decision:
+
+| Dimension | Dedicated Tools | Bash Commands |
+| -------------- | ---------------------------------------------- | ----------------------------------------------------------------- |
+| **Permission Granularity** | `Read` is read-only → Auto-release | `Bash: cat file` requires approval for the entire command (cat is in the read-only set but takes a different path) |
+| **Structured Output** | Returns structured data; UI can render diffs, highlighting | Plain text output; no rendering optimization |
+| **Performance Optimization** | File caching, pagination, token budget control | Each execution is a new process; no caching |
+| **Concurrency Safety** | `isConcurrencySafe()` returns `true` → Executable in parallel | Bash commands might have side effects; executed serially |
+| **Security Audit** | Tool name matches permission rules precisely | Command structure requires AST parsing before matching |
+
+`isConcurrencySafe()` (`BashTool.tsx:652`) is an often-overlooked but important design—only read-only commands can be executed in parallel within the agentic loop; commands with side effects must be serial to prevent race conditions.
+
+## Streaming Design for Progress Feedback
+
+Command execution in BashTool is streaming, pushing output line by line via the `onProgress` callback:
+
+```
+runShellCommand()
+  ├── Shell.exec() Starts sub-process
+  ├── Poll output file every second
+  ├── onProgress(lastLines, allLines, totalLines, totalBytes, isIncomplete)
+  │   ├── Update lastProgressOutput / fullOutput
+  │   └── resolveProgress() → Wake up generator yield
+  ├── yield { type: 'progress', output, fullOutput, elapsedTimeSeconds }
+  └── return { code, stdout, interrupted, ... }
+```
+
+The UI layer displays command output in real-time via the `useToolCallProgress` hook. The `resolveProgress()` signaling mechanism allows the generator to yield only when there is new data, avoiding busy waiting.

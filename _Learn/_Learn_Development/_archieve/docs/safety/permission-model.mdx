@@ -1,0 +1,191 @@
+---
+title: "Permission Model - Allow/Ask/Deny Three-Tier Permission System"
+description: "Detailed explanation of Claude Code's three-tier permission model implementation: rule matching engine based on src/utils/permissions/permissions.ts, five-layer rule source priority, tool name/command/path three-dimensional matching, Denial Tracking for infinite loop protection, and permission mode switching mechanism."
+keywords:
+  [
+    "permission model",
+    "Allow Ask Deny",
+    "PermissionRule",
+    "checkPermissions",
+    "Denial Tracking",
+    "permission rules",
+  ]
+---
+
+{/* Chapter Goal: Reveal the complete implementation of the permission system based on source code */}
+
+## Three Permission Behaviors
+
+For every tool call, the system makes one of three verdicts:
+
+| Behavior | Meaning | Return Type | Typical Scenario |
+| --------- | -------------------- | ----------------------------------------------------- | -------------------- |
+| **Allow** | Automatically released, seamless to user | `{ behavior: 'allow', updatedInput, decisionReason }` | Reading files within project |
+| **Ask** | Confirmation dialog pops up | `{ behavior: 'ask', message, suggestions, metadata }` | Executing unknown Bash commands |
+| **Deny** | Rejected directly | `{ behavior: 'deny', message, decisionReason }` | Attempting to execute forbidden commands |
+
+These behaviors are defined by the `PermissionResult` type (`src/utils/permissions/PermissionResult.ts`).
+
+## Sources of Permission Rules
+
+Rules are aggregated from 8 sources (`PERMISSION_RULE_SOURCES`, `permissions.ts:109`), with priority from low to high (later ones override earlier ones):
+
+```
+1. userSettings   — ~/.claude/settings.json (cross-project)
+2. projectSettings — .claude/settings.json (team shared)
+3. localSettings  — .claude/settings.local.json (gitignored, individual override)
+4. flagSettings   — --settings command-line argument
+5. policySettings — Policies delivered by enterprise admins (user cannot override)
+6. cliArg         — --allow/--deny command-line arguments
+7. command        — allowedTools whitelist of Skill tools
+8. session        — Manual authorization by the user in the current conversation ("Always allow")
+```
+
+Each source maintains three arrays: `alwaysAllowRules[source]`, `alwaysAskRules[source]`, and `alwaysDenyRules[source]`.
+
+The rule data structure is `PermissionRule`:
+
+```typescript
+{
+  source: PermissionRuleSource      // Which layer it comes from
+  ruleBehavior: 'allow' | 'ask' | 'deny'
+  ruleValue: {
+    toolName: string                // e.g., "Bash", "mcp__server1"
+    ruleContent?: string            // e.g., "git *", "src/**"
+  }
+}
+```
+
+## Rule Matching Engine
+
+### Three-Dimensional Matching
+
+`permissions.ts` implements three matching dimensions:
+
+**1. Tool Name Matching** (`toolMatchesRule()`, line 238)
+
+Matches the entire tool only when the rule has no `ruleContent`:
+
+```typescript
+// Exact match
+rule "Bash" → matches BashTool
+rule "mcp__server1" → matches all tools of this MCP Server (server level)
+rule "mcp__server1__*" → wildcard match (same as above)
+```
+
+MCP tools use `getToolNameForPermissionCheck()` to obtain a matching name, supporting both prefixed (`mcp__server__tool`) and non-prefixed modes.
+
+**2. Command Pattern Matching** (BashTool's `checkPermissions()`)
+
+BashTool parses command patterns via `preparePermissionMatcher()` (`Tool.ts:520`):
+
+```json
+{"tool": "Bash", "ruleContent": "git *"}  → matches "git commit -m 'fix'"
+```
+
+Commands are parsed via AST (`readOnlyValidation.ts` uses tree-sitter bash) to extract the first sub-command for matching.
+
+**3. Path Matching** (File tool's `checkPermissions()`)
+
+Read/Edit/Write tools extract file paths via `getPath()` to match with glob patterns in `ruleContent`:
+
+```json
+{"tool": "Edit", "ruleContent": "src/**"}  → matches "src/utils/foo.ts"
+```
+
+### Complete Flow of Permission Check
+
+The permission check for each tool call (`canUseTool()` → `checkPermissions()`) goes through the following steps:
+
+```
+1a. Blanket deny check
+    getDenyRuleForTool() → Does the tool name fully match a deny rule?
+    ↓ Hit → deny (the tool is filtered out during the getTools() phase)
+
+1b. Blanket allow check
+    toolAlwaysAllowedRule() → Does the tool name fully match an allow rule?
+    ↓ Hit → allow
+
+2. Tool's own checkPermissions()
+    Each tool has custom logic:
+    - BashTool: readOnlyValidation → sandbox determination → AST parsing → pattern matching
+    - FileEditTool: path whitelist check
+    - SkillTool: safe properties whitelist + exact/prefix matching
+    ↓ Returns PermissionResult
+
+3. Hook system
+    executePermissionRequestHooks() → PreToolUse hook can override
+    ↓ hook returns deny → deny
+    ↓ hook returns ask → upgrade to ask
+
+4. Ask rule check
+    getAskRules() → Hit → ask
+
+5. Default behavior
+    Determined based on current permissionMode
+    - 'default': most tools ask
+    - 'plan': write operations deny, read operations allow
+    - 'bypass': all allow
+```
+
+## Permission Modes
+
+| Mode | `PermissionMode` Value | Use Case | Behavior |
+| ---------------- | --------------------- | -------- | ------------------------------------------------------------------------------ |
+| **Default** | `'default'` | Daily use | Confirm sensitive operations one by one |
+| **Plan Mode** | `'plan'` | Exploration phase | Read-only (`isReadOnly()` check) |
+| **Accept Edits** | `'acceptEdits'` | Rapid iteration | File edits in workspace are allowed automatically; other operations still require confirmation |
+| **Don't Ask** | `'dontAsk'` | Reduce interruptions | Decisions are made automatically as much as possible to reduce confirmation popups |
+| **Auto** | `'auto'` | Trust AI | Decisions made automatically via transcript classifier (requires `TRANSCRIPT_CLASSIFIER` flag) |
+| **Bypass** | `'bypassPermissions'` | Full trust | All operations released automatically (requires explicit `--dangerously-skip-permissions`) |
+
+Plan Mode switching is triggered by `EnterPlanModeTool.call()`:
+
+```typescript
+// EnterPlanModeTool.ts:88
+context.setAppState((prev) => ({
+  ...prev,
+  toolPermissionContext: applyPermissionUpdate(
+    prepareContextForPlanMode(prev.toolPermissionContext),
+    { type: "setMode", mode: "plan", destination: "session" },
+  ),
+}));
+```
+
+Exiting is performed via `ExitPlanModeV2Tool`, restoring the previous mode.
+
+## Denial Tracking: Infinite Loop Protection
+
+`src/utils/permissions/denialTracking.ts` implements a denial tracking mechanism:
+
+```typescript
+const DENIAL_LIMITS = {
+  maxConsecutive: 3, // Upper limit for consecutive denials of the same tool
+  maxTotal: 20, // Total upper limit for denials
+};
+```
+
+When the AI is consecutively denied the same type of operation reaching the limit:
+
+1. `recordDenial()` records the denial and increments the count.
+2. `shouldFallbackToPrompting()` detects consecutive denials and returns true.
+3. The system injects a message to the AI: "Your previous tool call was rejected..."
+4. The AI is forced to change its strategy, avoiding an infinite loop of "repeatedly requesting the same denied operation."
+
+`recordSuccess()` is called upon successful operation to reset the count.
+
+## Runtime Update of Rules
+
+Permission rules can be updated dynamically at runtime (`applyPermissionUpdate()`, `PermissionUpdate.ts`):
+
+```typescript
+type PermissionUpdate =
+  | { type: "addRules"; destination; rules; behavior }
+  | { type: "replaceRules"; destination; rules; behavior }
+  | { type: "removeRules"; destination; rules; behavior }
+  | { type: "setMode"; destination; mode }
+  | { type: "addDirectories"; destination; directories }
+  | { type: "removeDirectories"; destination; directories };
+```
+
+When a user selects "Always allow" in the Ask dialog, the system calls `persistPermissionUpdates()` to write rules to the corresponding level's settings file (project/user/managed), while simultaneously updating the in-memory `toolPermissionContext`.

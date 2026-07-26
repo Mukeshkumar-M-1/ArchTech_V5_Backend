@@ -1,0 +1,51 @@
+---
+title: "Debug Mode"
+description: "Debug the CLI runtime via VS Code attach mode, supporting breakpoints, step-through execution, and variable inspection."
+keywords: ["debug", "debugging", "VS Code", "inspect", "breakpoints"]
+---
+
+## Overview
+
+TUI (REPL) mode requires a real terminal and cannot be directly debugged using a standard VS Code "launch" configuration. Instead, use **attach mode** to connect to a running Bun process.
+
+## Steps
+
+### 1. Start the Inspect Service in the Terminal
+
+```bash
+bun run dev:inspect
+```
+
+This will output a WebSocket address similar to `ws://localhost:8888/xxxxxxxx`.
+
+### 2. Attach the VS Code Debugger
+
+1. Set breakpoints in the `src/` files.
+2. Press **F5** → Select **"Attach to Bun (TUI debug)"**.
+
+> [!NOTE]
+> The WebSocket address used by `dev:inspect` and defined in `launch.json` may change each time you start. Ensure both are synchronized if connection issues occur.
+
+## Principle
+
+The `dev:inspect` script actually executes `scripts/dev-debug.ts`:
+
+```typescript
+// scripts/dev-debug.ts
+process.env.BUN_INSPECT = "localhost:8888/<token>"
+await import("./dev")
+```
+
+By setting the `BUN_INSPECT` environment variable, a Chrome DevTools Protocol-compatible inspect service is started before importing the dev mode entry point. The VS Code `bun` extension then connects to the outputted WebSocket address to perform the attach.
+
+## JetBrains IDEs
+
+In theory, JetBrains IDEs (e.g., WebStorm, IntelliJ) also support attaching to a Bun inspect service (**Run → Attach to Process**), though this has not been practically verified. If you successfully verify this, feel free to contribute to this documentation.
+
+## Related Files
+
+| File | Description |
+| :--- | :--- |
+| `package.json` → `dev:inspect` | npm script to start the inspect service. |
+| `.vscode/launch.json` | VS Code attach debugging configuration. |
+| `scripts/dev.ts` | Dev mode entry point; injects `MACRO` defines. |

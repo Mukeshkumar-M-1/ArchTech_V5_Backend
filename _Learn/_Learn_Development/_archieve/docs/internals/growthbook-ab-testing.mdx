@@ -1,0 +1,120 @@
+---
+title: "GrowthBook A/B Testing System - Runtime Feature Rollouts"
+description: "Revealing how Claude Code implements runtime A/B testing via GrowthBook: User targeting, the 'tengu' naming culture, and progressive feature release strategies."
+keywords: ["GrowthBook", "A/B testing", "runtime gating", "tengu", "progressive rollout"]
+---
+
+{/* Chapter Goal: Deep dive into the runtime A/B testing layer—GrowthBook's integration architecture, user targeting, and the 'tengu' naming culture */}
+
+## Why Runtime A/B Testing?
+
+Build-time `feature()` is "all or nothing"—either all users have it, or none do. Product teams need finer control:
+
+- Roll out a new feature to only 5% of users.
+- Differentiate experiences based on subscription type (Free / Pro / Team).
+- Silently enable experimental capabilities for specific organizations.
+- Remotely disable a problematic feature at any time without a new release.
+
+This is where **GrowthBook** comes in—a runtime, attribute-based feature gating and A/B testing system.
+
+## Integration Architecture
+
+The full implementation of GrowthBook resides in `src/services/analytics/growthbook.ts` (~1258 lines), following this workflow:
+
+<Steps>
+  <Step title="Fetch Remote Config at Startup">
+    When the CLI starts, the GrowthBook SDK fetches the current feature configuration and experiment grouping rules via the `https://api.anthropic.com/` API endpoint. It uses `remoteEval: true` mode—grouping is calculated on the server, and the client only receives the results.
+  </Step>
+  <Step title="Calculate User Attributes">
+    The SDK collects the current user's attributes (device ID, subscription type, organization UUID, etc.) to determine which groups they belong to for various experiments.
+  </Step>
+  <Step title="Cache Locally">
+    Calculation results are cached in the `cachedGrowthBookFeatures` field of `~/.claude.json`. Refresh interval: 20 minutes for Anthropic employees, 6 hours for external users.
+  </Step>
+  <Step title="Query Flags in Code">
+    Business code queries feature states using flag names prefixed with `tengu_*`, and the GrowthBook SDK returns the group value for the current user.
+  </Step>
+</Steps>
+
+## User Targeting Attributes
+
+GrowthBook determines experiment grouping based on the following user attributes:
+
+| Attribute | Type | Source | Purpose |
+|------|------|------|------|
+| `id` | string | Session ID | Grouping at the session level |
+| `deviceID` | string | Persistent device identifier | Consistency across sessions |
+| `sessionId` | string | Current session ID | Session-level experiments |
+| `platform` | enum | `process.platform` | Differentiation by OS |
+| `organizationUUID` | string | API auth info | Rollout by organization |
+| `accountUUID` | string | API auth info | Rollout by individual account |
+| `subscriptionType` | string | API auth info | Free / Pro / Team differentiation |
+| `rateLimitTier` | string | API auth info | Differentiation by rate limit tier |
+| `email` | string | API auth info | Precision targeting of specific users |
+| `appVersion` | string | `MACRO.VERSION` | Rollout by version number |
+| `github` | object | GitHub Actions metadata | Special handling for CI environments |
+
+<Note>
+This targeting system means Anthropic can perform very granular experiments—such as "enable a new feature for only 10% of Pro subscribers on Mac."
+</Note>
+
+## Codename Culture: The World of tengu_*
+
+All runtime flags are prefixed with `tengu_`—"Tengu" is the internal project codename for Claude Code. Flag names follow a **animal/plant/mineral + adjective** naming convention, intentionally kept opaque.
+
+<AccordionGroup>
+  <Accordion title="tengu_kairos — Kairos Assistant Mode">
+    Controls the runtime switch for KAIROS features. Even if the build-time `feature('KAIROS')` check passes, this flag must still be hit to activate it. Dual gating ensures features can be released in stages.
+  </Accordion>
+  <Accordion title="tengu_amber_stoat — Explore Agent A/B Testing">
+    Controls behavior variants for the built-in Explore sub-agents. "amber stoat" is a randomly generated codename unrelated to the feature content—this is to prevent guessing functionality from flag names.
+  </Accordion>
+  <Accordion title="tengu_auto_background_agents — Background Agent Automation">
+    Controls whether certain tasks are automatically dispatched to background agents instead of blocking the user in the foreground.
+  </Accordion>
+  <Accordion title="tengu_onyx_plover — Auto-Dream Background Memory">
+    Controls the "Auto-Dream" feature—background organization and consolidation of agent memories during idle time. "onyx plover" is another opaque codename.
+  </Accordion>
+  <Accordion title="tengu_glacier_2xr — Tool Search Behavior">
+    Controls behavior variants for Tool Search, likely an A/B test for search algorithms or ranking strategies.
+  </Accordion>
+  <Accordion title="tengu_birch_trellis — Bash Permission Policy">
+    Controls variants of the BashTool permission judgment policy—possibly testing more relaxed or stricter permission rules.
+  </Accordion>
+  <Accordion title="tengu_scratch — Scratchpad Feature">
+    Controls an experimental "scratchpad" feature, potentially allowing the AI to use a temporary staging area while processing complex tasks.
+  </Accordion>
+  <Accordion title="tengu_quartz_lantern — Diff Calculation Strategy">
+    Controls how diffs are calculated during file writes and edits. Likely A/B testing different diff algorithms' impact on user experience.
+  </Accordion>
+</AccordionGroup>
+
+## Ant-Only Override Mechanism
+
+Anthropic employees have two ways to bypass GrowthBook's remote evaluation:
+
+### Environment Variable Overrides
+
+```bash
+# Only effective in USER_TYPE=ant builds
+CLAUDE_INTERNAL_FC_OVERRIDES='{"tengu_kairos": true}' claude
+```
+
+Passing a JSON object via the `CLAUDE_INTERNAL_FC_OVERRIDES` environment variable directly overrides the value of any flag.
+
+### Config UI Overrides
+
+In internal builds, the Gates tab in the `/config` command provides a graphical flag management interface, allowing any GrowthBook flag to be toggled in real-time.
+
+## Experiment Tracking
+
+GrowthBook integrates full experiment exposure tracking:
+
+- Records an experiment exposure event every time a flag is queried.
+- Reported via `GrowthbookExperimentEvent` in protobuf format.
+- Includes `variation_id` (0=control, 1+=experimental) and an `in_experiment` flag.
+- Data is used to analyze the causal impact of features on user behavior.
+
+<Note>
+GrowthBook is currently being migrated from Statsig—the code still retains compatibility layers like `checkStatsigFeatureGate_CACHED_MAY_BE_STALE()`.
+</Note>

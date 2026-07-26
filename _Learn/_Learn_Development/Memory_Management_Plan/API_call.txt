@@ -1,0 +1,203 @@
+The current llm_api_handler.py is designed for single sequential calls — one await llm_request() at a time with retry and fallback. But there are three practical strategies for making 75 LLM calls during MemoryManagementAgent runs:
+
+Strategy Comparison
+Option A: Sequential (One-by-One)
+
+# Simple, safe, slow
+class MemoryManagementAgent:
+    def _enrich_requirement_memories(self, project_id, reqs):
+        for req in reqs:
+            md_content = await llm_request(
+                model="sonnet46",
+                messages=prompts.build_messages("enrich_requirement_memory", 
+                    user_content=json.dumps(req)),
+                max_tokens=1024,
+                temperature=0.1,
+            )
+            self._write_file(f"knowledge/{project_id}/requirements/{req['id']}.md", md_content)
+Pros: Zero risk of rate limits, simplest code, easy to debug
+Cons: 57 requirements × ~3s each = ~3 minutes minimum. 75 calls = ~4-5 minutes total
+Best when: No concurrent users, simple implementation needed
+
+Option B: Parallel Batch (Multiple Calls in Parallel)
+
+class MemoryManagementAgent:
+    async def _enrich_requirement_memories(self, project_id, reqs):
+        # Fire all 57 LLM calls at once (batched in parallel)
+        tasks = []
+        for req in reqs:
+            task = asyncio.create_task(
+                self._enrich_single_requirement(project_id, req)
+            )
+            tasks.append(task)
+        
+        # Wait for all to complete
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Write files as they complete
+        for req, result in zip(reqs, results):
+            if isinstance(result, str):
+                self._write_file(f"knowledge/{project_id}/requirements/{req['id']}.md", result)
+Pros: All 57 calls complete in ~3s (wall clock) instead of ~3 minutes. Total MemoryManagementAgent = ~15-20 seconds
+Cons: Could hit API rate limits if the proxy doesn't queue them, all requests use the same auth key
+Best when: Rate limits allow concurrent requests, fast turnaround needed
+
+Option C: Controlled Parallel (Bounded Concurrency — Recommended)
+
+class MemoryManagementAgent:
+    async def _enrich_requirement_memories(self, project_id, reqs):
+        # Semaphore controls max parallel calls (e.g., 5 at a time)
+        semaphore = asyncio.Semaphore(5)
+        
+        async def _enrich_with_limit(req):
+            async with semaphore:
+                return await llm_request(
+                    model="sonnet46",
+                    messages=prompts.build_messages("enrich_requirement_memory",
+                        user_content=self._build_req_context(req, reqs)),
+                    max_tokens=1024,
+                    temperature=0.1,
+                )
+        
+        # Fire all with bounded concurrency
+        tasks = [_enrich_with_limit(req) for req in reqs]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Write files
+        for req, result in zip(reqs, results):
+            if isinstance(result, str):
+                self._write_file(f"knowledge/{project_id}/requirements/{req['id']}.md", result)
+Pros:
+
+Respects rate limits (5 parallel = ~15 calls/sec burst, well within limits)
+Still fast (~35 parallel calls × ~3s / 5 concurrent = ~21 seconds)
+Retry/backoff still works inside llm_request()
+If rate limit hits, the semaphore ensures we don't overwhelm Cons: Slightly more code than Option B
+Recommended Approach — Controlled Parallel (Option C)
+
+# memory_management_agent.py
+
+class MemoryManagementAgent:
+    # Max parallel LLM calls — tune based on proxy rate limits
+    CONCURRENCY_LIMIT = 5
+
+    async def run(self, project_id: str, user_id: str | None = None) -> dict:
+        reqs = project_memory.get_all_requirements(project_id)
+
+        # Phase A: 57 LLM calls for requirement .md files (parallel)
+        stats = await self._enrich_requirement_memories(project_id, reqs)
+
+        # Phase B: 8 LLM calls for category .md files (parallel within group)
+        stats.update(await self._enrich_category_memories(project_id, reqs))
+
+        # Phase C: 8 LLM calls for sub-category .md files (parallel within group)
+        stats.update(await self._enrich_subcategory_memories(project_id, reqs))
+
+        # Phase D: Rule-based relationships (no LLM, synchronous)
+        self._create_relationships(project_id, reqs)
+
+        # Phase E: 1 LLM call for project overview
+        stats.update(await self._enrich_project_overview(project_id, reqs))
+
+        # Phase F: 1 LLM call for generation map
+        stats.update(await self._enrich_generation_map(project_id, reqs))
+
+        # Phase G: MEMORY.md index (synchronous)
+        self._update_memory_index(project_id)
+
+        return stats
+
+    async def _enrich_requirement_memories(self, project_id, reqs):
+        """Enrich all requirements in parallel with bounded concurrency."""
+        semaphore = asyncio.Semaphore(self.CONCURRENCY_LIMIT)
+
+        async def _enrich(req):
+            async with semaphore:
+                context = self._build_requirement_context(req, reqs)
+                system_prompt = prompts.render("enrich_requirement_memory")
+                result = await llm_request(
+                    model="sonnet46",
+                    system_prompt=system_prompt,
+                    messages=[{"role": "user", "content": context}],
+                    max_tokens=1024,
+                    temperature=0.1,
+                    fallback_chain=["opus46"],
+                )
+                return req, result
+
+        tasks = [_enrich(req) for req in reqs]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        written = 0
+        for req, result in zip(reqs, results):
+            if isinstance(result, str) and result.strip():
+                self._write_requirement_md(project_id, req["id"], result)
+                written += 1
+            elif isinstance(result, Exception):
+                log.warning(f"Failed to enrich {req['id']}: {result}")
+
+        return {"enriched_reqs": written, "total_reqs": len(reqs)}
+
+    async def _enrich_category_memories(self, project_id, reqs):
+        """Enrich category summaries in parallel."""
+        categories = self._group_by_category(reqs)
+        semaphore = asyncio.Semaphore(self.CONCURRENCY_LIMIT)
+
+        async def _enrich_cat(cat, cat_reqs):
+            async with semaphore:
+                system_prompt = prompts.render("enrich_category_memory")
+                context = self._build_category_context(cat, cat_reqs)
+                result = await llm_request(
+                    model="sonnet46",
+                    system_prompt=system_prompt,
+                    messages=[{"role": "user", "content": context}],
+                    max_tokens=2048,
+                    temperature=0.1,
+                    fallback_chain=["opus46"],
+                )
+                return cat, result
+
+        tasks = [_enrich_cat(cat, cat_reqs) for cat, cat_reqs in categories.items()]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        written = 0
+        for cat, result in zip(categories.keys(), results):
+            if isinstance(result, str) and result.strip():
+                self._write_category_md(project_id, cat, result)
+                written += 1
+
+        return {"enriched_categories": written}
+How It All Fits Together
+
+MemoryManagementAgent.run() — called synchronously after pipeline completes
+│
+├─ 57 × LLM calls (parallel, 5 at a time) → requirements/*.md
+│   Wall clock: ~35 seconds (57 / 5 × 3s per call)
+│
+├─ 8 × LLM calls (parallel, 5 at a time) → categories/*.md
+│   Wall clock: ~5 seconds
+│
+├─ 8 × LLM calls (parallel, 5 at a time) → subcategories/*.md
+│   Wall clock: ~5 seconds
+│
+├─ Rule-based → relationships.md (instant)
+│
+├─ 1 × LLM call → overview.md (instant-ish)
+│
+├─ 1 × LLM call → generation_map.md (instant-ish)
+│
+└─ MEMORY.md index (instant)
+    Total wall clock: ~45 seconds
+
+Each LLM call has:
+  - Retry with backoff (from llm_api_handler.py)
+  - Model fallback (sonnet46 → opus46)
+  - Empty response detection
+Key design decisions:
+
+Bounded concurrency (5) — safe against rate limits, still fast
+asyncio.gather — fires all tasks at once, processes results as they complete
+Phase separation — requirement enrichment finishes before category enrichment starts, so categories can reference enriched requirement content
+Retry/backoff inherited — each individual llm_request() call already has retry logic from llm_api_handler.py
+Graceful degradation — failed reqs are logged and skipped; the rest still work
+The Content Knowledge Agent during document generation works differently — it makes one LLM call per generation (with all the knowledge pre-loaded into the prompt). So there are no parallel calls during generation, only during the initial enrichment phase after extraction.

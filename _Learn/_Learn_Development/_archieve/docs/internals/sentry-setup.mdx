@@ -1,0 +1,106 @@
+---
+title: "Custom Sentry Error Reporting Configuration"
+description: "Connect to self-hosted or Cloud Sentry via environment variables for CLI runtime error capture and reporting. Completely silent if not configured."
+keywords: ["sentry", "error reporting", "monitoring", "DSN", "self-hosted"]
+---
+
+## Overview
+
+Claude Code supports capturing runtime exceptions through Sentry and reporting them to your own specified Sentry instance.
+
+- **`SENTRY_DSN` configured**: Automatically initializes the Sentry SDK, capturing unhandled exceptions and critical errors.
+- **Not configured**: All Sentry calls are no-ops, with zero overhead.
+
+## Environment Variables
+
+| Variable | Required | Description |
+| ------------ | ---- | -------------------------------------------------------------- |
+| `SENTRY_DSN` | Yes | Sentry project DSN, e.g., `https://xxx@o123456.ingest.sentry.io/789` |
+
+Only this one variable is needed; once set, it is enabled.
+
+## Usage
+
+### Self-hosted Sentry
+
+```bash
+SENTRY_DSN=https://public_key@your-sentry.example.com/123 \
+bun run dev
+```
+
+### Sentry Cloud (SaaS)
+
+```bash
+SENTRY_DSN=https://public_key@o123456.ingest.sentry.io/789 \
+bun run dev
+```
+
+### Without Sentry (Default Behavior)
+
+```bash
+bun run dev
+# SENTRY_DSN not set, all sentry functions are no-ops
+```
+
+## Sentry Server Configuration
+
+### Steps
+
+1. **Deploy Sentry instance** (Self-hosted Docker or use [sentry.io](https://sentry.io) Cloud)
+2. **Create Project**, selecting the **Node.js** platform
+3. Obtain the project **DSN** (Settings → Projects → Client Keys → DSN)
+4. Set the DSN as the `SENTRY_DSN` environment variable
+
+## Feature Details
+
+### Error Capture
+
+- **Automatic Capture**: `SentryErrorBoundary` wraps critical React components to capture rendering errors.
+- **Manual Reporting**: `errorLogSink` reports to Sentry synchronously when writing error logs.
+- **Graceful Shutdown**: `closeSentry()` ensures events are sent before process exit (2s timeout).
+
+### Security Filtering
+
+The `beforeSend` hook automatically strips the following sensitive headers:
+
+- `authorization`
+- `x-api-key`
+- `cookie`
+- `set-cookie`
+
+### Ignored Error Types
+
+The following error patterns are ignored and will not be reported:
+
+| Error | Reason |
+| --------------------------------------------------------- | -------------------- |
+| `ECONNREFUSED` / `ECONNRESET` / `ENOTFOUND` / `ETIMEDOUT` | Network unreachable, non-actionable |
+| `AbortError` / `The user aborted a request` | Explicit user cancellation |
+| `CancelError` | Interactive cancellation signal |
+
+### Other Configurations
+
+- **Sample Rate**: `sampleRate: 1.0` (captures all error events)
+- **Breadcrumb Limit**: `maxBreadcrumbs: 20` (controls payload volume)
+- **Performance Transactions**: Disabled (`beforeSendTransaction` returns `null`), only errors are reported.
+
+## API
+
+| Function | Description |
+| ----------------------------------- | --------------------------------------------------- |
+| `initSentry()` | Initializes the SDK, automatically called in `src/entrypoints/init.ts` |
+| `captureException(error, context?)` | Manually reports an exception, can attach additional context |
+| `setTag(key, value)` | Sets a tag, used for grouping and filtering on the Sentry dashboard |
+| `setUser({ id, email, username })` | Sets user context for error attribution |
+| `closeSentry(timeoutMs?)` | Flushes the queue and closes the client, called at process exit |
+| `isSentryInitialized()` | Checks if initialized |
+
+## Implementation Files
+
+| File | Description |
+| --------------------------------------- | -------------------------------------- |
+| `src/utils/sentry.ts` | Core SDK initialization and encapsulation |
+| `src/components/SentryErrorBoundary.ts` | React Error Boundary component |
+| `src/utils/errorLogSink.ts` | Error log sink, integrating `captureException` |
+| `src/utils/gracefulShutdown.ts` | Graceful exit, calls `closeSentry()` |
+| `src/entrypoints/init.ts` | Calls `initSentry()` at startup |

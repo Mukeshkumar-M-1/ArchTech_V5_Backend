@@ -1,0 +1,8 @@
+give me complete plan for memory management for project with 
+1. how it is going to work 
+2. how the requirement are used by an agent to make the understanding memory for future use 
+3. how it the category based memory are going to created for each and every requirement in md 
+4. how the whole project memory of project with the requirement of the extracted data for understand by agent for future for content generation.
+5. how the proper mapping for the memory for requirement extracted for each and every requirement  like a md files are going to created 
+6. How the created memory are going to linked for future use for generation 
+i needed to manage all the features for makeing complete project memory
