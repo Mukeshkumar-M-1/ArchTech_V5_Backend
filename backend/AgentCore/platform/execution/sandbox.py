@@ -46,12 +46,12 @@ class SandboxManager:
                     duration_ms=0.0
                 )
             return result
-        except Exception as e:
-            log.error(f"[SandboxManager] Execution faulted: {e}")
+        except Exception as exception:
+            log.error(f"[SandboxManager] Execution faulted: {exception}")
             return ActionResult(
                 status=ActionResultStatus.FAILURE,
                 action_type=action_type,
                 raw_output="",
                 duration_ms=0.0,
-                error_message=str(e)
+                error_message=str(exception)
             )

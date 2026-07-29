@@ -28,7 +28,7 @@ class ContextSelector:
         # Example strategy: keep the oldest 1 (system/initial) and the most recent N
         first = full_history[0:1]
         recent = full_history[-(self.max_history_turns - 1):]
-        log.debug(f"[ContextSelector] Trimmed history from {len(full_history)} to {len(first) + len(recent)} turns.")
+        log.info(f"[ContextSelector] Trimmed history from {len(full_history)} to {len(first) + len(recent)} turns.")
         return first + recent
 
     def summarize_memory(self, memory_snapshot: Dict[str, Any]) -> Dict[str, Any]:

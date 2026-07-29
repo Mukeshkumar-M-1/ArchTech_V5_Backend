@@ -23,7 +23,7 @@ from typing import Any, Optional
 
 from llm_api_handler import llm_request, DEFAULT_TIMEOUT
 from prompts.engine import PromptEngine
-from system_config import get_project_template_dir, get_source_template_dir
+from system_config import get_project_template_dir, get_source_template_dir, retrieve_selected_template_name
 from pydantic import BaseModel
 
 # ===================================================================
@@ -95,7 +95,8 @@ class TemplateAnalysisAgent:
     def __init__(self, project_id: str, session_id: str = ""):
         self.project_id = project_id
         self.session_id = session_id
-        self.project_template_dir = get_project_template_dir(project_id)
+        selected_template_name = retrieve_selected_template_name(project_id)
+        self.project_template_dir = get_project_template_dir(project_id, selected_template_name)
         self.source_template_dir = get_source_template_dir()
         self.prompt_engine = PromptEngine()
         self.context_buffer_data = ""

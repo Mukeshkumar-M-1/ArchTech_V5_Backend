@@ -6,6 +6,7 @@ to facilitate easy environment configuration for agents and developers.
 """
 
 from pathlib import Path
+import json
 import os
 
 # ─── Base Directories ────────────────────────────────────────────────────────
@@ -48,8 +49,8 @@ DEDUP_ENABLE_LLM = True
 # ─── Operational Settings ────────────────────────────────────────────────────
 API_HOST = "127.0.0.1"
 API_PORT = 8015
-API_URL = "https://api.groq.com/openai/v1"
-API_KEY = os.getenv("GROQ_API_KEY", "")
+API_URL = "https://llmgw.datapatterns.co.in/v1"
+API_KEY = "sk-dpllm-oL5QSppnfr1QRLSmV6moGey"
 API_TIME_OUT  = 120.0
 
 def get_project_base_dir() -> Path:
@@ -91,9 +92,14 @@ def get_internal_memory_source_data_dir() -> Path:
     project_internal_memory_source_path.mkdir(parents=True, exist_ok=True)
     return project_internal_memory_source_path
 
-def get_project_template_dir(project_id: str) -> Path:
-    """Get or create the project-specific template directory."""
-    project_template_path = BASE_DIR / f"{_ROOT_FOLDER_NAME}" / f"{project_id}" / "templates" / "Topic_Template"
+def get_project_template_dir(project_id: str, template_type: str = "Topic_Template") -> Path:
+    """Get or create the project-specific template directory.
+
+    If template_type is a template name (e.g. 'Standard', 'Detailed'), returns
+    .ArchTech/{project_id}/templates/{template_type}/. Otherwise defaults to
+    .ArchTech/{project_id}/templates/Topic_Template/ for backward compatibility.
+    """
+    project_template_path = BASE_DIR / f"{_ROOT_FOLDER_NAME}" / f"{project_id}" / "templates" / template_type
     project_template_path.mkdir(parents=True, exist_ok=True)
     return project_template_path
 
@@ -102,6 +108,199 @@ def get_source_template_dir() -> Path:
     project_source_template_path = BASE_DIR / "Document_Section" / "SRS_Section" / "Topic_Template"
     project_source_template_path.mkdir(parents=True, exist_ok=True)
     return project_source_template_path
+
+
+def get_template_registry() -> dict:
+    """Load the SRS template registry containing definitions for all template types.
+
+    Returns a dict of the form:
+        {"templates": {"Standard": {...}, "Compact": {...}}}
+    """
+    template_registry_path = BASE_DIR / "Document_Section" / "SRS_Section" / "templates_registry.json"
+    if template_registry_path.exists():
+        return json.loads(template_registry_path.read_text(encoding="utf-8"))
+    return {"templates": {}}
+
+
+def get_source_template_directory(template_name: str) -> Path:
+    """Return the filesystem path where source section files for a template type are stored."""
+    return BASE_DIR / "Document_Section" / "SRS_Section" / template_name / "Topic_Template"
+
+
+def get_project_template_metadata_directory(project_id: str) -> Path:
+    """Return the directory where project-level template metadata is persisted."""
+    project_template_metadata_directory = BASE_DIR / f"{_ROOT_FOLDER_NAME}" / f"{project_id}" / "templates" / "meta"
+    project_template_metadata_directory.mkdir(parents=True, exist_ok=True)
+    return project_template_metadata_directory
+
+
+def get_section_lock_mapping(project_id: str) -> dict:
+    """Return whether the selected template's sections are locked.
+
+    Reads `template_locks.json` (locked template name) and compares it with
+    `selected_template.json` (selected template name). If they match, returns `{\"__all__\": True}`.
+    Otherwise returns `{}` (no sections locked).
+    """
+    locked_template_path = get_project_template_metadata_directory(project_id) / "template_locks.json"
+    if locked_template_path.exists():
+        data = json.loads(locked_template_path.read_text(encoding="utf-8"))
+        locked_name = data.get("template_type")
+        if locked_name:
+            selected_name = retrieve_selected_template_name(project_id)
+            if locked_name == selected_name:
+                return {"__all__": True}
+    return {}
+
+
+def persist_section_lock_mapping(project_id: str, section_lock_mapping: dict) -> None:
+    """Save the locked template name to disk.
+
+    Accepts `{\"__all__\": True}` format from callers — persists only the
+    currently selected template name as the locked one.
+    """
+    locked_template_path = get_project_template_metadata_directory(project_id) / "template_locks.json"
+    if section_lock_mapping.get("__all__"):
+        selected_name = retrieve_selected_template_name(project_id)
+        locked_template_path.write_text(json.dumps({"template_type": selected_name}, indent=2), encoding="utf-8")
+    else:
+        # No sections locked — clear the file
+        locked_template_path.write_text(json.dumps({}, indent=2), encoding="utf-8")
+
+
+def get_locked_template_name(project_id: str) -> str:
+    """Return the name of the currently locked template, or empty string if none."""
+    locked_template_path = get_project_template_metadata_directory(project_id) / "template_locks.json"
+    if locked_template_path.exists():
+        data = json.loads(locked_template_path.read_text(encoding="utf-8"))
+        locked_name = data.get("template_type")
+        if locked_name:
+            return locked_name
+    return ""
+
+
+def persist_locked_template_name(project_id: str, template_name: str) -> None:
+    """Record which template type has its sections locked."""
+    locked_template_path = get_project_template_metadata_directory(project_id) / "template_locks.json"
+    locked_template_path.write_text(json.dumps({"template_type": template_name}, indent=2), encoding="utf-8")
+
+
+def retrieve_selected_template_name(project_id: str) -> str:
+    """Return the template type the user has selected for this project."""
+    selected_template_path = get_project_template_metadata_directory(project_id) / "selected_template.json"
+    if selected_template_path.exists():
+        return json.loads(selected_template_path.read_text(encoding="utf-8")).get("template_type", "Standard")
+    return "Standard"
+
+
+def persist_selected_template_name(project_id: str, selected_template_name: str) -> None:
+    """Record which template type the user has chosen for this project."""
+    selected_template_path = get_project_template_metadata_directory(project_id) / "selected_template.json"
+    selected_template_path.write_text(json.dumps({"template_type": selected_template_name}, indent=2), encoding="utf-8")
+
+
+# ─── Per-Project Template Registry ─────────────────────────────────────────────
+# Each project gets its own templates_registry.json under .ArchTech/{project_id}/templates/meta/
+# On first access, it merges the global entries (origin="global") with any project-specific
+# directories found on disk (origin="project"). This isolates user template CRUD from the
+# global Document_Section/SRS_Section/ source.
+
+
+def get_project_template_registry_path(project_id: str) -> Path:
+    """Return the filesystem path to the per-project template registry JSON."""
+    return get_project_template_metadata_directory(project_id) / "templates_registry.json"
+
+
+def get_project_template_registry(project_id: str) -> dict:
+    """Load the per-project template registry.
+
+    If the file doesn't exist yet, bootstrap it by:
+    1. Copying all global registry entries and marking them origin='global'
+    2. Scanning .ArchTech/{project_id}/templates/ for any extra directories
+       (user-created templates) and marking them origin='project'
+
+    Returns a dict of the form:
+        {"templates": {"Standard": {...}, "Compact": {...}, "MyTemplate": {...}}}
+    """
+    project_registry_path = get_project_template_registry_path(project_id)
+
+    # Fast path: registry already exists
+    if project_registry_path.exists():
+        return json.loads(project_registry_path.read_text(encoding="utf-8"))
+
+    # --- Bootstrap from global registry ---
+    # Global registry uses object format: {"templates": {"Standard": {...}, ...}}
+    global_registry = get_template_registry()
+    global_registry_templates = global_registry.get("templates", {})
+    global_template_names = set(global_registry_templates.keys())
+
+    # Scan the project's templates directory for any folders not in the global registry
+    # These are user-created templates (e.g. Sample_1) that already exist on disk
+    project_templates_base = BASE_DIR / _ROOT_FOLDER_NAME / project_id / "templates"
+    existing_project_dirs = set()
+    if project_templates_base.exists():
+        for child in project_templates_base.iterdir():
+            # Skip meta/ (metadata) and Topic_Template/ (legacy default)
+            if child.is_dir() and child.name not in ("meta", "Topic_Template"):
+                existing_project_dirs.add(child.name)
+
+    # Build the merged registry as a dict keyed by template name
+    templates_dict = {}
+
+    # Add all global entries with origin marker
+    for name, entry in global_registry_templates.items():
+        templates_dict[name] = {**entry, "name": name, "origin": "global"}
+
+    # Add any project-specific directories found on disk that aren't global templates
+    for dirname in sorted(existing_project_dirs - global_template_names):
+        # Count .md section files in the directory
+        section_count = 0
+        d = project_templates_base / dirname
+        if d.exists():
+            section_count = sum(1 for f in d.iterdir() if f.is_file() and f.suffix.lower() == ".md")
+        templates_dict[dirname] = {
+            "name": dirname,
+            "path": dirname,
+            "locked": False,
+            "section_count": section_count,
+            "origin": "project",
+            "created": __import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc
+            ).isoformat(),
+        }
+
+    # Persist the bootstrapped registry and return
+    result = {"templates": templates_dict}
+    project_registry_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    return result
+
+
+def ensure_project_template_metadata(project_id: str) -> None:
+    """Bootstrap template_locks.json and selected_template.json on first project access."""
+    project_registry = get_project_template_registry(project_id)
+    templates_dict = project_registry.get("templates", {})
+    first_template_name = next(iter(templates_dict))
+
+    locked_template_path = get_project_template_metadata_directory(project_id) / "template_locks.json"
+    if not locked_template_path.exists():
+        locked_template_path.write_text(
+            json.dumps({"template_type": first_template_name}, indent=2), encoding="utf-8"
+        )
+
+    selected_template_path = get_project_template_metadata_directory(project_id) / "selected_template.json"
+    if not selected_template_path.exists():
+        selected_template_path.write_text(
+            json.dumps({"template_type": first_template_name}, indent=2), encoding="utf-8"
+        )
+
+
+def update_project_template_registry(project_id: str, registry: dict) -> None:
+    """Save the per-project template registry back to disk.
+
+    Called after create/delete operations to persist changes.
+    """
+    project_registry_path = get_project_template_registry_path(project_id)
+    project_registry_path.write_text(json.dumps(registry, indent=2), encoding="utf-8")
+
 
 def get_reference_document_dir() -> Path:
     """Get the reference document for export the odt document"""

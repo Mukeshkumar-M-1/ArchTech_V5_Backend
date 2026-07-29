@@ -201,7 +201,7 @@ class QueryLoop:
                     
                     # Convert the provided tools list to definitions for the system prompt
                     current_tool_defs = []
-                    if tools is not None:
+                    if tools:
                         for tool in tools:
                             if isinstance(tool, dict):
                                 current_tool_defs.append(tool)
@@ -377,13 +377,13 @@ class QueryLoop:
         # STREAMING CALLING
         if self._streaming_enabled:
             return await self._LLM_stream_call(
-                messages, system_prompt, tool_definitions if tool_definitions else None, model, max_tokens, temperature
+                messages, system_prompt, tool_definitions, model, max_tokens, temperature
             )
 
         # FALLBACK CALLING
         return await self._LLM_call_with_fallback(
             messages=messages, system_prompt=system_prompt,
-            tools=tool_definitions if tool_definitions else None, model=model, max_tokens=max_tokens,
+            tools=tool_definitions, model=model, max_tokens=max_tokens,
             temperature=temperature, response_format=api_response_format
         )
 
@@ -490,7 +490,7 @@ class QueryLoop:
 
         # Format messages for API
         api_messages = [
-            # {"role": "system", "content": system_prompt},
+            {"role": "system", "content": system_prompt},
             *messages,
         ]
 

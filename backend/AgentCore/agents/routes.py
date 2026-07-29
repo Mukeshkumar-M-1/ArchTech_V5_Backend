@@ -13,7 +13,7 @@ import asyncio
 import json
 import logging
 from typing import AsyncGenerator
-from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 import os
@@ -40,6 +40,11 @@ def format_sse_event(data: dict) -> str:
         Formatted SSE data line string.
     """
     return f"data: {json.dumps(data, default=str)}\n\n"
+
+
+class GenerateDocumentRequest(BaseModel):
+    project_id: str
+    template_type: str = "srs"
 
 
 class SSEEventQueue:
@@ -86,6 +91,11 @@ class SSEEventQueue:
                 break
             yield msg
 
+class GenerateDocumentRequest(BaseModel):
+    project_id: str
+    template_type: str = "srs"
+
+
 class SSEToolQueue:
     """
        Separate queue for raw tool events (from ExecutionEngine / QueryLoop)
@@ -99,18 +109,17 @@ class SSEToolQueue:
 # ── POST /generate-document-stream ─────────────────────────────────────
 
 @router.post("/generate-document-stream")
-async def generate_document_stream(request: Request) -> StreamingResponse:
+async def generate_document_stream(request: GenerateDocumentRequest) -> StreamingResponse:
     """Stream document generation via Server-Sent Events.
 
     Args:
-        request: The FastAPI HTTP request containing project_id and template_type.
+        request: Pydantic model containing project_id and template_type.
 
     Returns:
         StreamingResponse with SSE document generation events.
     """
-    body = await request.json()
-    project_id = body.get("project_id", "")
-    template_type = body.get("template_type", "srs").lower()
+    project_id = request.project_id
+    template_type = request.template_type.lower()
     
     log.info(f"[GenerateAgentRoute] project_id={project_id} template_type={template_type}")
 
@@ -312,7 +321,12 @@ def export_document(req: ExportRequest, background_tasks: BackgroundTasks):
         #     sys.path.insert(0, backend_dir)
             
         from converter.convert import convert_markdown_to_odt
-        success = convert_markdown_to_odt(markdown_content=req.content, output_odt_file_path=output_odt_path, reference_template_odt_path=reference_template_document_path)
+        # Pass reference_template_odt_path explicitly now that get_reference_document_dir() is fixed
+        success = convert_markdown_to_odt(
+            markdown_content=req.content, 
+            output_odt_file_path=output_odt_path,
+            reference_template_odt_path=reference_template_document_path
+        )
         if success and os.path.exists(output_odt_path):
             return FileResponse(
                 path=output_odt_path,

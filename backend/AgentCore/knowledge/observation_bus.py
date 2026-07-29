@@ -22,7 +22,7 @@ class ObservationBus:
     def subscribe(self, callback: Callable[[Observation], None]) -> None:
         if callback not in self.subscribers:
             self.subscribers.append(callback)
-            log.debug(f"[ObservationBus] Registered subscriber: {callback.__name__}")
+            log.info(f"[ObservationBus] Registered subscriber: {callback.__name__}")
 
     def publish(self, observation: Observation) -> None:
         """Broadcasts the observation to all subscribers."""

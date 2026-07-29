@@ -32,14 +32,14 @@ class ToolRouter:
         # 2. Registry Lookup
         try:
             handler = self.registry.get_tool(action_type)
-        except KeyError as e:
-            log.warning(f"[ToolRouter] {e}")
+        except KeyError as exception:
+            log.warning(f"[ToolRouter] {exception}")
             return ActionResult(
                 status=ActionResultStatus.FAILURE,
                 action_type=action_type,
                 raw_output="",
                 duration_ms=0.0,
-                error_message=str(e)
+                error_message=str(exception)
             )
             
         log.debug(f"[ToolRouter] Routing action '{action_type}' to Sandbox.")

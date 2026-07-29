@@ -234,7 +234,6 @@ class ExecutionEngine:
 
         build_developer_message_context = "\n".join(build_developer_message)
 
-
         messages = [            
             {"role": "developer", "content": build_developer_message_context},
             {"role": "user", "content": build_user_message_context},

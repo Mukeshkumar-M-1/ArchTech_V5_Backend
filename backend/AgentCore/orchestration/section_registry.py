@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-from system_config import get_project_template_dir
+from system_config import get_project_template_dir, get_locked_template_name
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +36,8 @@ class SectionRegistry:
             Sorted list of SectionRegistryEntry objects.
         """
         section_registry_entry: list[SectionRegistryEntry] = []
-        base_template_folder = get_project_template_dir(project_id)
+        selected_template_name = get_locked_template_name(project_id)
+        base_template_folder = get_project_template_dir(project_id, selected_template_name)
 
 
         if not base_template_folder.exists():
@@ -78,7 +79,8 @@ class SectionRegistry:
             The matching SectionRegistryEntry, or None if not found.
         """
         section_content_data: dict[str, str] = {}
-        base_template_folder = get_project_template_dir(project_id)
+        selected_template_name = get_locked_template_name(project_id)
+        base_template_folder = get_project_template_dir(project_id, selected_template_name)
 
         for entry_item in section_registry_entry:
             if entry_item.section_number is not None:

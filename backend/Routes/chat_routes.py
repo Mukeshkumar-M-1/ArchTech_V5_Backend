@@ -101,7 +101,7 @@ async def _chat_stream(
                 loop._message_history.clear()
                 loop._executed_tools.clear()
                 queue.put_nowait({"type": "turn_start", "turn": 1})
-            available_tools = [] # list(registry._tools.values())
+            available_tools = list(registry._tools.values())
             run_messages = [{"role": "user", "content": user_message}]
             final_result = await loop.run(
                 messages=run_messages,
