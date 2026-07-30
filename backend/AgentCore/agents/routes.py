@@ -16,6 +16,7 @@ from typing import AsyncGenerator
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
+import datetime
 import os
 import tempfile
 import shutil
@@ -290,47 +291,79 @@ def resume_document_generation(project_id: str) -> dict:
 # ── POST /export-document ──────────────────────────────────────────────
 
 class ExportRequest(BaseModel):
-    content: str
-    format: str
-    filename: str
+    format: str = "odt"
+    filename: str = "Document"
+    content: str | None = None
+    project_id: str | None = None
+    version: int | None = None
+    template_type: str = "srs"
+    document_metadata: dict | None = None
+    document_metadata: dict | None = None
 
 @router.post("/export-document")
-def export_document(req: ExportRequest, background_tasks: BackgroundTasks):
-    """Export the generated document to a specific file format (e.g., ODT)."""
+def export_document(request: ExportRequest, background_tasks: BackgroundTasks):
+    """Export the generated document to a specific file format (e.g., ODT).
+
+    Two modes:
+    - Section-aware: when project_id + version are provided, reads per-section
+      content from stored JSON files so the converter can style tables/sections
+      by identity rather than position.
+    - Raw content: when content is provided directly, converts the flat markdown
+      string without section metadata.
+    """
     from system_config import get_reference_document_dir
-    if req.format.lower() != "odt":
+    from converter.convert import get_template_config
+    if request.format.lower() != "odt":
         raise HTTPException(status_code=400, detail="Only 'odt' format is supported at this time.")
-        
-    log.info(f"[Export] Request to export {req.filename}.odt")
-    
+
+    template_type = (request.template_type or "srs").lower()
+    log.info(f"[Export] Request to export {request.filename}.odt (template_type={template_type})")
+
     temp_dir = tempfile.mkdtemp()
-    output_odt_path = os.path.join(temp_dir, f"{req.filename}.odt")
-    reference_template_document_path = os.path.join(get_reference_document_dir(), "DP-VPX-0227-V1-01-SRS-1V00.odt")
-    
+    output_odt_path = os.path.join(temp_dir, f"{request.filename}.odt")
+    template_cfg = get_template_config(template_type)
+    reference_template_document_path = os.path.join(
+        get_reference_document_dir(),
+        template_cfg["reference_document_filename"],
+    )
+
     def cleanup():
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir, ignore_errors=True)
-            
+
     background_tasks.add_task(cleanup)
-    
+
     try:
-        # # Import dynamically if needed or it's accessible from the backend root
-        # import sys
-        # backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        # if backend_dir not in sys.path:
-        #     sys.path.insert(0, backend_dir)
-            
         from converter.convert import convert_markdown_to_odt
-        # Pass reference_template_odt_path explicitly now that get_reference_document_dir() is fixed
+
+        sections = None
+        if request.project_id and request.version:
+            sections = _fetch_version_sections(request.project_id, request.version)
+
+        document_metadata = request.document_metadata or {
+            "PRJ_ID": "DP-COMMON-0001",
+            "PRJ_FG": "000",
+            "PRJ_VERSION": "V1",
+            "TYPE_ID": "01",
+            "DOC_TYPE": "SRS",
+            "DOC_VER_MAJOR": "0",
+            "DOC_VER_MINOR": "01",
+            "DOC_VER_DATE": "DOCUMENT DATE",
+        }
+
         success = convert_markdown_to_odt(
-            markdown_content=req.content, 
+            markdown_content=request.content,
             output_odt_file_path=output_odt_path,
-            reference_template_odt_path=reference_template_document_path
+            reference_template_odt_path=reference_template_document_path,
+            sections=sections,
+            template_type=template_type,
+            document_metadata=document_metadata,
         )
+        
         if success and os.path.exists(output_odt_path):
             return FileResponse(
                 path=output_odt_path,
-                filename=f"{req.filename}.odt",
+                filename=f"{request.filename}.odt",
                 media_type="application/vnd.oasis.opendocument.text"
             )
         else:
@@ -338,3 +371,31 @@ def export_document(req: ExportRequest, background_tasks: BackgroundTasks):
     except Exception as exception:
         log.error(f"[Export] Error during export: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(exception))
+
+
+def _fetch_version_sections(project_id: str, version: int) -> list[dict]:
+    """Read all section content for a given document version from stored JSON."""
+    from system_config import get_project_generated_document_output_dir
+    output_dir = get_project_generated_document_output_dir(project_id)
+    if not output_dir.exists():
+        return []
+
+    ver_key = str(version)
+    sections = []
+    for json_file in sorted(output_dir.iterdir()):
+        if json_file.suffix.lower() != ".json" or json_file.name == "version.json":
+            continue
+        try:
+            data = json.loads(json_file.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        doc_data = data.get("document_data", {})
+        if ver_key not in doc_data:
+            continue
+        content = doc_data[ver_key].get("generated_data", "").strip()
+        if content:
+            sections.append({
+                "section_filename": data.get("section_filename", json_file.name.replace(".json", ".md")),
+                "content": content,
+            })
+    return sections

@@ -166,7 +166,7 @@ class ExecutionEngine:
                 "---",
                 "### INTERNAL MEMORY — TEST CASE INDEX SOURCE DATA:",
                 "\n",
-                str(agent_context_data.get("internal_memory_content", "")),
+                str(agent_context_data.get("internal_memory_content", '')),
                 "\n---",
                 "",
             ])
