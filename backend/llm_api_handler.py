@@ -25,21 +25,21 @@ log = logging.getLogger(__name__)
 # ─── Provider-based model config  ───────────────
 PROVIDER_MODEL_MAP = {
     "haiku45": {
-        "openai": "claude-opus-4-7",
+        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
     },
     "sonnet46": {
-        "openai": "claude-opus-4-7",
+        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
     },
     "opus46": {
-        "openai": "claude-opus-4-7",
+        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
     },
 }
 
 # Default model fallback chain — like CCB's model fallback on overloaded models
 MODEL_FALLBACK_CHAIN = {
-    "haiku": ["claude-opus-4-7"],
-    "sonnet": ["claude-opus-4-7"],
-    "opus": ["claude-opus-4-7"],
+    "haiku": ["qwen2.5-1.5b-instruct-q4_k_m"],
+    "sonnet": ["qwen2.5-1.5b-instruct-q4_k_m"],
+    "opus": ["qwen2.5-1.5b-instruct-q4_k_m"],
 }
 
 # ─── Default Settings ─────────────────────────────────────

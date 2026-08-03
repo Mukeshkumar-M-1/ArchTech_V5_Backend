@@ -14,9 +14,9 @@ import re
 import time
 import uuid
 from typing import Any, Dict, List, Optional
-from openai.types.chat import (ChatCompletionSystemMessageParam)
 from .event_bus import EventBus
 from .agent_state import AgentStateStore
+from .execution_history import ContextConfig, ContextManager, ExecutionStore, ExecutionTurn
 from AgentCore.execution.executor import ToolExecutor
 from AgentCore.execution.registry import registry
 from AgentCore.orchestration.contracts import TaskContract
@@ -166,11 +166,11 @@ class ExecutionEngine:
                 "---",
                 "### INTERNAL MEMORY — TEST CASE INDEX SOURCE DATA:",
                 "\n",
-                str(agent_context_data.get("internal_memory_content", '')),
+                str(agent_context_data.get("internal_memory_content", "")),
                 "\n---",
                 "",
             ])
-            log.info(f"[Execution_engine] [Internal_Memory] : {agent_context_data.get('internal_memory_content', '')}")
+            # log.info(f"[Execution_engine] [Internal_Memory] : {agent_context_data.get("internal_memory_content", "")}")
 
         if agent_context_data.get("section_number") in ["09", "9"]:
             # Filter traceability_data to only include sections needed for the matrix
@@ -230,16 +230,31 @@ class ExecutionEngine:
                 "---",
                 "",
             ])
-        log.info(f"[Execution_engine] [Traciability_data] [section: {agent_context_data.get('section_number')}] : {str(agent_context_data.get('traceability_data', ''))} ")
+        # log.info(f"[Execution_engine] [Traciability_data] [section: {agent_context_data.get("section_number")}] : {str(agent_context_data.get("traceability_data", ""))} ")
 
         build_developer_message_context = "\n".join(build_developer_message)
 
-        messages = [            
+        base_messages = [
             {"role": "developer", "content": build_developer_message_context},
             {"role": "user", "content": build_user_message_context},
         ]
-        
+
+        context_config = ContextConfig(recent_turns=3, max_context_messages=30)
+        store = ExecutionStore(config=context_config)
+        store.set_base_messages(base_messages)
+        context_manager = ContextManager(config=context_config)
+
         for agent_turn in range(1, max_turns + 1):
+            # Build bounded LLM context from store
+            # ContextManager splits all turns into:
+            #   old turns → programmatic summary
+            #   recent N turns → full messages
+            llm_messages = context_manager.build_context(
+                base_messages=store.base_messages,
+                execution_turns=store.get_all_turns(),
+                store=store,
+            )
+
             if not self.agent_state_store.increment_loop():
                 log.warning("[ExecutionEngine] Loop budget exceeded. Halting execution.")
                 return f"Error: Execution halted with max loop [{self.agent_state_store.agent_state.loop_count}/{self.agent_state_store.agent_state.max_loops}]"            
@@ -265,9 +280,9 @@ class ExecutionEngine:
             
             # Execute agent llm call
             try:
-                log.info(f"[ExecutionEngine] [LLM_Message_list] roles: {[getattr(m, 'role', m.get('role', '?')) for m in messages]}")
-                agent_response_context, result_tool_calls = await self._simulate_or_call_llm(agent_turn=agent_turn, messages=messages, tools=tools, custom_developer_message=build_developer_message_context)
-                log.info(f"[ExecutionEngine] [LLM_Message] Tak ID: [{task_id}] \n LLM Message Input: [{len(messages)}], Turn: [{agent_turn}], agent_response: [{len(agent_response_context)}]")
+                log.info(f"[ExecutionEngine] [LLM_Message_list] roles: {[getattr(m, 'role', m.get('role', '?')) for m in llm_messages]}")
+                agent_response_context, result_tool_calls = await self._simulate_or_call_llm(agent_turn=agent_turn, messages=llm_messages, tools=tools, custom_developer_message=build_developer_message_context)
+                log.info(f"[ExecutionEngine] [LLM_Message] Tak ID: [{task_id}] \n LLM Message Input: [{len(llm_messages)}], Turn: [{agent_turn}], agent_response: [{len(agent_response_context)}]")
 
             except Exception as exception:
                 log.error(f"[ExecutionEngine] LLM Call failed: {exception}", exc_info=True)
@@ -301,9 +316,10 @@ class ExecutionEngine:
                             "arguments": json.dumps(tool_call_item["input"])
                         }
                     })
-                messages.append(assistant_message)
 
                 # Execute tools
+                tool_messages: List[Dict[str, Any]] = []
+                tool_meta_list: List[Dict[str, Any]] = []
                 for tool_call_item in result_tool_calls:
                     tool_name = tool_call_item["name"]
                     tool_call_id = tool_call_item["id"]
@@ -359,6 +375,12 @@ class ExecutionEngine:
 
                     # Emit SSE tool_finished event for frontend progress layer
                     truncated_tool_output = (tool_output[:200] + "...") if len(tool_output) > 200 else tool_output
+                    agent_tool_data = {
+                        "tool_id": tool_call_id,
+                        "tool_name": tool_name,
+                        "tool_input_argument": tool_arguments,
+                        "tool_output": truncated_tool_output,
+                    }
                     try:
                         sse_tool_queue = get_tool_event_queue()
                         if sse_tool_queue:
@@ -372,24 +394,33 @@ class ExecutionEngine:
                                 "section": task_section_heading,
                             })
 
-                        agent_tool_data = {
-                            "tool_id": tool_call_id,
-                            "tool_name": tool_name,
-                            "tool_input_argument": tool_arguments,
-                            "tool_output": truncated_tool_output,
-                        }
                         agent_tool_control.setdefault(agent_turn, []).append(agent_tool_data)
                     except Exception as exception:
                         log.error(f"[ExecutionEngine] Error in tool finished: {exception}")
                         pass
 
-                    messages.append({
+                    tool_msg = {
                         "role": "tool",
                         "tool_call_id": tool_call_id,
                         "name": tool_name,
                         "content": tool_output
-                    })
-            
+                    }
+                    tool_messages.append(tool_msg)
+                    tool_meta_list.append(agent_tool_data)
+
+                exec_turn = ExecutionTurn.from_flat_messages(
+                    turn_number=agent_turn,
+                    assistant_msg=assistant_message,
+                    tool_msgs=tool_messages,
+                    tool_meta=tool_meta_list,
+                )
+                store.append_turn(exec_turn)
+                log.info(f"[ExecutionEngine] Turn {agent_turn} stored (complete={exec_turn.is_complete}, tools={len(tool_messages)})")
+
+                # Eagerly extract facts for LLM-enhanced context
+                if store.config.enable_llm_fact_extraction:
+                    await context_manager.extract_facts_for_turn(exec_turn, store)
+
             agent_turn_control.setdefault(agent_turn, []).append({
                 "turn_control": {str(agent_turn): copy.deepcopy(agent_tool_control.get(agent_turn, []))},
                 "generated_context_turn": agent_response_context
@@ -399,6 +430,15 @@ class ExecutionEngine:
                 "turn": agent_turn,
                 "tool_calls_count": len(result_tool_calls)
             })
+
+            # Log context statistics
+            stats = context_manager.get_context_stats(llm_messages)
+            log.info(
+                f"[ContextStats] turn={agent_turn} history={store.turn_count()} | "
+                f"llm_msgs={stats['total_messages']} assistant={stats['assistant_messages']} "
+                f"tool={stats['tool_messages']} tool_calls={stats['tool_calls']} "
+                f"est_tokens={stats['estimated_tokens']}"
+            )
 
         log.warning(f"[ExecutionEngine] Task '{task_id}' reached max turns ({max_turns}) without completing.")
         return "Error: Max turns reached without final answer."

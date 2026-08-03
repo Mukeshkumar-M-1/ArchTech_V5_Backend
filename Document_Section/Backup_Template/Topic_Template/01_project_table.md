@@ -1,15 +1,15 @@
 > \[!IMPORTANT\]
 >
 > - {{Document-Name}} → Ask to user
-> - {{Project-Version}} → Ask to user
+> - {{Project-Name}} → Ask to user
 
-**{{Document-Name}} For {{Project-Version}}**
+**{{Document-Name}} For {{Project-Name}}**
 
 **DOCUMENT CONTROL**
 
 > \[!IMPORTANT\]
 >
-> - Document Title → Use {{Document-Name}} for {{Project-Version}}
+> - Document Title → Use {{Document-Name}} for {{Project-Name}}
 > - Document Reference → {{Project-Board-ID}}-{{FG-Version}}-{{Product-Version}}-{{Type-ID}}-SRS-{{Document-Version}}
 > - {{Project-Board-ID}} → Ask to user
 > - {{FG-Version}} → Ask to user
@@ -25,7 +25,7 @@
 
 | Document Information | Details |
 | --- | --- |
-| Document Title | {{Document-Name}} for {{Project-Version}} |
+| Document Title | {{Document-Name}} for {{Project-Name}} |
 | Document Reference | {{Project-Board-ID}}-{{FG-Version}}-{{Product-Version}}-{{Type-ID}}-SRS-{{Document-Version}} |
 | Version Number | {{Document-Version}} |
 | Version Date | {{Document-Date}} |

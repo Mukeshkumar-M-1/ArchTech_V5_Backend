@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-from system_config import get_session_transcript_dir, get_project_transcript_dir, _ROOT_FOLDER_NAME
+from system_config import get_session_transcript_dir, get_project_transcript_dir, get_chat_session_dir, _ROOT_FOLDER_NAME
 from uuid import uuid4
 
 log = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def _get_dir_cache(project_id: str) -> tuple[Path, Path]:
     """Return (sessions_dir, projects_dir) for project_id, cached."""
     pid = (project_id)
     if pid not in _dir_cache:
-        _dir_cache[pid] = (get_session_transcript_dir(pid), get_project_transcript_dir(pid))
+        _dir_cache[pid] = (get_chat_session_dir(pid), get_project_transcript_dir(pid))
     return _dir_cache[pid]
 
 
@@ -164,16 +164,16 @@ class SessionLifecycle:
 
         :param project_id: Project identifier. Directories are scoped under .Archtech/{project_id}/.
         """
-        session_id = uuid4().hex[:12]
+        session_id = f"chat_{project_id}"
         now = time.time()
         cwd = os.getcwd()
 
         # Resolve per-project directories
         sessions_dir, projects_dir = _get_dir_cache(project_id)
 
-        # Write PID file: .archtech/{project_id}/sessions/<PID>.json
+        # Write session file: .ArchTech/{project_id}/chat_sessions/<session_id>.json
         sessions_dir.mkdir(parents=True, exist_ok=True)
-        pid_file = sessions_dir / f"{os.getpid()}.json"
+        pid_file = sessions_dir / f"{session_id}.json"
         record = SessionRecord(
             session_id=session_id,
             pid=os.getpid(),
@@ -190,7 +190,7 @@ class SessionLifecycle:
         transcript_dir.mkdir(parents=True, exist_ok=True)
         record.transcript_path = str(transcript_dir / f"{session_id}.jsonl")
 
-        # Write PID file
+        # Write session metadata file
         pid_file.write_text(json.dumps(record.to_dict(), indent=2), encoding="utf-8")
 
         # Create empty transcript file
@@ -281,8 +281,8 @@ class SessionLifecycle:
         new_record.parent_session_id = session_id
         new_record.status = "idle"
 
-        # Update PID file with parent_session_id
-        pid_file = sessions_dir / f"{os.getpid()}.json"
+        # Update session file with parent_session_id
+        pid_file = sessions_dir / f"{session_id}.json"
         if pid_file.exists():
             data = json.loads(pid_file.read_text(encoding="utf-8"))
             data["parentSessionId"] = session_id
@@ -406,7 +406,7 @@ class SessionLifecycle:
         raw = f"{project_id}:{key}:{now_ns}:{pid}"
         session_id = "sess-" + hashlib.md5(raw.encode()).hexdigest()[:10]
 
-        sessions_dir = get_session_transcript_dir(project_id=project_id)
+        sessions_dir = get_chat_session_dir(project_id=project_id)
         sessions_dir.mkdir(parents=True, exist_ok=True)
 
         record = SessionRecord(
@@ -442,7 +442,7 @@ class SessionLifecycle:
         candidates: list[tuple[dict, Path]] = []
         if current_pid:
             # Fast path: check the current project first
-            sessions_dir = get_session_transcript_dir(current_pid)
+            sessions_dir = get_chat_session_dir(current_pid)
             for session_file in sessions_dir.glob("*.json"):
                 try:
                     data = json.loads(session_file.read_text(encoding="utf-8"))
@@ -457,10 +457,10 @@ class SessionLifecycle:
                 return None
         else:
             for project_dir in archtech_dir.iterdir():
-                if not project_dir.is_dir() or project_dir.name in {"sessions", "None"}:
+                if not project_dir.is_dir() or project_dir.name in {"sessions", "chat_sessions", "None"}:
                     continue
                 pid = project_dir.name
-                sessions_dir = get_session_transcript_dir(pid)
+                sessions_dir = get_chat_session_dir(pid)
                 if not sessions_dir.exists():
                     continue
                 for session_file in sessions_dir.glob("*.json"):
@@ -539,7 +539,7 @@ class SessionLifecycle:
     @staticmethod
     def find_active(project_id: str) -> Optional[SessionRecord]:
         """Find the latest active (non-terminal) session for a project."""
-        sessions_dir = get_session_transcript_dir(project_id=project_id)
+        sessions_dir = get_chat_session_dir(project_id=project_id)
         if not sessions_dir.exists():
             return None
         for session_file in sorted(sessions_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -566,7 +566,7 @@ class SessionLifecycle:
     @staticmethod
     def find_latest(project_id: str) -> Optional[SessionRecord]:
         """Find the most recent session for a project, regardless of status."""
-        sessions_dir = get_session_transcript_dir(project_id=project_id)
+        sessions_dir = get_chat_session_dir(project_id=project_id)
         if not sessions_dir.exists():
             return None
         for session_file in sorted(sessions_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):

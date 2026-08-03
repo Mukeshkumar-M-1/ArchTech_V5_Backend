@@ -1,0 +1,11 @@
+# FPGA DDR Tests
+
+| Test cases | Description |
+|---|---|
+| **Address Bus Test** | Qualifies the address bus lines in the memory device. Writes a base address with a known pattern and all remaining addresses with anti-pattern, then reads all locations to verify written values match. Reverses the operation — base address with anti-pattern, rest with pattern — and repeats. PASS if read values match written values in both phases, otherwise FAIL. |
+| **Data Bus Test** | Qualifies the data bus lines in the memory device. Performs Walking 1's and Walking 0's test. Execute memory walking ones by left-shifting data 1 bit at a time until it reaches the 32nd bit. Execute memory walking zeros by left-shifting the complement of data 1 bit at a time until it reaches the 32nd bit. PASS if both test cases succeed, otherwise FAIL. |
+| **Device Test** | Determines whether every bit in the device is capable of holding both 0 and 1. Writes 32-bit incremental counter data (0x00 00 00 00, 0x00 00 00 01, 0x00 00 00 02, …, n) across the allocated memory of the given RAM size. Reads back from the starting location and verifies against written data. Writes inverted data to the same location and repeats for all memory locations until maximum RAM size is reached. Finally reads back all locations to verify inverted data. PASS if written and read-back values match in both phases, otherwise FAIL. |
+| **Full Memory Test** | Validates the read, write, and verify operation in the DDR memory through the emulator. **Note:** This test is executed only once through the emulator. |
+| **Read/Write Test** | Validates the read, write, and verify operation in the DDR memory. The user provides the start address, number of locations, and data pattern to write. For example, writes 0xAA data to the specified number of locations starting from the given address and reads back. PASS if read values match written values, otherwise FAIL. **Note:** Applicable for micro-controller based applications and is for debugging purpose only. |
+
+> **Note:** Descriptions may be modified as per the specific requirement criteria.

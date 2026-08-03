@@ -42,7 +42,21 @@ class StaticBlockBuilder:
     def build(self, tool_definitions, global_goal_text: str | None = None, phase_text: str | None = None) -> list[SystemPromptBlock]:
         blocks = []
 
-        # Document generation identity
+        # Identity and tool list
+        tool_list = ""
+        if tool_definitions:
+            tool_names = []
+            for td in tool_definitions:
+                if isinstance(td, dict):
+                    name = td.get("function", {}).get("name", td.get("name", ""))
+                    desc = td.get("function", {}).get("description", "")
+                    tool_names.append(f"  - {name}: {desc}" if desc else f"  - {name}")
+                elif hasattr(td, 'get_description'):
+                    tool_names.append(f"  - {td.name}: {td.get_description()}")
+                elif hasattr(td, 'name'):
+                    tool_names.append(f"  - {td.name}")
+            if tool_names:
+                tool_list = f"\nYou have access to the following tools:\n" + "\n".join(tool_names) + "\n\n"
         blocks.append(SystemPromptBlock(
             content=(
                 "You are an autonomous AI agent for technical document generation.\n"
@@ -50,7 +64,7 @@ class StaticBlockBuilder:
                 "observe results, and repeat until the section is complete.\n"
                 "For every turn you MUST follow the PTAO thinking protocol below.\n"
                 "Follow the instructions below every time the user sends a message."
-            ),
+            ) + tool_list,
             cache_scope="global",
         ))
 

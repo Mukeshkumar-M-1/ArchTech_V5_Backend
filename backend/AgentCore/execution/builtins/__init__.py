@@ -29,6 +29,7 @@ from .task_output import TaskOutput
 from .task_stop import TaskStop
 from .send_message import SendMessage
 from .request_user_input import RequestUserInput
+from .propose_content_edit import ProposeContentEdit
 
 log = logging.getLogger(__name__)
 
@@ -50,11 +51,12 @@ __all__ = [
     "TaskStop",
     "SendMessage",
     "RequestUserInput",
+    "ProposeContentEdit",
 ]
 
 # Auto-register all builtins
 for _tool in [FileRead, FileWrite, FileEdit, Bash, Agent, Glob, Search, TodoWrite, Skill,
               TaskCreate, TaskUpdate, TaskList, TaskGet, TaskOutput, TaskStop, SendMessage,
-              RequestUserInput]:
+              RequestUserInput, ProposeContentEdit]:
     registry.register(_tool)
     # log.info("[Builtins] Registered tool: %s", _tool.name)

@@ -49,7 +49,7 @@ DEDUP_ENABLE_LLM = True
 # ─── Operational Settings ────────────────────────────────────────────────────
 API_HOST = "127.0.0.1"
 API_PORT = 8015
-API_URL = "https://llmgw.datapatterns.co.in/v1"
+API_URL = "http://127.0.0.1:5757/v1"
 API_KEY = "sk-dpllm-oL5QSppnfr1QRLSmV6moGey"
 API_TIME_OUT  = 120.0
 

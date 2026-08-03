@@ -1,0 +1,9 @@
+# Display Brightness Test Specification
+
+| Test cases | Description |
+|---|---|
+| **Manual Mode Display Brightness Test** | Tests display brightness considered that display brightness is calibrated. Option to select Brightness control mode (Manual/Auto), Brightness mode (Day/Night/NVIS — if applicable), and Display brightness (0 to 100%). User shall select manual mode, Day/Night/NVIS, display brightness in the steps of 25, 50, 75, & 100% and observe the display luminance. If display luminance increases when increasing the display brightness percentage, the test is considered as PASS. |
+| **Auto Mode Display Brightness Test** | Option to select Brightness control mode (Manual/Auto), Brightness mode (Day/Night/NVIS — if applicable), offset value (-50 to 50 — if applicable), and time constant (0 to 9999). Time constant shall be set as 9000. Close the ambient light sensor and expose the ambient light sensor to light and observe the display brightness variations. On exposing the light sensor to the light, brightness value shall increase. After covering the light sensor, the brightness value shall decrease. On setting the offset value as 50, the minimum brightness will be 50. On setting the offset value as -50, the maximum brightness will be 50. |
+| **Display Brightness Test** | LCD Back light Driver Module shall perform display brightness test by updating the display brightness in 3 steps as 25%, 50% and 75%, reading the Back light sensor, and declare the test as success if the display Back light sensor value is within the valid range. **Note:** Display Backlight sensor valid range shall be configurable. |
+
+> **Note:** Descriptions may be modified as per the specific requirement criteria.

@@ -314,6 +314,13 @@ class QueryLoop:
             log.info(f"[QueryLoop] Loop finished after {self._turn} turns")
             self._compaction.reset_failures()
 
+            # Emit final text for non-streaming so frontend can render it
+            if not self._streaming_enabled and self.message_manager and final_text:
+                try:
+                    self.message_manager.emit_progress_event(final_text, 0, 0)
+                except Exception:
+                    pass
+
         except Exception as exception:
             log.error(f"[QueryLoop] Error: {exception}", exc_info=True)
             final_text = f"Error: {type(exception).__name__}: {exception}"
@@ -706,6 +713,13 @@ class QueryLoop:
                 else:
                     self._executed_tools.add(file_path)
 
+            # Emit tool_use_start so frontend shows the tool before it finishes
+            if self.message_manager:
+                try:
+                    self.message_manager.emit_tool_use_start(tool_id, tool_name, tool_arguments)
+                except Exception:
+                    pass
+
             result = await executor.execute(tool=tool_description, tool_call_id=tool_id, args=tool_arguments)
             content = result.content
 
@@ -717,12 +731,21 @@ class QueryLoop:
                 # Parse the interaction details and emit SSE events via message_manager
                 if self.message_manager:
                     try:
-                        _, prompt, ui_type, options_json, title = content.split("|", 4)
-                        options = json.loads(options_json)
+                        # Try parsing as JSON first (new format)
+                        json_part = content.split("|", 1)[1]
+                        if json_part.strip().startswith("{"):
+                            data = json.loads(json_part)
+                            prompt = data.get("prompt", "")
+                            ui_type = data.get("ui_type", "select")
+                            options = data.get("options", [])
+                            title = data.get("title", "")
+                        else:
+                            # Fallback for old pipe-delimited format
+                            _, prompt, ui_type, options_json, title = content.split("|", 4)
+                            options = json.loads(options_json)
                     except Exception:
                         prompt, ui_type, options, title = "Please select an option", "select", [], ""
                     try:
-                        self.message_manager.emit_tool_use_start(tool_id, tool_name, tool_arguments)
                         self.message_manager.emit_tool_interaction_request(tool_id, ui_type, options, prompt, title)
                     except Exception:
                         pass  # SSE events are best-effort
@@ -740,5 +763,12 @@ class QueryLoop:
                 "content": content,
                 "is_error": result.is_error,
             })
+
+            # Emit tool_use_complete after execution (non-streaming path)
+            if self.message_manager:
+                try:
+                    self.message_manager.emit_tool_use_complete(tool_id, content)
+                except Exception:
+                    pass
 
         return results

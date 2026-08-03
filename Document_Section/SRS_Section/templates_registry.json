@@ -1,0 +1,28 @@
+{
+  "templates": {
+    "Standard": {
+      "name": "Standard",
+      "path": "Standard/Topic_Template",
+      "locked": true,
+      "section_count": 11,
+      "created": "2026-01-01T00:00:00Z",
+      "origin": "global"
+    },
+    "Compact": {
+      "name": "Compact",
+      "path": "Compact/Topic_Template",
+      "locked": false,
+      "section_count": 11,
+      "created": "2026-01-01T00:00:00Z",
+      "origin": "global"
+    },
+    "Detailed": {
+      "name": "Detailed",
+      "path": "Detailed/Topic_Template",
+      "locked": false,
+      "section_count": 11,
+      "created": "2026-01-01T00:00:00Z",
+      "origin": "global"
+    }
+  }
+}

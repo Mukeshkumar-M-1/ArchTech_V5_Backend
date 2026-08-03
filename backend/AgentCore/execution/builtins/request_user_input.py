@@ -35,7 +35,13 @@ def _execute(prompt: str, ui_type: str, options: list[str], title: str = "", **k
     """
     log.info("[RequestUserInput] prompt=%s, ui_type=%s, options=%s, title=%s", prompt, ui_type, options, title)
 
-    return f"{AWAITING_MARKER}|{prompt}|{ui_type}|{json.dumps(options)}|{title}"
+    interaction_data = {
+        "prompt": prompt,
+        "ui_type": ui_type,
+        "options": options,
+        "title": title
+    }
+    return f"{AWAITING_MARKER}|{json.dumps(interaction_data)}"
 
 
 RequestUserInput = ToolDefinition(

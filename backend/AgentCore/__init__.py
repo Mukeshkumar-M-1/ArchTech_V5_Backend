@@ -16,6 +16,8 @@ from __future__ import annotations
 # ====================================================================
 
 from .execution.registry import ToolRegistry, ToolDefinition, register, registry
+from .execution import builtins  # noqa: F401 — registers all tool definitions
+
 from .execution.executor import ToolExecutor, ToolExecutionResult
 from .execution.query_loop import QueryLoop
 from .execution.agent_spawner import AgentSpawner, AgentResult

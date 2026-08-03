@@ -348,7 +348,7 @@ def export_document(request: ExportRequest, background_tasks: BackgroundTasks):
             "DOC_TYPE": "SRS",
             "DOC_VER_MAJOR": "0",
             "DOC_VER_MINOR": "01",
-            "DOC_VER_DATE": "DOCUMENT DATE",
+            "DOC_DATE": "DATE",
         }
 
         success = convert_markdown_to_odt(

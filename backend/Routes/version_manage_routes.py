@@ -177,3 +177,67 @@ def get_document_version_content(project_id: str, section_filename: str, version
         "version": version,
         "content": _strip_agent_preamble(raw_content) if raw_content else "",
     }
+
+
+# ---------------------------------------------------------------------------
+# 4. PUT /document-version-content/{project_id}/{section_filename}/{version}
+#    Update the markdown content for a specific section + version.
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel
+
+class UpdateVersionContentRequest(BaseModel):
+    content: str
+
+@router.put("/document-version-content/{project_id}/{section_filename}/{version}")
+def update_document_version_content(project_id: str, section_filename: str, version: int, request: UpdateVersionContentRequest):
+    """Update the markdown content for a specific section version."""
+    output_dir = get_project_generated_document_output_dir(project_id)
+
+    if not output_dir.exists():
+        raise HTTPException(status_code=404, detail="Output directory not found")
+
+    # Find the corresponding JSON file
+    base_name = section_filename
+    if base_name.lower().endswith(".md"):
+        base_name = base_name[:-3]
+    json_filename = f"{base_name}.json"
+    json_file = output_dir / json_filename
+
+    if not json_file.exists():
+        # Try matching by section_number prefix
+        matched = False
+        for f in output_dir.iterdir():
+            if f.suffix.lower() == ".json" and f.name.startswith(base_name.split("_")[0]):
+                json_file = f
+                matched = True
+                break
+        if not matched:
+            raise HTTPException(status_code=404, detail=f"Section file not found: {section_filename}")
+
+    data = _read_section_json(output_dir, json_file)
+    if not data:
+        raise HTTPException(status_code=500, detail="Failed to read section data")
+
+    doc_data = data.get("document_data", {})
+    version_key = str(version)
+
+    if version_key not in doc_data:
+        available = sorted([int(k) for k in doc_data.keys() if k.isdigit()])
+        raise HTTPException(
+            status_code=404,
+            detail=f"Version {version} not found for this section. Available: {available}",
+        )
+
+    # Update the content
+    doc_data[version_key]["generated_data"] = request.content
+    data["document_data"] = doc_data
+
+    # Write back to file
+    try:
+        json_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        log.info(f"[VersionRoutes] Successfully updated content for {section_filename} (v{version})")
+        return {"status": "ok", "message": f"Updated {section_filename} version {version}"}
+    except Exception as e:
+        log.error(f"[VersionRoutes] Failed to write updated section data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to write updated section data")
