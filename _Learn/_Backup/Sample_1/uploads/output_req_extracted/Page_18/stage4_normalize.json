@@ -1,0 +1,20 @@
+{
+  "page": 18,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6,
+      "normalized": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "text": "PCIe interface: x8 PCIe interface on FPGA MGT bank; Reference clock from clock generator to FPGA MGT bank will be used for PCIe.",
+      "score": 8,
+      "normalized": "PCIe interface: x8 PCIe interface on FPGA MGT bank; Reference clock from clock generator to FPGA MGT bank shall be used for PCIe."
+    },
+    {
+      "text": "DDR4/L SDRAM Interface: One 64 bit DDR4 SDRAM controller IP core shall be implemented in FPGA IO bank; Reference clock from clock generator to FPGA IO bank will be used for DDR4 controller.",
+      "score": 9,
+      "normalized": "DDR4/L SDRAM Interface: One 64 bit DDR4 SDRAM controller IP core shall be implemented in FPGA IO bank; Reference clock from clock generator to FPGA IO bank shall be used for DDR4 controller."
+    }
+  ]
+}

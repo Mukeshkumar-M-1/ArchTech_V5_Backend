@@ -9,10 +9,10 @@ import logging
 
 from ..context.execution_context import ExecutionContext
 from ..domain.reasoning_state import ReasoningState
-from .engine import ReasoningEngine
-from ..action.executor import ActionExecutor
+from .reason_engine import ReasoningEngine
+from ..action.action_executor import ActionExecutor
 from ..knowledge.observation_engine import ObservationEngine
-from ..knowledge.observation import Observation
+from ..knowledge.observation_manager import ObservationManager
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class TurnManager:
         log.info("[TurnManager] Initialized.")
 
     def execute_turn(self, context: ExecutionContext, state: ReasoningState,
-                     observation_history=None) -> Observation:
+                     observation_history=None) -> ObservationManager:
         """Runs the sequence: Reason -> Act -> Observe."""
         log.info(f"\n--- Starting Turn (Attempt {state.attempt_number}) ---")
         if observation_history is None:

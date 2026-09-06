@@ -1,0 +1,15 @@
+{
+  "page": 17,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6,
+      "normalized": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "text": "Kintex Ultrascale-XCKU035 series FPGA shall be used in the module with sufficient IO count as per design requirement.",
+      "score": 7,
+      "normalized": "The Kintex Ultrascale XCKU035 series FPGA shall be used in the module with sufficient IO count as per design requirement."
+    }
+  ]
+}

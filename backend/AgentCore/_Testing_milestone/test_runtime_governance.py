@@ -13,12 +13,20 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from AgentCore.infrastructure.policy_manager import PolicyManager, PolicyDecision
-from AgentCore.infrastructure.telemetry import TelemetryCollector, CostTracker
-from AgentCore.domain.policy import RuntimePolicy
+from AgentCore.infrastructure.telemetry_manager import TelemetryManager, CostTracker
+from AgentCore.domain.runtime_policy import RuntimePolicy
 
 logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    level=logging.INFO,
+    format="\n\n %(asctime)s [%(name)s.%(funcName)s]\n [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log13.log",
+            encoding="utf-8",
+            mode="a",
+        ),
+    ],
 )
 log = logging.getLogger("TestRuntimeGovernance")
 
@@ -63,7 +71,7 @@ def test_telemetry_and_budgets():
     )
     
     cost_tracker = CostTracker()
-    telemetry = TelemetryCollector(cost_tracker)
+    telemetry = TelemetryManager(cost_tracker)
     
     # Simulate turn loop accumulating cost
     turn_tokens = 4000

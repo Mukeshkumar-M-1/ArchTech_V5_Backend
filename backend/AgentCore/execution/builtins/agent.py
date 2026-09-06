@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import AgentInput
 
 log = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ async def _execute(
     """
     log.info("[Agent] Spawning agent_type=%s, description=%s, background=%s", agent_type, description, run_in_background)
     from AgentCore.execution.agent_spawner import AgentSpawner
-    from AgentCore.execution.registry import registry as tool_registry
+    from ..tool_registry import registry as tool_registry
 
     # Pass the full tool definitions so the subagent can use them
     all_tools = tool_registry.get_all()

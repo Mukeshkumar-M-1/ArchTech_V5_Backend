@@ -1,0 +1,55 @@
+{
+  "page": 13,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 7,
+      "normalized": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-001 Type \u2022 XMC Module (VITA42) \u2022 Single-Width Mezzanine Card",
+      "score": 6,
+      "normalized": "DP-XMC-5049-HRS-001 Type: XMC Module (VITA42), Single-Width Mezzanine Card"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-002 FPGA \u2022 Family: Kintex Ultrascale \u2022 Device: XCKU035-2FBVA676I \u2022 Logic cells: 444,343 \u2022 Maximum HP I/Os: 416 \u2022 Maximum HR I/Os: 104 \u2022 Block RAM Blocks: 540 \u2022 Distributed RAM: 5.9 Mb (Max.) \u2022 Block RAM: 19.0 Mb \u2022 CMTs: 10 \u2022 DSP 48e1 Slices: 1,700 \u2022 PCIe Gen3 x8: 2 \u2022 GTH 16.3 Gb/s Transceivers: 16",
+      "score": 8,
+      "normalized": "DP-XMC-5049-HRS-002 FPGA \u2022 Family: Kintex Ultrascale \u2022 Device: XCKU035-2FBVA676I \u2022 Logic cells: 444,343 \u2022 Maximum HP I/Os: 416 \u2022 Maximum HR I/Os: 104 \u2022 Block RAM Blocks: 540 \u2022 Distributed RAM: 5.9 Mb (Max.) \u2022 Block RAM: 19.0 Mb \u2022 CMTs: 10 \u2022 DSP 48e1 Slices: 1,700 \u2022 PCIe Gen3 x8: 2 \u2022 GTH 16.3 Gb/s Transceivers: 16"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-003 Micro-controller \u2022 Family: SAM D5x/E5x \u2022 Device: ATSAMD51G19A \u2022 Core: 32-bit Arm\u00ae Cortex\u00ae-M4F MCUs \u2022 Memory: 512KB in-system self-programmable Flash \u2022 RAM: 192KB SRAM",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-003 Micro-controller: Family: SAM D5x/E5x; Device: ATSAMD51G19A; Core: 32-bit Arm Cortex-M4F MCUs; Memory: 512KB in-system self-programmable Flash; RAM: 192KB SRAM"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-004 Voltage Module supply rails: \u2022 +5V \u2022 +3.3V \u2022 +3.3V-AUX",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-004 Voltage Module supply rails: +5V, +3.3V, +3.3V-AUX"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-005 Current \u2022 5V @ 2.99 A (TYP) \u2022 3V @ 3.18 A (TYP) \u2022 3.3V-AUX @ 0.002 A (TYP)",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-005 Current 5V @ 2.99 A (TYP) 3V @ 3.18 A (TYP) 3.3V-AUX @ 0.002 A (TYP)"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-006 Power Dissipation \u2022 15 W (TYP)",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-006 Power Dissipation 15 W (TYP)"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-007 SDRAM \u2022 64-bit 4GB DDR4",
+      "score": 6,
+      "normalized": "DP-XMC-5049-HRS-007 SDRAM 64-bit 4GB DDR4"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-008 Configuration Flash Memory \u2022 64MB",
+      "score": 6,
+      "normalized": "DP-XMC-5049-HRS-008 Configuration Flash Memory shall be 64MB"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-009 Storage Flash Memory \u2022 256MB",
+      "score": 6,
+      "normalized": "DP-XMC-5049-HRS-009 Storage Flash Memory shall be 256MB"
+    }
+  ]
+}

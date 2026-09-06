@@ -5,7 +5,7 @@ import logging
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from AgentCore.domain.policy import RuntimePolicy
+from AgentCore.domain.runtime_policy import RuntimePolicy
 from AgentCore.domain.reasoning_state import ReasoningState
 from AgentCore.context.execution_context import ExecutionContext
 
@@ -14,26 +14,26 @@ from AgentCore.knowledge.observation_engine import ObservationEngine
 from AgentCore.journal.execution_journal import ExecutionJournal
 
 from AgentCore.action.tool_router import ToolRouter
-from AgentCore.platform.execution.registry import ToolRegistry
-from AgentCore.platform.execution.sandbox import SandboxManager
-from AgentCore.action.executor import ActionExecutor
+from AgentCore.execution.tool_registry import ToolRegistry
+from AgentCore.platform.execution.sandbox_manager import SandboxManager
+from AgentCore.action.action_executor import ActionExecutor
 
-from AgentCore.reasoning.engine import ReasoningEngine
+from AgentCore.reasoning.reason_engine import ReasoningEngine
 from AgentCore.reasoning.turn_manager import TurnManager
 
-from AgentCore.cognitive.reflection import ReflectionEngine
-from AgentCore.cognitive.verifier import Verifier
-from AgentCore.cognitive.repair import RepairPlanner
+from AgentCore.cognitive.reflection_engine import ReflectionEngine
+from AgentCore.cognitive.verifier_engine import VerifierEngine
+from AgentCore.cognitive.repair_engine import RepairEngine
 
 from AgentCore.orchestration.workflow import LoopController, WorkflowRunner
-from AgentCore.orchestration.planner import PlanningEngine, TaskScheduler, MissionManager
+from AgentCore.orchestration.planner_engine import PlanningEngine, TaskScheduler, MissionManager
 
 logging.basicConfig(
     level=logging.INFO, 
     format="\n\n %(asctime)s [%(name)s.%(funcName)s] \n [%(levelname)s] %(message)s", 
     handlers=[
         logging.StreamHandler(), 
-        logging.FileHandler(r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log5.log", encoding="utf-8", mode="a")
+        logging.FileHandler(r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log7.log", encoding="utf-8", mode="a")
         ]
     )
 
@@ -57,8 +57,8 @@ def main():
     
     # 3. Cognitive Branches
     reflection = ReflectionEngine()
-    verifier = Verifier()
-    repair = RepairPlanner()
+    verifier = VerifierEngine()
+    repair = RepairEngine()
     
     # 4. Controllers & Planners
     loop_controller = LoopController(policy, turn_manager, reflection, verifier, repair)

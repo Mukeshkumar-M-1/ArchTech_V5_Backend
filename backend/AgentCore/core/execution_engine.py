@@ -1,7 +1,7 @@
 """
 ExecutionEngine - The runtime boundary for executing tasks.
 
-Hides LLM turning, tool execution, and prompt assembly from the AgentKernel.
+Hides LLM turning, tool execution, and prompt assembly from the ChatAgentKernel.
 The Kernel says "Execute Task", and this engine handles the Turn -> Tool -> Turn loop,
 emitting events along the way.
 """
@@ -12,39 +12,63 @@ import json
 import logging
 import re
 import time
-import uuid
-from typing import Any, Dict, List, Optional
-from .event_bus import EventBus
+from typing import Any, Dict, List
+from AgentCore.event_bus import AsyncEventBus
 from .agent_state import AgentStateStore
 from .execution_history import ContextConfig, ContextManager, ExecutionStore, ExecutionTurn
-from AgentCore.execution.executor import ToolExecutor
-from AgentCore.execution.registry import registry
+from AgentCore.execution.tool_executor import ToolExecutor
+from AgentCore.execution.tool_registry import registry
+from AgentCore.execution.message_manager import SSEGenerationMessageManager
 from AgentCore.orchestration.contracts import TaskContract
 
 log = logging.getLogger(__name__)
 
-# Module-level tool event queue for SSE forwarding.
-# Set by routes.py via set_tool_event_queue() before each generation request.
-_tool_event_queue: Optional[asyncio.Queue] = None
+# Registry for generation interaction loops (task_key → {loop, engine_ref})
+_generation_loop_store: dict[str, Any] = {}
 
 
-def set_tool_event_queue(queue: Optional[asyncio.Queue]) -> None:
-    """Set the global tool event queue for SSE forwarding."""
-    global _tool_event_queue
-    _tool_event_queue = queue
+def register_generation_loop(task_id: str, loop_instance: Any, engine_ref: "ExecutionEngine | None" = None) -> None:
+    _generation_loop_store[task_id] = {"loop": loop_instance, "engine": engine_ref}
 
 
-def get_tool_event_queue() -> Optional[asyncio.Queue]:
-    """Get the current tool event queue (if any active generation)."""
-    return _tool_event_queue
+def get_generation_loop(task_id: str) -> Any:
+    entry = _generation_loop_store.get(task_id)
+    return entry["loop"] if entry else None
+
+
+def get_generation_engine(task_id: str) -> "ExecutionEngine | None":
+    entry = _generation_loop_store.get(task_id)
+    return entry.get("engine") if entry else None
+
+
+def unregister_generation_loop(task_id: str) -> None:
+    _generation_loop_store.pop(task_id, None)
+
 
 class ExecutionEngine:
     """Executes tasks by managing the LLM interaction loop and tool execution."""
-    
-    def __init__(self, event_bus: EventBus, agent_state_store: AgentStateStore, tool_executor: ToolExecutor):
+
+    def __init__(
+        self,
+        event_bus: AsyncEventBus,
+        agent_state_store: AgentStateStore,
+        tool_executor: ToolExecutor,
+        message_manager: SSEGenerationMessageManager | None=None,
+    ):
         self.event_bus = event_bus
         self.agent_state_store = agent_state_store
         self.tool_executor = tool_executor
+        self._message_manager = message_manager
+        self._active_query_loop: Any = None
+        self._awaiting_input: bool = False
+        self._awaiting_input_marker: str = ""
+        self._user_response: str | None = None
+        self._input_ready_event: asyncio.Event | None = None
+        self._interactive_tool_call_id: str | None = None
+        self._interactive_tool_name: str | None = None
+        self._interactive_tool_output: str | None = None
+        self._interactive_task_id: str | None = None
+        self._interactive_section_heading: str | None = None
         log.info("[ExecutionEngine] Initialized.")
 
     async def execute_task(self, task_id: str, task_contract: TaskContract, tools: List[Any], max_turns: int = 10) -> str:
@@ -60,7 +84,9 @@ class ExecutionEngine:
             The final textual result of the execution.
         """
         log.info(f"[ExecutionEngine] Starting execution Task=[{task_id}] with {len(tools)} tools.")
-        
+
+        self._awaiting_input = False
+
         self.agent_state_store.set_active_task(task_id)
         self.agent_state_store.update_state("EXECUTE")
         agent_version_data: Dict[str, List[Any]] = {}
@@ -95,6 +121,7 @@ class ExecutionEngine:
             str(agent_context_data.get('knowledge_content', '')),
             "---",
         ]   
+        
         build_user_message_context = "\n".join(build_user_message)
 
         # Build developer message
@@ -109,6 +136,13 @@ class ExecutionEngine:
             "The response must contain ZERO text outside of the actual section content. Anything before the first heading or after the last table is a violation.",
             "## NO REQUIREMENT IDs",
             "Do NOT generate or include any requirement identifiers such as REQ-XXXX, HAR-XXXX, SOF-XXXX, GEN-XXXX, FUN-XXXX or any similar prefixed ID format in the output. If such IDs appear in the context or template, omit them entirely from the generated content.",
+            "## TEMPLATE PLACEHOLDER RULES",
+            "If the template contains {{placeholders}} (e.g., {{Document-Name}}, {{Project-Name}}), you MUST collect those values from the user using the RequestUserInput tool BEFORE generating section content.",
+            "1. Call RequestUserInput for EACH placeholder one at a time (sequential, NOT bundled).",
+            "2. After receiving each response, call RequestUserInput for the NEXT placeholder.",
+            "3. Only AFTER all placeholders are filled should you generate the final section content.",
+            "4. NEVER output {{placeholders}} as-is in your response — they must all be replaced with real values.",
+            "5. If you have no placeholders to ask about, generate the section content directly.",
             "## TEMPLATE FORMAT",
             "\n\n",
             str(agent_context_data.get("section_template_content", "")),
@@ -116,6 +150,7 @@ class ExecutionEngine:
         ]
 
         if agent_context_data.get("section_number") in ["06", "6"]:
+            
             build_developer_message.extend([
                 "## FUNCTIONAL REQUIREMENTS — TEST CASE GENERATION INSTRUCTIONS",
                 "You are generating detailed functional requirements and test case specifications for Section 06. "
@@ -124,17 +159,20 @@ class ExecutionEngine:
                 "### CRITICAL STRUCTURAL & HEADING RULES",
                 "1. **Parent Component Sections (`###` Level):**",
                 "   - Create a `### 4.X.Y [Component Name]` heading for every major requirement (e.g., `### 4.3.3 EEPROM Test`).",
-                "   - Include a parent table formatted as: `**Table 4.NN [Component Name]**` containing the primary Requirement ID and high-level description.",
+                "   - Include a parent table formatted as: `**Table 4.NN [Component Name]**` followed by a blank line, then the table containing the primary Requirement ID and high-level description.",
                 "",
                 "2. **Individual Test Cases (`####` Level):**",
                 "   - Create a separate `#### 4.X.Y.Z [Test Case Name]` subsection for EVERY individual test case defined in the test case files.",
                 "   - **STRICT FORBIDDEN:** Do NOT condense, consolidate, or lump multiple test cases into single paragraphs or single tables.",
                 "   - Use exact test case names from the source files — do NOT rename, hallucinate, or omit any test case.",
-                "   - Include a dedicated table formatted as: `**Table 4.NN.Z [Test Case Name]**` containing its specific Sub-Requirement ID and description.",
+                "   - Include a dedicated table formatted as: `**Table 4.NN.Z [Test Case Name]**` followed by a blank line, then the table containing its specific Sub-Requirement ID and description.",
                 "",
                 "3. **Table Column Standard:**",
                 "   - Every table in this section MUST strictly adhere to this 2-column format:",
                 "     `| Sub-Requirement ID | Requirement Description |`",
+                "",
+                "4. **Table Caption Spacing (required for proper rendering):**",
+                "   - There MUST be a blank line between a table caption (`**Table 4.XX ...**`) and the pipe-delimited table that follows it. Without this blank line, Pandoc merges the caption into the table, corrupting column alignment.",
                 "",
                 "---",
                 "### EXEMPLAR FORMAT",
@@ -144,6 +182,7 @@ class ExecutionEngine:
                 "### 4.3.3 EEPROM Test",
                 "",
                 "**Table 4.21 EEPROM Test**",
+                "",
                 "| Sub-Requirement ID | Requirement Description |",
                 "|-------------------|-------------------------|",
                 "| DPXMC5049_FW_EEPROM_03_03 | High-level summary of EEPROM hardware testing scope... |",
@@ -151,6 +190,7 @@ class ExecutionEngine:
                 "#### 4.3.3.1 Data Retention Test",
                 "",
                 "**Table 4.21.1 Data Retention Test**",
+                "",
                 "| Sub-Requirement ID | Requirement Description |",
                 "|-------------------|-------------------------|",
                 "| DPXMC5049_FW_EEPROM_03_03_01 | Qualifies authenticity and integrity of the memory device. A read operation shall be performed to verify the signature... |",
@@ -158,6 +198,7 @@ class ExecutionEngine:
                 "#### 4.3.3.2 Read/Write Test",
                 "",
                 "**Table 4.21.2 Read/Write Test**",
+                "",
                 "| Sub-Requirement ID | Requirement Description |",
                 "|-------------------|-------------------------|",
                 "| DPXMC5049_FW_EEPROM_03_03_02 | Validates read, write, and erase verification operations across designated memory banks... |",
@@ -235,7 +276,7 @@ class ExecutionEngine:
         build_developer_message_context = "\n".join(build_developer_message)
 
         base_messages = [
-            {"role": "developer", "content": build_developer_message_context},
+            # {"role": "developer", "content": build_developer_message_context},
             {"role": "user", "content": build_user_message_context},
         ]
 
@@ -245,10 +286,49 @@ class ExecutionEngine:
         context_manager = ContextManager(config=context_config)
 
         for agent_turn in range(1, max_turns + 1):
-            # Build bounded LLM context from store
-            # ContextManager splits all turns into:
-            #   old turns → programmatic summary
-            #   recent N turns → full messages
+            # If we paused waiting for user input, wait in place for the response.
+            if self._awaiting_input:
+                if self._user_response is not None:
+                    log.info(f"[ExecutionEngine] [user_response] : {self._user_response} and [tool_call_id] : {self._interactive_tool_call_id}")
+                    log.info(f"[ExecutionEngine] [Store_turn] : {store.turns}")
+                    if store.turns:
+                        last_turn = store.turns[-1]
+                        last_turn.tool_messages.append({
+                            "role": "tool",
+                            "tool_call_id": self._interactive_tool_call_id,
+                            "name": self._interactive_tool_name,
+                            "content": json.dumps({
+                                "user_response": self._user_response,
+                                "status": "completed",
+                            }),
+                        })
+                        log.info("[ExecutionEngine] User response injected into turn %d for tool_call=%s",
+                                 last_turn.turn_number, self._interactive_tool_call_id)
+                        log.info("[ExecutionEngine] [store_last_turn] : %s", last_turn)
+                    # Emit tool_finished so frontend transitions from "awaiting_input" → "success"
+                    if self._message_manager and self._interactive_tool_call_id:
+                        self._message_manager.emit_tool_finished(
+                            tool_name=self._interactive_tool_name,
+                            tool_call_id=self._interactive_tool_call_id,
+                            is_error=False,
+                            output=self._user_response,
+                            duration_ms=0,
+                            section_heading=self._interactive_section_heading,
+                            task_id=self._interactive_task_id,
+                        )
+
+                    self._awaiting_input = False
+                    self._user_response = None
+                    self._input_ready_event = None
+                    self._interactive_tool_call_id = None
+                    log.info("[ExecutionEngine] Resuming execution after user response.")
+                else:
+                    # No response yet — wait asynchronously (blocks here, does NOT return)
+                    log.info("[ExecutionEngine] Paused, awaiting user input response.")
+                    self._input_ready_event = asyncio.Event()
+                    await self._input_ready_event.wait()
+                    continue
+
             llm_messages = context_manager.build_context(
                 base_messages=store.base_messages,
                 execution_turns=store.get_all_turns(),
@@ -265,24 +345,19 @@ class ExecutionEngine:
                 "turn": agent_turn,
             })
 
-            # Emit SSE Tool Turn Status
-            try:
-                sse_tool_queue = get_tool_event_queue()
-                if sse_tool_queue:
-                    sse_tool_queue.put_nowait({
-                        "type": "turn_start",
-                        "turn": agent_turn,
-                        "task_id": task_id,
-                    })
-            except Exception as exception:
-                log.error(f"[ExecutionEngine] [Error] Tool Execution : {exception}")
-                pass
+            # Emit SSE Turn Start
+            if self._message_manager:
+                self._message_manager.emit_turn_start(agent_turn, task_id)
+
+            # Emit SSE Turn Phase
+            if self._message_manager:
+                self._message_manager.emit_section_phase(section_heading=task_section_heading)
             
             # Execute agent llm call
             try:
                 log.info(f"[ExecutionEngine] [LLM_Message_list] roles: {[getattr(m, 'role', m.get('role', '?')) for m in llm_messages]}")
                 agent_response_context, result_tool_calls = await self._simulate_or_call_llm(agent_turn=agent_turn, messages=llm_messages, tools=tools, custom_developer_message=build_developer_message_context)
-                log.info(f"[ExecutionEngine] [LLM_Message] Tak ID: [{task_id}] \n LLM Message Input: [{len(llm_messages)}], Turn: [{agent_turn}], agent_response: [{len(agent_response_context)}]")
+                log.info(f"[ExecutionEngine] [LLM_Message] Task ID: [{task_id}] \n LLM Message Input: [{len(llm_messages)}], Turn: [{agent_turn}], agent_response: [{len(agent_response_context)}]")
 
             except Exception as exception:
                 log.error(f"[ExecutionEngine] LLM Call failed: {exception}", exc_info=True)
@@ -331,73 +406,88 @@ class ExecutionEngine:
                     })
 
                     # Emit SSE tool_started event for frontend progress layer
-                    try:
-                        sse_tool_queue = get_tool_event_queue()
-                        if sse_tool_queue:
-                            sse_tool_queue.put_nowait({
-                                "type": "tool_started",
-                                "tool_name": tool_name,
-                                "tool_call_id": tool_call_id,
-                                "input": tool_arguments,
-                                "section": task_section_heading,
-                            })
-                    except Exception as exception:
-                        log.error(f"[ExecutionEngine] Error in tool start: {exception}")
-                        pass
+                    if self._message_manager:
+                        self._message_manager.emit_tool_started(
+                            tool_name=tool_name, tool_call_id=tool_call_id, input_args=tool_arguments, section_heading=task_section_heading, task_id=task_id,
+                        )
 
                     tool_execution_start_time = time.monotonic()
 
                     # Execute tool via ToolExecutor
                     tool_output = ""
-                    tool_execution_succeeded = True
+                    tool_execution_succeeded = False
 
                     if self.tool_executor:
                         tool_definition = registry.get(tool_name)
                         if tool_definition:
                             tool_execution_result = await self.tool_executor.execute(tool_definition, tool_call_id, tool_arguments)
                             tool_output = tool_execution_result.content
-                            tool_execution_succeeded = not tool_execution_result.is_error
+                            tool_execution_succeeded = tool_execution_result.is_error
+
+                            # Detect interactive tool markers (RequestUserInput)
+                            if self._message_manager and tool_output and "__AWAITING_USER_INPUT__" in tool_output:
+                                interactive_tool_result = tool_output.split("__AWAITING_USER_INPUT__", 1)
+                                if len(interactive_tool_result):
+                                    interactive_payload = interactive_tool_result[1].strip() 
+                                else:
+                                    interactive_payload = None
+
+                                if interactive_payload:
+                                    try:
+                                        interaction_data = json.loads(interactive_payload)
+                                        tool_name_for_ui = "RequestUserInput"
+                                        self._message_manager.emit_tool_interaction_request(
+                                            tool_call_id=tool_call_id,
+                                            tool_name=tool_name_for_ui,
+                                            input_args=interaction_data,
+                                            task_id=task_id,
+                                            section_heading=task_section_heading
+                                        )
+                                        log.info("[ExecutionEngine] Interactive tool detected in execution loop [%s], emitting SSE event", tool_name)
+                                        register_generation_loop(f"{task_id}_{tool_call_id}", self._active_query_loop, self)
+                                        # Store metadata for emitting tool_finished after user responds
+                                        self._interactive_tool_name = tool_name_for_ui
+                                        self._interactive_task_id = task_id
+                                        self._interactive_section_heading = task_section_heading
+                                        self._awaiting_input = True
+                                        self._awaiting_input_marker = tool_output
+                                        self._interactive_tool_call_id = tool_call_id
+                                        break  # stop executing remaining tools
+                                    except (json.JSONDecodeError, ValueError):
+                                        log.warning("[ExecutionEngine] Interactive marker found but JSON payload is invalid")
                         else:
                             tool_output = f"Error: Tool '{tool_name}' not found."
                             tool_execution_succeeded = False
                     else:
                         tool_output = f"Simulated result for {tool_name}"
-                        tool_execution_succeeded = True
+                        tool_execution_succeeded = False
 
                     tool_execution_duration_ms = (time.monotonic() - tool_execution_start_time) * 1000
 
                     await self.event_bus.emit("ToolFinished", {
                         "tool_name": tool_name,
                         "tool_call_id": tool_call_id,
-                        "is_error": not tool_execution_succeeded,
+                        "is_error": tool_execution_succeeded,
                         "content_length": len(tool_output)
                     })
 
                     # Emit SSE tool_finished event for frontend progress layer
                     truncated_tool_output = (tool_output[:200] + "...") if len(tool_output) > 200 else tool_output
+            
+                    if self._message_manager:
+                        self._message_manager.emit_tool_finished(
+                            tool_name=tool_name, tool_call_id=tool_call_id, is_error=tool_execution_succeeded,
+                            output=truncated_tool_output, duration_ms=round(tool_execution_duration_ms, 1),
+                            section_heading=task_section_heading, task_id=task_id,
+                        )
+
                     agent_tool_data = {
                         "tool_id": tool_call_id,
                         "tool_name": tool_name,
                         "tool_input_argument": tool_arguments,
                         "tool_output": truncated_tool_output,
                     }
-                    try:
-                        sse_tool_queue = get_tool_event_queue()
-                        if sse_tool_queue:
-                            sse_tool_queue.put_nowait({
-                                "type": "tool_finished",
-                                "tool_name": tool_name,
-                                "tool_call_id": tool_call_id,
-                                "is_error": not tool_execution_succeeded,
-                                "output": truncated_tool_output,
-                                "duration_ms": round(tool_execution_duration_ms, 1),
-                                "section": task_section_heading,
-                            })
-
-                        agent_tool_control.setdefault(agent_turn, []).append(agent_tool_data)
-                    except Exception as exception:
-                        log.error(f"[ExecutionEngine] Error in tool finished: {exception}")
-                        pass
+                    agent_tool_control.setdefault(agent_turn, []).append(agent_tool_data)
 
                     tool_msg = {
                         "role": "tool",
@@ -434,7 +524,7 @@ class ExecutionEngine:
             # Log context statistics
             stats = context_manager.get_context_stats(llm_messages)
             log.info(
-                f"[ContextStats] turn={agent_turn} history={store.turn_count()} | "
+                f"[ExecutionEngine] turn={agent_turn} history={store.turn_count()} | "
                 f"llm_msgs={stats['total_messages']} assistant={stats['assistant_messages']} "
                 f"tool={stats['tool_messages']} tool_calls={stats['tool_calls']} "
                 f"est_tokens={stats['estimated_tokens']}"
@@ -443,16 +533,28 @@ class ExecutionEngine:
         log.warning(f"[ExecutionEngine] Task '{task_id}' reached max turns ({max_turns}) without completing.")
         return "Error: Max turns reached without final answer."
     
-    async def _simulate_or_call_llm(self, agent_turn: int, messages: List[Dict[str, Any]], tools: List[Any], custom_developer_message: str) -> tuple[str, List[Dict[str, Any]]]:
+    async def _simulate_or_call_llm(self, 
+        agent_turn: int, 
+        messages: List[Dict[str, Any]], 
+        tools: List[Any], 
+        custom_developer_message: str) -> tuple[str, List[Dict[str, Any]]]:
         """
         Calls the actual LLM API using the legacy QueryLoop's fallback and parsing logic.
         """
         from AgentCore.execution.query_loop import QueryLoop
         from AgentCore.execution.system_prompt import SystemPromptManager
+        from system_config import load_project_settings
+        from project_context import ProjectContext
 
         log.info(f"[ExecutionEngine] [Execute_LLM_Call] Turn: [{agent_turn}]")
-        query_loop = QueryLoop(streaming_enabled=False, fallback_chain=["opus46"])
-        
+
+        # Use the default model saved in the project's settings.json, if any
+        project_settings = load_project_settings(ProjectContext.get())
+        primary_llm_model = project_settings.get("default_model")
+
+        query_loop = QueryLoop(streaming_enabled=False)
+        self._active_query_loop = query_loop
+
         tool_definitions = []
         if tools:
             for tool in tools:
@@ -478,43 +580,65 @@ class ExecutionEngine:
             block_item.content for block_item in system_prompt_block if block_item.content
         )
 
+        # Interactive tool instructions — bias the LLM toward using RequestUserInput
+        system_prompt_message += (
+            "\n\n## TOOL USAGE RULES\n"
+            "**CRITICAL: Call ONLY ONE tool per response.** Never include more than one tool call in a single turn.\n"
+            "After receiving the result of one tool call, make your next tool call in the following turn.\n\n"
+            "## INTERACTION TOOL USAGE\n"
+            "You have access to interactive tools that pause execution and require user input before you can continue.\n\n"
+            "### RequestUserInput\n"
+            "**CRITICAL: Ask ONE question at a time. NEVER bundle multiple items into a single prompt.**\n"
+            "If you need multiple pieces of information from the user, you MUST call RequestUserInput sequentially:\n"
+            "1. Call RequestUserInput asking for the first item only.\n"
+            "2. The user responds. You receive the response as the tool output.\n"
+            "3. Process the response. Then call RequestUserInput AGAIN for the next item.\n"
+            "4. Repeat for each additional piece of information.\n\n"
+            "**WRONG** (bans all fields in one prompt):\n"
+            "'Please provide: Project Name, Project Board ID, Version, Type ID...'\n\n"
+            "**RIGHT** (sequential calls):\n"
+            "Call 1: 'What is the Project Name? (e.g., DP-XMC-5049)'\n"
+            "→ User responds: 'DP-XMC-5049'\n"
+            "Call 2: 'What is the Document Name? (e.g., Software Requirements Specification)'\n"
+            "→ User responds: 'Software Requirements Specification'\n"
+            "...\n\n"
+            "Use this tool whenever you need the user to make a choice, confirm something, or provide specific information.\n"
+            "Available interaction types:\n"
+            "1. **select** — When the user should pick ONE option from a dropdown list (2-8 options).\n"
+            "   Example: 'Which section should we update?' with options like ['Introduction', 'Scope', 'Requirements'].\n"
+            "2. **radio** — When the user should pick ONE option from a visible list (2-8 options).\n"
+            "   Example: 'How would you like to proceed?' with options like ['Continue', 'Skip', 'Revise'].\n"
+            "3. **checkbox** — When the user should pick MULTIPLE options from a list (2-8 options).\n"
+            "   Example: 'Which requirements should be added?' with options like ['Authentication', 'Logging', 'Caching'].\n"
+            "4. **text** — When you need a free-form text response from the user (pass empty list for options).\n"
+            "   Example: 'Describe the intended behavior in your own words.'\n\n"
+            "Interaction guidelines:\n"
+            "- Use `select` when the list is short and a single choice is needed\n"
+            "- Use `radio` when you want all options visible for a single choice\n"
+            "- Use `checkbox` when multiple selections are valid\n"
+            "- Use `text` when the user needs to provide details, explanations, or custom input\n"
+            "- Always provide 2-8 clear, specific options (avoid vague choices)\n"
+            "- The user's response is returned to you as a string you can use in subsequent reasoning\n"
+            "- After receiving a response, process it and call RequestUserInput again for the next item.\n\n"
+        )
+
         system_prompt_message += "\n" + custom_developer_message
 
         try:
-            response = await query_loop._LLM_call_with_fallback(
+            response = await query_loop._LLM_chatcomplete_call(
                 messages=messages,
                 system_prompt=system_prompt_message,
                 tools=tool_definitions if tool_definitions else None,
-                model="opus46",
+                model=primary_llm_model,
                 max_tokens=32768,
                 temperature=0.1
             )
-            
+            # log.info(f"[ExecutionEngine] [Execute_LLM_Call] Turn No: [{agent_turn}] and Response : {response}")
             final_text, result_tool_calls = query_loop._parse_response(response)
+            # log.info(f"[ExecutionEngine] [Execute_LLM_Call] Turn No: [{agent_turn}] and Response : {final_text}, Tool Calls: {result_tool_calls}")
             return final_text, result_tool_calls
-            
+
         except Exception as exception:
             log.error(f"[ExecutionEngine] Real LLM Call failed: {exception}", exc_info=True)
             return f"Error: LLM Call failed: {str(exception)}", []
 
-    def _clean_final_output(self, raw_llm_output: str) -> str:
-        """Strip LLM preamble, code fences, and commentary from final document output."""
-        if not raw_llm_output:
-            return raw_llm_output
-
-        cleaned_text = raw_llm_output
-
-        # Remove markdown code fence wrapper (```markdown ... ``` or ``` ... ```)
-        cleaned_text = re.sub(r"^```markdown\s*\n", "", cleaned_text, count=1)
-        cleaned_text = re.sub(r"^```\s*\n", "", cleaned_text, count=1)
-        cleaned_text = re.sub(r"\n```\s*$", "", cleaned_text, count=1)
-
-        # Remove preamble: strip all lines before the first level-1 heading (#)
-        first_heading_match = re.search(r"^#\s+\S", cleaned_text, re.MULTILINE)
-        if first_heading_match:
-            cleaned_text = cleaned_text[first_heading_match.start():]
-
-        # Remove leading/trailing whitespace
-        cleaned_text = cleaned_text.strip()
-
-        return cleaned_text

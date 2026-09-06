@@ -11,11 +11,11 @@ from enum import Enum
 
 from ..context.execution_context import ExecutionContext
 from ..domain.reasoning_state import ReasoningState
-from ..domain.policy import RuntimePolicy
+from ..domain.runtime_policy import RuntimePolicy
 from ..reasoning.turn_manager import TurnManager
-from ..cognitive.reflection import ReflectionEngine, ReflectionDecision
-from ..cognitive.verifier import Verifier
-from ..cognitive.repair import RepairPlanner
+from ..cognitive.reflection_engine import ReflectionEngine, ReflectionDecision
+from ..cognitive.verifier_engine import VerifierEngine
+from ..cognitive.repair_engine import RepairEngine
 
 log = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class LoopController:
         policy: RuntimePolicy, 
         turn_manager: TurnManager, 
         reflection: ReflectionEngine,
-        verifier: Verifier,
-        repair: RepairPlanner
+        verifier: VerifierEngine,
+        repair: RepairEngine
     ):
         self.policy = policy
         self.turn = turn_manager

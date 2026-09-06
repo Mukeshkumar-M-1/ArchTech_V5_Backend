@@ -16,7 +16,7 @@ class MessageBuilder:
         log.info("[MessageBuilder] Initialized with system instruction.")
 
     def build_messages(self, user_prompt: str) -> List[Dict[str, Any]]:
-        log.debug("[MessageBuilder] Building standardized message array.")
+        log.info("[MessageBuilder] Building standardized message array.")
         return [
             {"role": "system", "content": self.system_instruction},
             {"role": "user", "content": user_prompt}

@@ -15,7 +15,7 @@ class DiffEngine:
         log.info("[DiffEngine] Initialized.")
 
     def generate_diff(self, original: str, modified: str, filename: str) -> str:
-        log.debug(f"[DiffEngine] Computing diff for {filename}")
+        log.info(f"[DiffEngine] Computing diff for {filename}")
         
         diff = difflib.unified_diff(
             original.splitlines(keepends=True),

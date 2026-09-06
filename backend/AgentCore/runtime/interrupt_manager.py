@@ -7,7 +7,7 @@ Interrupts can pause the workflow, inject messages, or trigger checkpoints.
 
 import logging
 from enum import Enum, auto
-from ..infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from .state_machine import RuntimeStateMachine, RuntimeState
 
 log = logging.getLogger(__name__)

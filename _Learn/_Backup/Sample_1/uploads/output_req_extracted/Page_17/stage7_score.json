@@ -1,0 +1,57 @@
+{
+  "page": 17,
+  "requirements": [
+    {
+      "id": "REQ-0008",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 17,
+      "keywords": [
+        "kintex ultrascale+",
+        "fpga",
+        "stana3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818",
+        "interface"
+      ],
+      "extracted_at": "2026-06-15T09:10:00.383652",
+      "confidence": 0.53,
+      "explanation": "**Meaning :** The FPGA hardware must be capable of handling multiple specific video and data transmission standards simultaneously.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 86,
+      "rule_score": 1.0,
+      "related_ids": []
+    },
+    {
+      "id": "REQ-0009",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "The Kintex Ultrascale XCKU035 series FPGA shall be used in the module with sufficient IO count as per design requirement.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 17,
+      "keywords": [
+        "kintex ultrascale",
+        "xcku035",
+        "fpga",
+        "io count"
+      ],
+      "extracted_at": "2026-06-15T09:10:00.633171",
+      "confidence": 0.43,
+      "explanation": "**Meaning :** The module must use a specific model of FPGA from the Kintex Ultrascale XCKU035 series, ensuring it has enough input/output pins to meet the design's needs.\n\n**Components :**\n- Kintex Ultrascale XCKU035 series FPGA\n\n**Parameters :**\n- Sufficient IO count as per design requirement",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 121,
+      "rule_score": 1.0,
+      "related_ids": []
+    }
+  ]
+}

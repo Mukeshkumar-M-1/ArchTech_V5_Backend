@@ -15,6 +15,7 @@ from typing import AsyncGenerator, Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from AgentCore.execution.message_manager import SSEChatMessageManager
 
 log = logging.getLogger(__name__)
 
@@ -31,62 +32,30 @@ class ChatSendRequest:
         self.message = message
         self.project_id = project_id
 
-
 # ─── Streaming endpoint ──────────────────────────────────────────────
-
 async def _chat_stream(
     session_id: str,
     user_message: str,
     project_id: str,
 ) -> AsyncGenerator[str, None]:
     """Core streaming logic — runs the AgentCore QueryLoop and yields SSE events."""
-    from AgentCore import QueryLoop, SessionLifecycle
-    from AgentCore.execution.registry import registry
+    from AgentCore import QueryLoop, ChatSessionManager
+    from AgentCore.execution.tool_registry import registry
 
     # Setup session
-    record = SessionLifecycle._load(session_id, project_id)
+    from system_config import load_project_settings
+    chat_model = (load_project_settings(project_id) or {}).get("default_model")
+
+    record = ChatSessionManager._load(session_id, project_id)
+
+    # setup chatQueue
+    chat_event_queue = asyncio.Queue()
+
     if not record:
-        record = SessionLifecycle.create(project_path="", entrypoint="chat", kind="interactive", project_id=project_id)
+        record = ChatSessionManager.create(project_path="", entrypoint="chat", kind="interactive", project_id=project_id)
         session_id = record.session_id
 
     yield f"data: {json.dumps({'type': 'session_created', 'session_id': session_id}, default=str)}\n\n"
-
-    event_queue = asyncio.Queue()
-
-    class SSEMessageManager:
-        def emit_progress_event(self, content, tokens_in, tokens_out):
-            if content:
-                log.info("[Chat] emit_progress_event: %d chars", len(content))
-                event_queue.put_nowait({"type": "text_delta", "content": content})
-
-        def emit_tool_use_start(self, tool_call_id, name, input_args):
-            log.info("[Chat] emit_tool_use_start: %s %s", tool_call_id, name)
-            event_queue.put_nowait({
-                "type": "tool_use_start",
-                "tool_call_id": tool_call_id,
-                "name": name,
-                "input": input_args,
-            })
-
-        def emit_tool_interaction_request(self, tool_call_id, ui_type, options, prompt, title=""):
-            event_queue.put_nowait({
-                "type": "tool_interaction_request",
-                "tool_call_id": tool_call_id,
-                "name": "RequestUserInput",
-                "input": {"prompt": prompt, "ui_type": ui_type, "options": options, "title": title},
-                "status": "awaiting_input",
-                "ui_type": ui_type,
-                "options": options,
-                "prompt": prompt,
-            })
-
-        def emit_tool_use_complete(self, tool_call_id, output):
-            log.info("[Chat] emit_tool_use_complete: %s", tool_call_id)
-            event_queue.put_nowait({
-                "type": "tool_use_complete",
-                "tool_call_id": tool_call_id,
-                "output": output,
-            })
 
     # Store pending interactions for /chat/interact endpoint
     global _pending_interactions
@@ -100,31 +69,82 @@ async def _chat_stream(
     async def run_loop(resume=False):
         try:
             if resume:
-                # Clear history so only user response (appended by set_user_response) is visible.
-                # This prevents re-execution of RequestUserInput and resets the conversation
-                # to continue from the user's selection.
-                loop._message_history.clear()
+                # Remove all stale __AWAITING_USER_INPUT__ markers AND the assistant
+                # message that contained the tool calls. Keeping the assistant message
+                # with unresolved tool_calls causes the LLM to replay those tools.
+                # The user response tool result from set_user_response provides
+                # sufficient context for the LLM to continue.
+                loop._message_history = [
+                    m for m in loop._message_history
+                    if not (isinstance(m.get("content"), str) and m.get("content", "").startswith("__AWAITING_USER_INPUT__"))
+                    and not m.get("tool_calls")
+                ]
                 loop._executed_tools.clear()
-                event_queue.put_nowait({"type": "turn_start", "turn": 1})
-            # Restrict available tools in chat mode to a specific set of 5 tools
-            allowed_tools = {"FileRead", "Bash", "Glob", "Search", "ProposeContentEdit"}
-            available_tools = [t for t in registry._tools.values() if t.name in allowed_tools]
+                chat_event_queue.put_nowait({"type": "turn_start", "turn": loop._turn})
+            # Restrict available tools in chat mode to a specific set of tools
+            allowed_tools = {"FileRead", "Bash", "Glob", "Search", "ProposeContentEdit", "RequestUserInput"}
+            available_tools = [tool_item for tool_item in registry._tools.values() if tool_item.name in allowed_tools]
             run_messages = [{"role": "user", "content": user_message}]
             
             # Chat-specific system prompt to heavily bias the LLM toward using the ProposeContentEdit tool
             chat_system_prompt = (
                 "You are ArchTech AI, an advanced engineering assistant operating within the ArchTech IDE Chat Panel.\n"
                 "Your primary role is to help the user write, review, and edit technical documentation (such as SRS).\n"
-                "CRITICAL INSTRUCTION: If the user provides text blocks from their editor (labeled as EDITOR CONTEXT) "
+                "CRITICAL INSTRUCTION: \n"
+                "If the user provides text blocks from their editor (labeled as EDITOR CONTEXT) "
                 "and asks you to modify, rewrite, rephrase, or update them, you MUST use the `ProposeContentEdit` tool "
                 "to submit your proposed changes. Do NOT output the edited text directly in your conversational response "
-                "because the user relies on the tool's UI to review the diff."
+                "because the user relies on the tool's UI to review the diff.\n\n"
+                "TOOL PRIORITY RULE (READ THIS FIRST):\n"
+                "When EDITOR CONTEXT is provided and the user asks to modify/rewrite/rephrase/update:\n"
+                "→ ALWAYS use `ProposeContentEdit`. Do NOT ask the user for options or choices.\n"
+                "→ `RequestUserInput` is NEVER appropriate for rephrase/rewrite/modify requests on editor content.\n\n"
+                "\n"
+                "INTERACTION INSTRUCTION: Use the `RequestUserInput` tool ONLY when the user asks for help filling in missing document fields or makes a selection between options.\n"
+                "\n"
+                "**When to use RequestUserInput:**\n"
+                "- The user asks to fill {{placeholder}} values and no context data exists\n"
+                "- The user explicitly asks you to choose between options (e.g., 'Which section should I update?')\n"
+                "\n"
+                "**When NOT to use RequestUserInput:**\n"
+                "- Any query involving editor context — use ProposeContentEdit instead\n"
+                "- General questions (explain, summarize, check grammar, give opinion)\n"
+                "- Conversational or informational requests\n"
+                "- You can directly answer from the provided information\n\n"
+                "\n"
+                "Decision flow (follow in order):\n"
+                "1. Does the user provide editor context AND ask to modify/rewrite/rephrase? → Use `ProposeContentEdit`\n"
+                "2. Does the user ask to fill placeholder values or choose between options? → Use `RequestUserInput`\n"
+                "3. Does the user ask to read, open, or show the content of a specific file at a known path? → Use `FileRead` (pass the path) and report the content\n"
+                "4. Does the user ask to find files by name or pattern (e.g. 'all .md files', 'where is X.py')? → Use `Glob`\n"
+                "5. Does the user ask to search for text/content across files (e.g. 'find usages of Y')? → Use `Search`\n"
+                "6. Does the user ask to run a command or perform a shell operation? → Use `Bash`\n"
+                "7. Any other query → Answer directly without tools\n"
+                "Note: If you do not know the exact path, use `Glob` or `Search` to locate the file first, then `FileRead` to read it.\n\n"
+                "Available interaction types:\n"
+                "1. **select** — When the user should pick ONE option from a dropdown list (2-8 options).\n"
+                "   Example: 'Which section should we update?' with options like ['Introduction', 'Scope', 'Requirements'].\n"
+                "2. **radio** — When the user should pick ONE option from a visible list (2-8 options).\n"
+                "   Example: 'How would you like to proceed?' with options like ['Continue', 'Skip', 'Revise'].\n"
+                "3. **checkbox** — When the user should pick MULTIPLE options from a list (2-8 options).\n"
+                "   Example: 'Which requirements should be added?' with options like ['Authentication', 'Logging', 'Caching'].\n"
+                "4. **text** — When you need a free-form text response from the user (pass empty list for options).\n"
+                "   Example: 'Describe the intended behavior in your own words.'\n\n"
+                "Interaction guidelines:\n"
+                "- Use `select` when the list is short and a single choice is needed\n"
+                "- Use `radio` when you want all options visible for a single choice\n"
+                "- Use `checkbox` when multiple selections are valid\n"
+                "- Use `text` when the user needs to provide details, explanations, or custom input\n"
+                "- Always provide 2-8 clear, specific options (avoid vague choices)\n"
+                "- The user's response is returned to you as a string you can use in subsequent reasoning\n"
+                "- NEVER bundle multiple questions into a single prompt — ask ONE at a time"
             )
             
             final_result = await loop.run(
-                messages=run_messages,
+                initial_messages=run_messages,
                 tools=available_tools,
-                system_prompt=chat_system_prompt
+                system_prompt=chat_system_prompt,
+                model=chat_model
             )
             if isinstance(final_result, dict) and final_result.get("_status") == "awaiting_input":
                 # Parse the awaiting input details from the marker in message history
@@ -132,16 +152,16 @@ async def _chat_stream(
                 _pending_interactions[session_id]["loop"] = loop
                 _pending_interactions[session_id]["tool_call_id"] = tc_id
                 _pending_interactions[session_id]["resumed"] = False
-                event_queue.put_nowait({"type": "interaction_paused", "session_id": session_id, "tool_call_id": tc_id})
+                chat_event_queue.put_nowait({"type": "interaction_paused", "session_id": session_id, "tool_call_id": tc_id})
             else:
-                event_queue.put_nowait({"type": "turn_complete", "turn": 1})
-                event_queue.put_nowait({"type": "done", "content": final_result})
+                chat_event_queue.put_nowait({"type": "turn_complete", "turn": 1})
+                chat_event_queue.put_nowait({"type": "done", "content": final_result})
                 # Clear stale interaction state from any previous turn
                 _pending_interactions[session_id]["tool_call_id"] = None
                 _pending_interactions[session_id]["resumed"] = False
-        except Exception as e:
-            log.error(f"[Chat] Loop execution error: {e}", exc_info=True)
-            event_queue.put_nowait({"type": "error", "message": str(e)})
+        except Exception as exception:
+            log.error(f"[Chat] Loop execution error: {exception}", exc_info=True)
+            chat_event_queue.put_nowait({"type": "error", "message": str(exception)})
             # Clear stale interaction state on error
             _pending_interactions[session_id]["tool_call_id"] = None
             _pending_interactions[session_id]["resumed"] = False
@@ -151,7 +171,7 @@ async def _chat_stream(
         session_id=session_id,
         project_id=project_id,
         streaming_enabled=False,
-        message_manager=SSEMessageManager(),
+        message_manager=SSEChatMessageManager(chat_event_queue=chat_event_queue),
         max_turns=5,
     )
 
@@ -162,13 +182,13 @@ async def _chat_stream(
     try:
         while True:
             try:
-                event = await asyncio.wait_for(event_queue.get(), timeout=0.5)
+                event = await asyncio.wait_for(chat_event_queue.get(), timeout=0.5)
                 yield f"data: {json.dumps(event, default=str)}\n\n"
 
                 # Drain any events that arrived while we processed
-                while not event_queue.empty():
+                while not chat_event_queue.empty():
                     try:
-                        evt = event_queue.get_nowait()
+                        evt = chat_event_queue.get_nowait()
                         yield f"data: {json.dumps(evt, default=str)}\n\n"
                     except asyncio.QueueEmpty:
                         break
@@ -198,7 +218,7 @@ async def _chat_stream(
             await run_loop(resume=True)
             try:
                 while True:
-                    event = await asyncio.wait_for(event_queue.get(), timeout=1.0)
+                    event = await asyncio.wait_for(chat_event_queue.get(), timeout=1.0)
                     yield f"data: {json.dumps(event, default=str)}\n\n"
                     if event["type"] in ("done", "error", "interaction_paused"):
                         break
@@ -219,6 +239,7 @@ async def chat_send(request: Request):
     body = await request.json()
     session_id = body.get("session_id", "")
     project_id = body.get("project_id", "")
+    user_message = ""
     """
     context_block = {
         "text": "Document InformationDetailsDocument TitleTBD for DP-XMC-5049Document ReferenceTBD-TBD-TBD-TBD-SRS-TBDVersion NumberTBDVersion Date2024-05-22Prepared ByName: TBDDocument Review ByName: TBDTechnical Review ByName: TBDProcess Review ByName: TBDApproved ByName: Design Review Board",
@@ -229,20 +250,20 @@ async def chat_send(request: Request):
     }
     """
     context_blocks = body.get("context_blocks")
-    message = body.get("message", "").strip()
+    context_message = body.get("message", "").strip()
 
-    if not message:
+    if not context_message:
         raise HTTPException(status_code=400, detail="message is required")
 
     if context_blocks:
         blocks_text = "\n\n".join([
-            f"Section: {b.get('section', 'Unknown')} (v{b.get('version', '1')}) | Block Number: {b.get('blockNumber', 'Unknown')}\n"
-            f"Text:\n{b.get('text', '')}"
-            for b in context_blocks
+            f"Section: {block_item.get('section', '')} (v{block_item.get('version', '')}) | Block Number: {block_item.get('blockNumber', '')}\n"
+            f"Text:\n{block_item.get('markdown', '')}"
+            for block_item in context_blocks
         ])
         
         # Explicit instruction to force the LLM to use the tool
-        instruction = (
+        user_instruction = (
             "The user has selected the following text blocks from their editor. "
             "If the user asks you to modify, rephrase, rewrite, or update this content, "
             "you MUST use the `ProposeContentEdit` tool to propose the changes. "
@@ -250,16 +271,18 @@ async def chat_send(request: Request):
             "Do NOT just output the raw edited text in your chat response."
         )
         
-        message = (
+        user_message = (
             f"--- EDITOR CONTEXT ---\n"
-            f"{instruction}\n\n"
+            f"{user_instruction}\n\n"
             f"{blocks_text}\n"
             f"----------------------\n\n"
-            f"User Query: {message}"
+            f"User Query: {context_message}"
         )
+    else:
+        user_message = context_message
 
     return StreamingResponse(
-        _chat_stream(session_id, message, project_id),
+        _chat_stream(session_id=session_id, user_message=user_message, project_id=project_id),
         media_type="text/event-stream",
     )
 
@@ -267,7 +290,7 @@ async def chat_send(request: Request):
 @router.get("/chat/messages/{session_id}")
 async def get_chat_messages(session_id: str, project_id: str = "default"):
     """Fetch conversation history for a session."""
-    from AgentCore import SessionLifecycle, SessionMemoryCache
+    from AgentCore import SessionMemoryCache
     
     # Try to extract the project ID from query params or assume default
     cache = SessionMemoryCache(project_id)
@@ -292,12 +315,12 @@ async def get_chat_messages(session_id: str, project_id: str = "default"):
 
 
 @router.get("/chat/sessions")
-async def list_chat_sessions(project_id: str = "default"):
+async def list_chat_sessions(project_id: str = None):
     """List all active chat sessions."""
-    from AgentCore import SessionLifecycle
-    
+    from AgentCore import ChatSessionManager
+
     # Discover all sessions for the project
-    active = SessionLifecycle.discover_active(project_id)
+    active = ChatSessionManager.discover_active(project_id)
     return [record.to_dict() for record in active]
 
 

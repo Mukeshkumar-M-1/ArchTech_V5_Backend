@@ -1,0 +1,56 @@
+{
+  "page": 29,
+  "requirements": [
+    {
+      "id": "HAR-0001",
+      "type": null,
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "priority": "High",
+      "text": "This section shall include required test equipment, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, emulators, software environment, and programming file.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 29,
+      "keywords": [
+        "test equipment",
+        "test cables",
+        "test jig",
+        "test rig",
+        "jtag",
+        "emulators",
+        "software environment",
+        "programming file"
+      ],
+      "extracted_at": "2026-06-15T09:10:04.605643",
+      "confidence": 0.485,
+      "explanation": "**Meaning :** This section must list all the physical tools, hardware accessories, and software environments needed to perform testing.\n\n**Components :**\n- Test equipment\n- Test cables (bought out)\n- Test cables (fabricated)\n- Test jig\n- Test rig\n- External modules\n- JTAG\n- Emulators\n- Software environment\n- Programming file\n\n**Purpose :** To ensure all necessary resources for testing are identified and available.",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 202,
+      "rule_score": 0.333,
+      "related_ids": []
+    },
+    {
+      "id": "FUN-0001",
+      "type": null,
+      "category": "Functional",
+      "sub_category": "General",
+      "priority": "High",
+      "text": "This section shall be provided with test setup, interconnection details, and equipment connectivity.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 29,
+      "keywords": [
+        "test setup",
+        "interconnection details",
+        "equipment connectivity"
+      ],
+      "extracted_at": "2026-06-15T09:10:05.105779",
+      "confidence": 0.3,
+      "explanation": "**Meaning :** This section must describe how the test setup is arranged, including how components are connected and how equipment links together.\n\n**Components :**\n- Test setup\n- Interconnection details\n- Equipment connectivity\n\n**Purpose :** To provide clear instructions on the physical and logical arrangement of the testing infrastructure.",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 100,
+      "rule_score": 0.0,
+      "related_ids": []
+    }
+  ]
+}

@@ -2,19 +2,19 @@ import logging
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from AgentCore.repository.snapshot import SnapshotManager
-from AgentCore.repository.index import RepositoryIndex
-from AgentCore.repository.query_engine import RepositoryQueryEngine
-from AgentCore.memory.manager import MemoryManager
-from AgentCore.context.selector import ContextSelector
-from AgentCore.context.builder import ContextBuilder
-from AgentCore.prompt.template import PromptTemplate
-from AgentCore.prompt.registry import PromptRegistry
-from AgentCore.prompt.manager import PromptManager
-from AgentCore.knowledge.observation import Observation
-from AgentCore.knowledge.graph import KnowledgeGraph, KnowledgeUpdater
+from AgentCore.repository.repo_snapshot import SnapshotManager
+from AgentCore.repository.repo_index import RepositoryIndex
+from AgentCore.repository.repo_query_engine import RepositoryQueryEngine
+from AgentCore.memory.store_manager import StoreManager
+from AgentCore.context.context_selector import ContextSelector
+from AgentCore.context.context_builder import ContextBuilder
+from AgentCore.prompt.prompt_template import PromptTemplate
+from AgentCore.prompt.prompt_registry import PromptRegistry
+from AgentCore.prompt.prompt_manager import PromptManager
+from AgentCore.knowledge.observation_manager import ObservationManager
+from AgentCore.knowledge.knowledge_manager import KnowledgeGraph, KnowledgeUpdater
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -27,13 +27,13 @@ logging.basicConfig(
 
 def main():
     print("\n=== Testing Phase 2.1: Repository Intelligence ===")
-    root_dir = Path(__file__).parent.parent
+    root_dir = "/home/devusr/Mukesh/ArchTech_V5_1/Backend/.ArchTech/DP-XMC-5049/_output"
     snapshot = SnapshotManager(str(root_dir)).create_snapshot()
     repo_index = RepositoryIndex(snapshot)
     repo_engine = RepositoryQueryEngine(repo_index)
     
     print("\n=== Testing Phase 2.2: Memory Layer ===")
-    memory = MemoryManager()
+    memory = StoreManager()
     memory.attach_mission("mission_99")
     memory.working_store.add_question("How does the Execution Engine work?")
     memory.working_store.record_evidence("Code Search", "Found ExecutionEngine class in execution_engine.py")
@@ -71,7 +71,7 @@ def main():
     graph = KnowledgeGraph()
     updater = KnowledgeUpdater(graph)
     
-    obs = Observation.create("AST_Parser", "Found relationship between AgentKernel and ExecutionEngine")
+    obs = ObservationManager.create("AST_Parser", "Found relationship between AgentKernel and ExecutionEngine")
     updater.process_observation(obs, [
         {"source": "AgentKernel", "target": "ExecutionEngine", "relationship": "instantiates"}
     ])

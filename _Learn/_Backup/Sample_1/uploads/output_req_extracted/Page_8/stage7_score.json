@@ -1,0 +1,61 @@
+{
+  "page": 8,
+  "requirements": [
+    {
+      "id": "REQ-0014",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 8,
+      "keywords": [
+        "kintex ultrascale+",
+        "fpga",
+        "stana3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818",
+        "interface"
+      ],
+      "extracted_at": "2026-06-15T09:10:22.395514",
+      "confidence": 0.53,
+      "explanation": "**Meaning :** The Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 86,
+      "rule_score": 1.0,
+      "related_ids": []
+    },
+    {
+      "id": "REQ-0015",
+      "type": null,
+      "category": "Hardware/Interface",
+      "sub_category": "PCIe",
+      "priority": "High",
+      "text": "DP-XMC-5049 shall be a XMC PCIe based video converter module which supports STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 8,
+      "keywords": [
+        "xmc",
+        "pcie",
+        "video converter",
+        "stanag3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818"
+      ],
+      "extracted_at": "2026-06-15T09:10:22.863818",
+      "confidence": 0.51,
+      "explanation": "**Meaning :** The DP-XMC-5049 is a hardware module that converts video signals. It uses the XMC form factor and connects via the PCIe bus. It must support the same set of video and data interfaces as the FPGA.\n\n**Components :**\n- DP-XMC-5049 module\n- XMC form factor\n- PCIe bus\n- Video converter functionality\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 125,
+      "rule_score": 0.333,
+      "related_ids": []
+    }
+  ]
+}

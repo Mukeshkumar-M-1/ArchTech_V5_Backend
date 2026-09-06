@@ -49,15 +49,50 @@ DEDUP_ENABLE_LLM = True
 # ─── Operational Settings ────────────────────────────────────────────────────
 API_HOST = "127.0.0.1"
 API_PORT = 8015
-API_URL = "http://127.0.0.1:5757/v1"
-API_KEY = "sk-dpllm-oL5QSppnfr1QRLSmV6moGey"
+API_URL = "https://llmgw.datapatterns.co.in/v1"
+API_KEY = "sk-dpllm-yeKn9FAGTBsNvMGG373heTb"
 API_TIME_OUT  = 120.0
 
 def get_project_base_dir() -> Path:
     "Return the project-specific base directory."
     project_base_dir = BASE_DIR / f"{_ROOT_FOLDER_NAME}"
-    project_base_dir.mkdir(parents=TimeoutError, exist_ok=True)
+    project_base_dir.mkdir(parents=True, exist_ok=True)
     return project_base_dir
+
+def get_database_dir() -> Path:
+    "Return the central database directory."
+    database_dir = get_project_base_dir() / "database"
+    database_dir.mkdir(parents=True, exist_ok=True)
+    return database_dir
+
+def get_project_workspace_dir(project_id: str) -> Path:
+    "Return the project-specific workspace directory path."
+    return BASE_DIR / f"{_ROOT_FOLDER_NAME}" / f"{project_id}"
+
+def get_project_settings_path(project_id: str) -> Path:
+    """Return the path to the project's LLM settings file (.ArchTech/{project_id}/settings.json)."""
+    return BASE_DIR / f"{_ROOT_FOLDER_NAME}" / f"{project_id}" / "settings.json"
+
+def load_project_settings(project_id: str) -> dict:
+    """Load the project's LLM settings, if saved.
+
+    Returns a dict containing only the present, non-empty keys among
+    ``api_url``, ``api_key`` and ``timeout``. Returns {} when the file is
+    missing or unreadable — callers fall back to the hardcoded defaults.
+    """
+    if not project_id:
+        return {}
+    project_settings_file_path = get_project_settings_path(project_id)
+    if not project_settings_file_path.exists():
+        return {}
+    try:
+        settings_data = json.loads(project_settings_file_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(settings_data, dict):
+        return {}
+    supported_settings_keys = ("api_url", "api_key", "timeout", "default_model", "models")
+    return {settings_key: settings_data[settings_key] for settings_key in supported_settings_keys if settings_data.get(settings_key)}
 
 def get_req_dir(project_id: str) -> Path:
     """Returns the project-specific requirements directory."""
@@ -398,6 +433,46 @@ def record_section_version(project_id: str, section_filename: str, version: int)
         data["sections"][section_filename]["latest_version"] = version
 
     version_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def copy_sections_to_new_version(
+    project_id: str, from_version: int, to_version: int
+) -> None:
+    """Copy all section content from ``from_version`` to ``to_version`` in per-section
+    JSON files so that a single-section regeneration produces a full new version."""
+    import json
+
+    output_dir = get_project_generated_document_output_dir(project_id)
+    if not output_dir.exists():
+        return
+
+    source_version_key = str(from_version)
+    target_version_key = str(to_version)
+
+    for section_json_path in output_dir.iterdir():
+        if (
+            section_json_path.suffix.lower() != ".json"
+            or section_json_path.name == _VERSION_JSON_FILENAME
+        ):
+            continue
+
+        try:
+            section_data = json.loads(
+                section_json_path.read_text(encoding="utf-8")
+            )
+        except Exception:
+            continue
+
+        document_data = section_data.get("document_data", {})
+        if source_version_key not in document_data:
+            continue
+
+        if target_version_key not in document_data:
+            document_data[target_version_key] = document_data[source_version_key]
+            section_data["document_data"] = document_data
+            section_json_path.write_text(
+                json.dumps(section_data, indent=2), encoding="utf-8"
+            )
 
 
 def get_chat_session_dir(project_id: str) -> Path:

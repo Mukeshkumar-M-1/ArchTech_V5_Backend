@@ -8,7 +8,7 @@ Prevents implicit state changes and ensures predictable transitions.
 import logging
 from enum import Enum, auto
 from typing import Dict, Set
-from ..infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 
 log = logging.getLogger(__name__)
 

@@ -1,0 +1,10 @@
+{
+  "page": 28,
+  "input_segments": [
+    "INTEGRATION \u2013 If the requirement is complied by integration testing, it comes in INTEGRATION (Unit level, System Level, External Interface level which requires external modules / system for compliance)",
+    "DEMO \u2013 If the requirement is complied with one time validation, it comes under DEMO. (The requirements which have to be qualified but not carried for the production testing)",
+    "INSPECTION \u2013 If the requirement is complied with the physical inspection, it comes under INSPECION (Eg. Size of the module)",
+    "ANALYSIS \u2013 If the requirement is complied with the any analysis, design compliance it comes under ANALYSIS"
+  ],
+  "passed": []
+}

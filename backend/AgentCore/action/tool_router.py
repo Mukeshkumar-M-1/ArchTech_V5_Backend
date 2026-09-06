@@ -8,10 +8,10 @@ Execution is wrapped in the SandboxManager for safety.
 import logging
 from typing import Dict, Any
 
-from ..domain.policy import RuntimePolicy
+from ..domain.runtime_policy import RuntimePolicy
 from ..domain.action_result import ActionResult, ActionResultStatus
-from ..platform.execution.registry import ToolRegistry
-from ..platform.execution.sandbox import SandboxManager
+from ..execution.tool_registry import ToolRegistry
+from ..platform.execution.sandbox_manager import SandboxManager
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class ToolRouter:
                 error_message=str(exception)
             )
             
-        log.debug(f"[ToolRouter] Routing action '{action_type}' to Sandbox.")
+        log.info(f"[ToolRouter] Routing action '{action_type}' to Sandbox.")
         
         # 3. Sandbox Execution
         return self.sandbox.execute_safely(action_type, handler, parameters)

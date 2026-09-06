@@ -1,0 +1,16 @@
+{
+  "page": 14,
+  "segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "VIDEO INTERFACE",
+    "DP-XMC-5049-HRS-0011 ARINC 818: Three ARINC 818 Transmitter(Tx) for high speed digital video output on XMC Secondary Connector. One output channel is interfaced to XMC connector. Two output channels are optional with DVI channel 1. 4.25Gb/s data rate (max) support for each Tx channel. Three ARINC 818 Receiver(Rx) for high speed digital video input. All three channels are optional with DVI channel 1. 4.25Gb/s data rate (max) support for each Rx channel.",
+    "DP-XMC-5049-HRS-0012 DP/DP++ Input: One DP/DP++ Input from XMC Secondary Connector.",
+    "DP-XMC-5049-HRS-0010 DVI Video Output: Two single link DVI video output on XMC Secondary Connector. One channel is optional with two ARINC818 outputs & three ARINC818 inputs. One channel is optional with RED & BLUE signals of RGBHV channel 1 & 2. One single link DVI Video output on DVI Connector at Front Panel (optional).",
+    "DP-XMC-5049-HRS-0013 STANAG 3350 / VGA: Three STANAG 3350 / VGA / RGBHV / RGB Video output on XMC Secondary Connector. RED & BLUE of two channels are optional with DVI channel 2.",
+    "COMMUNICATION",
+    "DP-XMC-5049-HRS-0014 PCIe: 1x x8 PCIe Gen 3 link between XMC Primary Connector and MGT bank of FPGA.",
+    "INPUT / OUTPUT SPECIFICATIONS"
+  ],
+  "raw_text_length": 1329
+}

@@ -1,0 +1,61 @@
+{
+  "page": 11,
+  "requirements": [
+    {
+      "id": "REQ-0001",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 11,
+      "keywords": [
+        "kintex ultrascale+",
+        "fpga",
+        "stanag3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818",
+        "interface"
+      ],
+      "extracted_at": "2026-06-15T09:09:58.429972",
+      "confidence": 0.53,
+      "explanation": "**Meaning :** The Kintex Ultrascale+ FPGA must be capable of handling five specific types of data interfaces: STANAG3350, RGB, VGA, DVI, and ARINC818.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 93,
+      "rule_score": 1.0,
+      "related_ids": []
+    },
+    {
+      "id": "REQ-0004",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "Normal",
+      "text": "2.1 Features VITA 42 Compliant XMC Module; Kintex Ultrascale series FPGA with two 4GB DDR4 SDRAM controller; x8 PCIe Gen 3 links on XMC Primary Connector; Dual mode displayport video input; 2x Single link DVI outputs on XMC Secondary Connector (FG configurable); 1x Single link DVI output on DVI Connector at Front panel (FG configurable); 3x ARINC 818 Transmitter(Tx & Rx) on XMC Secondary Connector (FG configurable); RGBHV / VGA / STANAG 3350 Output using Encoder on XMC Secondary Connector (FG configurable)",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 11,
+      "keywords": [
+        "vita 42",
+        "xmc module",
+        "kintex ultrascale",
+        "fpga",
+        "ddr4 sdram",
+        "pcie gen 3",
+        "displayport",
+        "dvi"
+      ],
+      "extracted_at": "2026-06-15T09:09:59.178163",
+      "confidence": 0.505,
+      "explanation": "**Meaning :** This requirement describes a VITA 42 compliant XMC module built around a Kintex Ultrascale series FPGA. It details the module's memory, connectivity, and configurable video/data output capabilities.\n\n**Components :**\n- VITA 42 Compliant XMC Module\n- Kintex Ultrascale series FPGA\n- 4GB DDR4 SDRAM controller\n- x8 PCIe Gen 3 links\n- XMC Primary Connector\n- XMC Secondary Connector\n- Dual mode displayport video input\n- Single link DVI outputs\n- DVI Connector at Front panel\n- ARINC 818 Transmitter (Tx & Rx)\n- RGBHV / VGA / STANAG 3350 Output Encoder\n\n**Parameters :**\n- Two 4GB DDR4 SDRAM controllers\n- x8 PCIe Gen 3 links\n- 2x Single link DVI outputs (XMC Secondary Connector, FG configurable)\n- 1x Single link DVI output (Front panel, FG configurable)\n- 3x ARINC 818 Transmitters (XMC Secondary Connector, FG configurable)\n- RGBHV / VGA / STANAG 3350 Output (XMC Secondary Connector, FG configurable)",
+      "has_unit": true,
+      "has_directive": false,
+      "char_count": 511,
+      "rule_score": 1.0,
+      "related_ids": []
+    }
+  ]
+}

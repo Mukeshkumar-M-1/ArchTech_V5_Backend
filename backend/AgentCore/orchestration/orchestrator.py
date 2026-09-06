@@ -13,7 +13,7 @@ import logging
 import re
 import unicodedata
 from pathlib import Path
-from typing import AsyncGenerator, Dict, Any
+from typing import Any
 from system_config import (
     get_project_generated_document_output_dir,
     start_new_version,
@@ -23,11 +23,12 @@ from system_config import (
 from AgentCore.orchestration.contracts import AgentDescriptor
 from AgentCore.orchestration.runtime_adapter import RuntimeAdapter
 from AgentCore.orchestration.worker_management import AgentCatalog, WorkerDirectory, HeartbeatMonitor
-from AgentCore.orchestration.queue_and_dispatch import TaskQueue, LeaseManager, AssignmentTracker, Dispatcher
-from AgentCore.orchestration.scheduling import CapabilityResolver, LeastBusyPolicy, Scheduler
+from AgentCore.orchestration.lease_manager import TaskQueue, LeaseManager, AssignmentTracker, Dispatcher
+from AgentCore.orchestration.scheduling_manager import CapabilityResolver, LeastBusyPolicy, SchedulerManager
 from AgentCore.orchestration.mission_layer import MissionParser, TaskPlanner, TaskGraphBuilder, MissionStateManager, ReadyTaskSelector
 from AgentCore.orchestration.result_layer import ResultProcessor, MissionStateUpdater
 from AgentCore.execution.pause_manager import is_paused
+from AgentCore.execution.message_manager import SSEGenerationMessageManager
 
 log = logging.getLogger(__name__)
 
@@ -84,10 +85,11 @@ def _build_heading_tree(flat_headings: list[dict]) -> list[dict]:
 class MissionOrchestrator:
     """Coordinates multi-agent execution of a mission using the M5 TaskGraph pipeline."""
 
-    def __init__(self, project_id: str, num_workers: int = DEFAULT_MAX_WORKERS):
+    def __init__(self, project_id: str, num_workers: int = DEFAULT_MAX_WORKERS, message_manager: SSEGenerationMessageManager | None = None):
         """Initialize the local M5 cluster."""
         self.project_id = project_id
         self.num_workers = num_workers
+        self._message_manager = message_manager
         self.agent_catalog = AgentCatalog()
         self.worker_directory = WorkerDirectory()
         self.agent_run_times_adapter = {}
@@ -116,21 +118,26 @@ class MissionOrchestrator:
             self.agent_heart_beats.append(agent_heart_beat_task)
             
             # Initialize agent runtime adapter
-            self.agent_run_times_adapter[agent_id] = RuntimeAdapter(agent_id=agent_id, project_id=self.project_id)
+            self.agent_run_times_adapter[agent_id] = RuntimeAdapter(
+                agent_id=agent_id,
+                project_id=self.project_id,
+                message_manager=self._message_manager,
+            )
             
         await asyncio.sleep(0.1) # Yield to let heartbeats start
         
         # Initialize Dispatcher for run time adapter
         self.dispatcher = Dispatcher(runtime_adapter=self.agent_run_times_adapter)
 
-        # Initialize Scheduler for agent
-        self.scheduler = Scheduler(
+        # Initialize SchedulerManager for agent
+        self.scheduler = SchedulerManager(
             capability_resolver=CapabilityResolver(self.agent_catalog),
             worker_directory=self.worker_directory,
             scheduling_policy=LeastBusyPolicy(),
             lease_manager=self.lease_manager,
             dispatcher=self.dispatcher,
-            assignment_tracker=self.assignment_tracker
+            assignment_tracker=self.assignment_tracker,
+            message_manager=self._message_manager
         )
         log.info(f"[MissionOrchestrator] Booted cluster with {self.num_workers} workers.")
 
@@ -138,17 +145,16 @@ class MissionOrchestrator:
         self,
         project_id: str,
         template_type: str,
-        goal: str
-    ) -> AsyncGenerator[Dict[str, Any], None]:
-        """Execute a mission and yield SSE-compatible event dictionaries.
-        
+        goal: str,
+        target_section: str | None = None,
+    ) -> None:
+        """Execute a mission, emitting events via the SSEGenerationMessageManager.
+
         Args:
             project_id: Project identifier.
             template_type: Template type (e.g., srs, hld).
             goal: The overarching generation goal string.
-            
-        Yields:
-            Dict representing progress and chunk events.
+            target_section: If provided, filter the task graph to only this section.
         """
         # Ensure cluster is booted
         if not self.agent_run_times_adapter:
@@ -169,47 +175,61 @@ class MissionOrchestrator:
         # Initialize Task graph
         task_graph = TaskGraphBuilder().build_graph(planned_tasks=planned_tasks, mission_specification=mission_specification)
         log.info(f"[MissionOrchestrator] Initializing Task graph for {project_id}")
-            
+
+        # Optionally filter to a single section for regeneration
+        if target_section is not None:
+            target_task_id = f"{project_id}_section_{target_section}"
+            if target_task_id in task_graph.task_node:
+                task_graph.task_node = {target_task_id: task_graph.task_node[target_task_id]}
+                # Clear dependencies — section regeneration is independent;
+                # upstream sections are not in the filtered graph.
+                task_graph.task_node[target_task_id].dependencies.clear()
+                log.info(f"[MissionOrchestrator] Filtered task graph to single section: {target_section}")
+            else:
+                log.warning(f"[MissionOrchestrator] Target section '{target_section}' not found in task graph; proceeding with all sections")
+
         # Initialize Mission state manager from graph
         mission_state_manager.initialize_from_graph(task_graph=task_graph)
         log.info(f"[MissionOrchestrator] Initializing Mission state manager from graph for {project_id}")
-        
+
         # Initialize Ready Task Selector
         task_selector = ReadyTaskSelector(task_graph=task_graph, task_queue=self.task_queue)
         log.info(f"[MissionOrchestrator] Initializing Ready Task Selector for {project_id}")
-        
+
         # Initialize State Updater
         mission_state_updater = MissionStateUpdater(task_graph=task_graph, mission_state_manager=mission_state_manager)
         log.info(f"[MissionOrchestrator] Initializing State Updater for {project_id}")
-        
+
         # Initialize Result Processor
         result_processor = ResultProcessor(lease_manager=self.lease_manager, mission_state_updater=mission_state_updater, worker_directory=self.worker_directory)
         log.info(f"[MissionOrchestrator] Initializing Result Processor for {project_id}")
-        
 
-        yield {
-            "type": "mission_started",
-            "total_tasks": mission_state_manager.total_tasks,
-            "project_id": project_id
-        }
-
+        if self._message_manager:
+            self._message_manager.emit_mission_started(mission_state_manager.total_tasks, project_id)
         # Bump document-level version at generation start
-        document_version = start_new_version(project_id, template_type)
-        log.info(f"[MissionOrchestrator] Document version {document_version} started for {project_id}")
+        if target_section is not None:
+            # Section regeneration — version already bumped by caller (routes.py)
+            from system_config import get_document_version
+            version_info = get_document_version(project_id)
+            document_version = version_info.get("current_version", 0)
+            log.info(f"[MissionOrchestrator] Using existing version {document_version} for section regeneration: {target_section}")
+        else:
+            document_version = start_new_version(project_id, template_type)
+            log.info(f"[MissionOrchestrator] Document version {document_version} started for {project_id}")
 
-        yield {
-            "type": "gen_start",
-            "section_count": mission_state_manager.total_tasks,
-            "document_version": document_version,
-        }
-        
+        if self._message_manager:
+            self._message_manager.emit_gen_start(mission_state_manager.total_tasks, document_version)
+
         # Dispatch pending task list
         pending_dispatch_tasks = []
-        
+
+        log.info(f"[MissionOrchestrator] Task Graph : {task_graph}")
+
         while mission_state_manager.completed_tasks < mission_state_manager.total_tasks:
             # Check for pause signal
             if is_paused(project_id):
-                yield {"type": "paused", "reason": "user paused"}
+                if self._message_manager:
+                    self._message_manager.emit_paused("user paused")
                 return
 
             # Inject traceability data for ready tasks (before they're marked running)
@@ -226,7 +246,7 @@ class MissionOrchestrator:
             # Run scheduling cycle to dispatch work
             agent_spawned_task_list = await self.scheduler.run_scheduling_cycle(self.task_queue)
             pending_dispatch_tasks.extend(agent_spawned_task_list)
-            
+
             # Check for completed tasks
             if pending_dispatch_tasks:
                 agent_completed_task, agent_pending_task = await asyncio.wait(
@@ -235,7 +255,7 @@ class MissionOrchestrator:
                     return_when=asyncio.FIRST_COMPLETED
                 )
                 pending_dispatch_tasks = list(agent_pending_task)
-                
+
                 # Sort by task_id so streaming order is deterministic
                 # (asyncio.wait returns a set, which has no ordering guarantee)
                 completed_with_ids = []
@@ -256,23 +276,21 @@ class MissionOrchestrator:
                         task_section_heading = agent_execution_context.get("section_heading", "unknown")
 
                         # Emit Start Event for the completed section
-                        yield {
-                            "type": "section_start",
-                            "section_number": task_section_number,
-                            "heading": task_section_heading,
-                            "section_current": mission_state_manager.completed_tasks,
-                            "section_total": mission_state_manager.total_tasks,
-                        }
+                        if self._message_manager:
+                            self._message_manager.emit_section_start(
+                                task_section_number, task_section_heading,
+                                mission_state_manager.completed_tasks,
+                                mission_state_manager.total_tasks,
+                            )
 
                         # Emit Progress Event
                         progress_pct = int((mission_state_manager.completed_tasks / max(1, mission_state_manager.total_tasks)) * 100)
-                        yield {
-                            "type": "progress",
-                            "progress": progress_pct,
-                            "phase": f"Generating: {task_section_heading}",
-                            "section_current": mission_state_manager.completed_tasks,
-                            "section_total": mission_state_manager.total_tasks,
-                        }
+                        if self._message_manager:
+                            self._message_manager.emit_progress(
+                                progress_pct,
+                                mission_state_manager.completed_tasks,
+                                mission_state_manager.total_tasks,
+                            )
 
                         # Extract generated result
                         generated_result_data = agent_result_data.produced_evidence or ""
@@ -308,39 +326,38 @@ class MissionOrchestrator:
                         log.info(f"[MissionOrchestrator] Wrote section {task_section_number} to {versioned_path.name}")
 
                         # Emit Chunk the final LLM output for the frontend stream
-                        for chunk_idx in range(0, max(1, len(generated_result_data)), 500):
-                            chunk_data = generated_result_data[chunk_idx : chunk_idx + 500]
-                            if chunk_data.strip() or not generated_result_data:
-                                yield {
-                                    "type": "section_chunk",
-                                    "section_number": task_section_number,
-                                    "content": chunk_data,
-                                }
+                        if self._message_manager:
+                            for chunk_idx in range(0, max(1, len(generated_result_data)), 500):
+                                chunk_data = generated_result_data[chunk_idx : chunk_idx + 500]
+                                if chunk_data.strip() or not generated_result_data:
+                                    self._message_manager.emit_section_chunk(
+                                        task_section_number, chunk_data,
+                                    )
 
                         # Parse headings from the generated content for document outline
                         section_flat_headings = _parse_markdown_headings(generated_result_data)
                         section_heading_tree = _build_heading_tree(section_flat_headings)
 
                         # Emit Complete Event
-                        yield {
-                            "type": "section_complete",
-                            "section_number": task_section_number,
-                            "heading": task_section_heading,
-                            "headings_parsed": section_heading_tree,
-                            "tools_used": getattr(agent_result_data, "tool_calls_used", []),
-                        }
+                        if self._message_manager:
+                            self._message_manager.emit_section_complete(
+                                task_section_number, task_section_heading,
+                                section_heading_tree,
+                                getattr(agent_result_data, "tool_calls_used", []),
+                            )
 
                     except Exception as exception:
                         log.error(f"[MissionOrchestrator] Task Execution Error: {exception}", exc_info=True)
-                        yield {"type": "task_failed", "error": str(exception)}
+                        if self._message_manager:
+                            self._message_manager.emit_task_failed(str(exception))
                         mission_state_manager.completed_tasks += 1
             else:
                 # Idle backoff
                 await asyncio.sleep(0.1)
 
-        yield {
-            "type": "gen_complete",
-            "total_sections": mission_state_manager.completed_tasks,
-            "document_version": document_version,
-            "document_length": 1000
-        }
+        if self._message_manager:
+            self._message_manager.emit_gen_complete(
+                mission_state_manager.completed_tasks,
+                document_version,
+                1000,
+            )

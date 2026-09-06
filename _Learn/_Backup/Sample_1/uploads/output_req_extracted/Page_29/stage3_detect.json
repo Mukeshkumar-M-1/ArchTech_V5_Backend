@@ -1,0 +1,20 @@
+{
+  "page": 29,
+  "input_segments": [
+    "Annexure D: Test Setup",
+    "This section shall be given with required test equipments, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, Emulators, software environment, programming file etc.",
+    "Table D 1 : Test Equipments\nS. No. | Equipments/ Tool* | Manufacturer | Model Number\n1 | Power Supply \u2013 5V & 3.3V | TDK Lambda | \n2 | SBC Module DP-VPX-0750 | DATA PATTERNS | \n3 | JTAG Cable | Xilinx | Digilent HS-2/HS-3\n4 | Digital Multi meter |  | \n5 | Test PC |  | \n6 | STANAG 3350 / VGA Display (TBD) |  | \n7 | DVI Display (TBD) |  | \n* Also include external cooling devices, Ruggedizers\n** Also include onboard and PC files",
+    "Table D 2 : Programming Files\nS. No. | Programming Files** | Device | Development (New / Existing)\n1 | .mcs file | FPGA | New",
+    "This section shall be given with test setup with interconnection details and equipment connectivity."
+  ],
+  "passed": [
+    {
+      "text": "This section shall be given with required test equipments, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, Emulators, software environment, programming file etc.",
+      "score": 7
+    },
+    {
+      "text": "This section shall be given with test setup with interconnection details and equipment connectivity.",
+      "score": 6
+    }
+  ]
+}

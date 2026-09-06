@@ -1,0 +1,85 @@
+{
+  "page": 13,
+  "explained": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "explanation": "**Meaning :** The system uses a specific FPGA chip capable of handling various video and data transmission standards.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818"
+    },
+    {
+      "category": "Functional",
+      "sub_category": "General",
+      "sem_conf": 0.0,
+      "kw_conf": 0.0,
+      "text": "DP-XMC-5049-HRS-001 Type \u2022 XMC Module (VITA42) \u2022 Single-Width Mezzanine Card",
+      "explanation": "**Meaning :** The hardware is a specific type of expansion card that fits into a standard chassis slot.\n\n**Components :**\n- XMC Module\n- VITA42 standard\n- Single-Width Mezzanine Card\n\n**Parameters :**\n- DP-XMC-5049-HRS-001 Type"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-002 FPGA \u2022 Family: Kintex Ultrascale \u2022 Device: XCKU035-2FBVA676I \u2022 Logic cells: 444,343 \u2022 Maximum HP I/Os: 416 \u2022 Maximum HR I/Os: 104 \u2022 Block RAM Blocks: 540 \u2022 Distributed RAM: 5.9 Mb (Max.) \u2022 Block RAM: 19.0 Mb \u2022 CMTs: 10 \u2022 DSP 48e1 Slices: 1,700 \u2022 PCIe Gen3 x8: 2 \u2022 GTH 16.3 Gb/s Transceivers: 16",
+      "explanation": "**Meaning :** This requirement specifies the exact FPGA model and its detailed internal resources, such as logic capacity, memory, and high-speed interfaces.\n\n**Components :**\n- Kintex Ultrascale FPGA\n- XCKU035-2FBVA676I device\n- Logic cells\n- HP I/Os\n- HR I/Os\n- Block RAM Blocks\n- Distributed RAM\n- Block RAM\n- CMTs\n- DSP 48e1 Slices\n- PCIe Gen3 x8\n- GTH 16.3 Gb/s Transceivers\n\n**Parameters :**\n- Logic cells: 444,343\n- Maximum HP I/Os: 416\n- Maximum HR I/Os: 104\n- Block RAM Blocks: 540\n- Distributed RAM: 5.9 Mb (Max.)\n- Block RAM: 19.0 Mb\n- CMTs: 10\n- DSP 48e1 Slices: 1,700\n- PCIe Gen3 x8: 2\n- GTH 16.3 Gb/s Transceivers: 16"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Processor",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-003 Micro-controller \u2022 Family: SAM D5x/E5x \u2022 Device: ATSAMD51G19A \u2022 Core: 32-bit Arm\u00ae Cortex\u00ae-M4F MCUs \u2022 Memory: 512KB in-system self-programmable Flash \u2022 RAM: 192KB SRAM",
+      "explanation": "**Meaning :** The system includes a microcontroller based on the Arm Cortex-M4F core with specific memory sizes for program storage and data processing.\n\n**Components :**\n- SAM D5x/E5x Micro-controller\n- ATSAMD51G19A device\n- 32-bit Arm\u00ae Cortex\u00ae-M4F MCU\n- Flash memory\n- SRAM\n\n**Parameters :**\n- Memory: 512KB in-system self-programmable Flash\n- RAM: 192KB SRAM"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-004 Voltage Module supply rails: \u2022 +5V \u2022 +3.3V \u2022 +3.3V-AUX",
+      "explanation": "**Meaning :** The module requires three distinct power supply voltages to operate its different internal circuits.\n\n**Components :**\n- Voltage Module supply rails\n\n**Parameters :**\n- +5V\n- +3.3V\n- +3.3V-AUX"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-005 Current \u2022 5V @ 2.99 A (TYP) \u2022 3V @ 3.18 A (TYP) \u2022 3.3V-AUX @ 0.002 A (TYP)",
+      "explanation": "**Meaning :** This specifies the typical current draw for each of the power supply rails, indicating how much electrical current the module consumes.\n\n**Components :**\n- Current measurements for power rails\n\n**Parameters :**\n- 5V @ 2.99 A (TYP)\n- 3V @ 3.18 A (TYP)\n- 3.3V-AUX @ 0.002 A (TYP)"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.2,
+      "kw_conf": 0.6666666666666666,
+      "text": "DP-XMC-5049-HRS-006 Power Dissipation \u2022 15 W (TYP)",
+      "explanation": "**Meaning :** The module dissipates a typical amount of heat power during operation, which is important for thermal management and cooling design.\n\n**Components :**\n- Power Dissipation\n\n**Parameters :**\n- 15 W (TYP)"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Memory",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-007 SDRAM \u2022 64-bit 4GB DDR4",
+      "explanation": "**Meaning :** The system uses a large capacity DDR4 SDRAM for high-speed data storage and processing.\n\n**Components :**\n- SDRAM\n- DDR4\n\n**Parameters :**\n- 64-bit\n- 4GB"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Memory",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-008 Configuration Flash Memory \u2022 64MB",
+      "explanation": "**Meaning :** The module includes a flash memory chip used for storing configuration data or firmware.\n\n**Components :**\n- Configuration Flash Memory\n\n**Parameters :**\n- 64MB"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Memory",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-009 Storage Flash Memory \u2022 256MB",
+      "explanation": "**Meaning :** The module includes a flash memory chip used for general data storage.\n\n**Components :**\n- Storage Flash Memory\n\n**Parameters :**\n- 256MB"
+    }
+  ]
+}

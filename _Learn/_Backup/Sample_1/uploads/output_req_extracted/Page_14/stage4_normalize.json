@@ -1,0 +1,35 @@
+{
+  "page": 14,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6,
+      "normalized": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "text": "DP-XMC-5049-HRS-0011 ARINC 818: Three ARINC 818 Transmitter(Tx) for high speed digital video output on XMC Secondary Connector. One output channel is interfaced to XMC connector. Two output channels are optional with DVI channel 1. 4.25Gb/s data rate (max) support for each Tx channel. Three ARINC 818 Receiver(Rx) for high speed digital video input. All three channels are optional with DVI channel 1. 4.25Gb/s data rate (max) support for each Rx channel.",
+      "score": 10,
+      "normalized": "DP-XMC-5049-HRS-0011 ARINC 818: Three ARINC 818 Transmitter (Tx) for high speed digital video output on XMC Secondary Connector. One output channel shall be interfaced to XMC connector. Two output channels are optional with DVI channel 1. 4.25 Gb/s data rate (max) shall be supported for each Tx channel. Three ARINC 818 Receiver (Rx) for high speed digital video input. All three channels are optional with DVI channel 1. 4.25 Gb/s data rate (max) shall be supported for each Rx channel."
+    },
+    {
+      "text": "DP-XMC-5049-HRS-0012 DP/DP++ Input: One DP/DP++ Input from XMC Secondary Connector.",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-0012 DP/DP++ Input: One DP/DP++ Input from XMC Secondary Connector."
+    },
+    {
+      "text": "DP-XMC-5049-HRS-0010 DVI Video Output: Two single link DVI video output on XMC Secondary Connector. One channel is optional with two ARINC818 outputs & three ARINC818 inputs. One channel is optional with RED & BLUE signals of RGBHV channel 1 & 2. One single link DVI Video output on DVI Connector at Front Panel (optional).",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-0010 DVI Video Output: Two single link DVI video outputs on XMC Secondary Connector. One channel is optional with two ARINC818 outputs and three ARINC818 inputs. One channel is optional with RED and BLUE signals of RGBHV channel 1 and 2. One single link DVI Video output on DVI Connector at Front Panel (optional)."
+    },
+    {
+      "text": "DP-XMC-5049-HRS-0013 STANAG 3350 / VGA: Three STANAG 3350 / VGA / RGBHV / RGB Video output on XMC Secondary Connector. RED & BLUE of two channels are optional with DVI channel 2.",
+      "score": 7,
+      "normalized": "DP-XMC-5049-HRS-0013 STANAG 3350 / VGA: Three STANAG 3350 / VGA / RGBHV / RGB Video output on XMC Secondary Connector. RED and BLUE of two channels are optional with DVI channel 2."
+    },
+    {
+      "text": "DP-XMC-5049-HRS-0014 PCIe: 1x x8 PCIe Gen 3 link between XMC Primary Connector and MGT bank of FPGA.",
+      "score": 8,
+      "normalized": "DP-XMC-5049-HRS-0014 PCIe: 1x x8 PCIe Gen 3 link between XMC Primary Connector and MGT bank of FPGA."
+    }
+  ]
+}

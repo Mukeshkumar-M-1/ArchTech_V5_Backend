@@ -1,0 +1,48 @@
+{
+  "pid": 406614,
+  "sessionId": "sess-854d41b47f",
+  "cwd": "/home/devusr/Mukesh/ArchTech_V5/Backend",
+  "startedAt": 1782216053.9327726,
+  "kind": "generation",
+  "entrypoint": "cli",
+  "transcriptPath": "",
+  "status": "running",
+  "parentSessionId": null,
+  "projectId": "Sample_1",
+  "progress": 60,
+  "currentPhase": "Building dependency graph",
+  "stageLogs": [
+    {
+      "stage": "3.2 Identify Sections",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-23T12:00:57.534307+00:00"
+    },
+    {
+      "stage": "3.1 Parse Template",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-23T12:01:25.557507+00:00"
+    },
+    {
+      "stage": "3.3 Identify Fields",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 8300,
+      "tokens_out": 0,
+      "timestamp": "2026-06-23T12:02:52.536736+00:00"
+    },
+    {
+      "stage": "3.4 Build Dependency DAG",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-23T12:02:54.757116+00:00"
+    }
+  ]
+}

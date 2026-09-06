@@ -7,7 +7,7 @@ semantic Observation while ensuring the raw output is preserved for the journal.
 
 import logging
 from ..domain.action_result import ActionResult, ActionResultStatus
-from .observation import Observation
+from .observation_manager import ObservationManager
 from .observation_bus import ObservationBus
 
 log = logging.getLogger(__name__)
@@ -19,12 +19,12 @@ class ObservationParser:
         self.bus = bus
         log.info("[ObservationParser] Initialized.")
 
-    def parse(self, result: ActionResult) -> Observation:
+    def parse(self, result: ActionResult) -> ObservationManager:
         confidence = 1.0 if result.status == ActionResultStatus.SUCCESS else 0.1
         evidence = result.raw_output if result.status == ActionResultStatus.SUCCESS else f"Failed: {result.error_message}"
         
-        # We store the raw_result explicitly in the Observation for journaling
-        observation = Observation.create(
+        # We store the raw_result explicitly in the ObservationManager for journaling
+        observation = ObservationManager.create(
             source_tool=result.action_type,
             evidence=evidence,
             confidence=confidence

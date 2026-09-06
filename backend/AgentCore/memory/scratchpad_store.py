@@ -15,7 +15,7 @@ class ScratchpadStore:
     
     def __init__(self):
         self._notes: Dict[str, str] = {}
-        log.info("[ScratchpadStore] Initialized.")
+        log.info("[ScratchpadStore] Initialized Scratchdpad Memory.")
 
     def write(self, key: str, content: str) -> None:
         """Write a note to the scratchpad."""

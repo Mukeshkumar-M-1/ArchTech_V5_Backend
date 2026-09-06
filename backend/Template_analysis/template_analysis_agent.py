@@ -111,17 +111,17 @@ class TemplateAnalysisAgent:
 
         Reports progress to session if session_id is provided.
         """
-        from AgentCore.execution.session_manager import SessionLifecycle
+        from AgentCore import GenerationSessionManager
 
         sess_id = self.session_id
         # --- Phase 3.2: Identify Sections (TOC) ---
         toc_entries = await self._phase3_2_identify_sections()
         if toc_entries:
             if sess_id:
-                SessionLifecycle.update_progress( project_id=self.project_id,
+                GenerationSessionManager.update_progress(project_id=self.project_id,
                     session_id=sess_id, progress=10, current_phase="Identifying sections"
                 )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.2 Identify Sections", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.2 Identify Sections", status="ok")
 
         if not toc_entries:
             log.warning("[Phase3] No template sections found — returning empty result")
@@ -134,10 +134,10 @@ class TemplateAnalysisAgent:
             # --- Phase 3.1: Parse Template ---
             doc_tree = await self._phase3_1_parse_template(toc_entries)
             if sess_id:
-                SessionLifecycle.update_progress(project_id=self.project_id,
+                GenerationSessionManager.update_progress(project_id=self.project_id,
                     session_id=sess_id, progress=20, current_phase="Parsing template tree"
                 )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.1 Parse Template", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.1 Parse Template", status="ok")
 
             # --- Phase 3.3: Identify Required Fields ---
             fields_list = await self._phase3_3_identify_fields(toc_entries)
@@ -146,21 +146,21 @@ class TemplateAnalysisAgent:
             if sess_id and toc_entries:
                 for i, entry in enumerate(toc_entries, start=1):
                     pct = 20 + int((i / len(toc_entries)) * 40)  # 20-60%
-                    SessionLifecycle.update_progress(
+                    GenerationSessionManager.update_progress(
                         project_id=self.project_id,
                         session_id=sess_id,
                         progress=pct,
                         current_phase=f"Identifying fields in {entry['filename']} ({i}/{len(toc_entries)})",
                     )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.3 Identify Fields", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.3 Identify Fields", status="ok")
 
             # --- Phase 3.4: Build Dependency DAG ---
             dag = await self._phase3_4_build_dependency_dag(toc_entries)
             if sess_id:
-                SessionLifecycle.update_progress(
+                GenerationSessionManager.update_progress(
                     project_id=self.project_id, session_id=sess_id, progress=60, current_phase="Building dependency graph"
                 )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.4 Build Dependency DAG", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.4 Build Dependency DAG", status="ok")
 
             # --- Phase 3.5: Determine Output Types ---
             styling = await self._phase3_5_determine_output_types(toc_entries)
@@ -169,13 +169,13 @@ class TemplateAnalysisAgent:
             if sess_id and toc_entries:
                 for i, entry in enumerate(toc_entries, start=1):
                     pct = 60 + int((i / len(toc_entries)) * 20)  # 60-80%
-                    SessionLifecycle.update_progress(
+                    GenerationSessionManager.update_progress(
                         project_id=self.project_id,
                         session_id=sess_id,
                         progress=pct,
                         current_phase=f"Determining output type for {entry['filename']} ({i}/{len(toc_entries)})",
                     )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.5 Determine Output Types", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="3.5 Determine Output Types", status="ok")
             result = Phase3Result(
                 document_tree=doc_tree,
                 table_of_contents=toc_entries,
@@ -186,19 +186,19 @@ class TemplateAnalysisAgent:
 
         # Persist to JSON file
         if sess_id:
-            SessionLifecycle.update_progress(
+            GenerationSessionManager.update_progress(
                 project_id=self.project_id, session_id=sess_id, progress=90, current_phase="Saving analysis results"
             )
         output_file = self._save_phase3_result(result)
         result.output_file = output_file
 
         if sess_id:
-            SessionLifecycle.update_progress(
+            GenerationSessionManager.update_progress(
                 project_id=self.project_id,
                 session_id=sess_id, progress=100, status="complete",
                 current_phase=f"Phase 3 complete — {len(result.table_of_contents)} sections analyzed",
             )
-            SessionLifecycle.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="Phase 3 Complete", status="ok")
+            GenerationSessionManager.log_stage_complete(project_id=self.project_id, session_id=sess_id, stage="Phase 3 Complete", status="ok")
 
         return result
 

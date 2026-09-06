@@ -33,7 +33,7 @@ class PolicyManager:
         log.info("[PolicyManager] Initialized with heuristic policies.")
 
     def evaluate(self, action_type: str, parameters: Dict[str, Any]) -> PolicyEvaluation:
-        log.debug(f"[PolicyManager] Evaluating action: {action_type}")
+        log.info(f"[PolicyManager] Evaluating action: {action_type}")
         
         # 1. Evaluate Security Policy
         cmd = parameters.get("command", "").lower()

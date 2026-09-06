@@ -14,13 +14,21 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from AgentCore.infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from AgentCore.runtime.state_machine import RuntimeStateMachine, RuntimeState
 from AgentCore.runtime.cancellation_manager import CancellationManager
 
 logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    level=logging.INFO,
+    format="\n\n %(asctime)s [%(name)s.%(funcName)s]\n [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log14.log",
+            encoding="utf-8",
+            mode="a",
+        ),
+    ],
 )
 log = logging.getLogger("TestRuntimePerformance")
 

@@ -155,9 +155,9 @@ class ContextManager:
         compact_token_budget: int = 100_000,
     ) -> None:
         self.config = config
-        from AgentCore.execution.compaction import CompactPipeline, TokenEstimator
-        self._compact_pipeline = CompactPipeline(token_budget=compact_token_budget)
-        self._TokenEstimator = TokenEstimator
+        from AgentCore.execution.context_compaction import ContextCompactPipeline, ContextTokenEstimator
+        self._compact_pipeline = ContextCompactPipeline(token_budget=compact_token_budget)
+        self._TokenEstimator = ContextTokenEstimator
         log.info(
             "[ContextManager] Initialized: recent_turns=%d, max_context_messages=%d, "
             "llm_fact_extraction=%s, extraction_model=%s",
@@ -176,8 +176,10 @@ class ContextManager:
         """Build the bounded message list for an LLM call."""
         messages = [copy.deepcopy(m) for m in base_messages]
 
-        # Split all complete turns into old vs recent
-        complete_turns = [t for t in execution_turns if t.is_complete]
+        # Split all complete turns into old vs recent.
+        # Include turns that have tool_messages even if is_complete=False —
+        # e.g. a paused turn where we injected a user response.
+        complete_turns = [t for t in execution_turns if t.is_complete or t.tool_messages]
         recent_turns = complete_turns[-self.config.recent_turns:] if self.config.recent_turns else []
         old_turns = complete_turns[:-len(recent_turns)]
 
@@ -273,8 +275,8 @@ class ContextManager:
     @staticmethod
     def _extract_file_path(tool_result_msg: Dict[str, Any]) -> Optional[str]:
         """Extract a file path from tool output content."""
-        from AgentCore.execution.compaction import Tool_compact
-        return Tool_compact.extract_path(str(tool_result_msg.get("content", "")))
+        from AgentCore.execution.context_compaction import ContextToolCompact
+        return ContextToolCompact.extract_path(str(tool_result_msg.get("content", "")))
 
     @staticmethod
     def _extract_tool_input(turn: ExecutionTurn, tool_msg: Dict[str, Any]) -> Optional[str]:

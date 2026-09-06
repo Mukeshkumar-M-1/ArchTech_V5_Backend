@@ -1,0 +1,15 @@
+{
+  "page": 12,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "3 BLOCK DIAGRAM",
+    "Figure 3.1: Block Diagram of <DP-XMC-5049>"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6
+    }
+  ]
+}

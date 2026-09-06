@@ -74,9 +74,9 @@ graph TD
     
     S --> Q[Task Queue]
     
-    Q --> W1[Worker Runtime 1 (Black Box)]
-    Q --> W2[Worker Runtime 2 (Black Box)]
-    Q --> WN[Worker Runtime N (Black Box)]
+    Q --> W1[Worker Runtime 1]
+    Q --> W2[Worker Runtime 2 ]
+    Q --> WN[Worker Runtime N]
     
     W1 --> R[Execution Result]
     W2 --> R

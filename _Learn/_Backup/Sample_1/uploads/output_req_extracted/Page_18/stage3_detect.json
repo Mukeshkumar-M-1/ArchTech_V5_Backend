@@ -1,0 +1,29 @@
+{
+  "page": 18,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "5.3 Functional Requirement",
+    "S.No Function Name Description Reference if applicable x8 PCIe link on FPGA MGT Bank DDR4/L SDRAM 64 BIT 4GB DDR4 memory Interface interfaced to HP IO bank DVI TMDS level video interfaced Video encoder Video DAC IC interfaced on HR interface IO bank via RGB pixel data DVI protocol implementation on FPGA via HR bank to be interfaced to external DVI equalizer IC ARINC 818 protocol on FPGA ARINC 818 interface via MGT Bank to XMC Primary Connector. Temperature sensor interfaced Temperature sensor via I2C interface SPI Flash memory 256MB SPI user flash interfaced DP-VPX-5792 DP-VPX-5792 DP-VPX-5792 DP-VPX-5792 DP-VPX-5792 DP-VPX-5792 DP-VPX-5792 DP-VPX-5792",
+    "1 PCIe Interface DP-VPX-5792 2 DP-VPX-5792 3 DVI TMDS Video DP-VPX-5792 4 DP-VPX-5792 5 DVI Video Output DP-VPX-5792 6 ARINC 818 interface DP-VPX-5792 7 Temperature sensor DP-VPX-5792 8 DP-VPX-5792",
+    "5.3.1 Functional Requirement Description",
+    "FUNCTIONAL REQUIREMENT DESCRIPTION",
+    "PCIe interface: x8 PCIe interface on FPGA MGT bank; Reference clock from clock generator to FPGA MGT bank will be used for PCIe.",
+    "DDR4/L SDRAM Interface: One 64 bit DDR4 SDRAM controller IP core shall be implemented in FPGA IO bank; Reference clock from clock generator to FPGA IO bank will be used for DDR4 controller.",
+    "Table Data (clear view for content): ['S.No | Function Name | Description | Reference if applicable\\n1 | PCIe Interface | x8 PCIe link on FPGA MGT Bank | DP-VPX-5792\\n2 | DDR4/L SDRAM Interface | 64 BIT 4GB DDR4 memory interfaced to HP IO bank | DP-VPX-5792\\n3 | DVI TMDS Video | DVI TMDS level video interfaced to FPGA HR IO bank | DP-VPX-5792\\n4 | Video encoder interface | Video DAC IC interfaced on HR IO bank via RGB pixel data | DP-VPX-5792\\n5 | DVI Video Output | DVI protocol implementation on FPGA via HR bank to be interfaced to external DVI equalizer IC | DP-VPX-5792\\n6 | ARINC 818 interface | ARINC 818 protocol on FPGA via MGT Bank to XMC Primary Connector. | DP-VPX-5792\\n7 | Temperature sensor | Temperature sensor interfaced via I2C interface | DP-VPX-5792\\n8 | SPI Flash memory interface | 256MB SPI user flash interfaced to HR IO bank via SPI | DP-VPX-5792']"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6
+    },
+    {
+      "text": "PCIe interface: x8 PCIe interface on FPGA MGT bank; Reference clock from clock generator to FPGA MGT bank will be used for PCIe.",
+      "score": 8
+    },
+    {
+      "text": "DDR4/L SDRAM Interface: One 64 bit DDR4 SDRAM controller IP core shall be implemented in FPGA IO bank; Reference clock from clock generator to FPGA IO bank will be used for DDR4 controller.",
+      "score": 9
+    }
+  ]
+}

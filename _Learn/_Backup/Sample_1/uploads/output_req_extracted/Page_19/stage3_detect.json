@@ -1,0 +1,42 @@
+{
+  "page": 19,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+    "DVI/TMDS Video Inputs: FPGA shall be interfaced with maximum 3x DVI/TMDS Video inputs.",
+    "Video Encoder Interface: FPGA shall be interfaced with three Video encoder IC via RGB parallel data bus interface on IO bank for Video output from FPGA to XMC Secondary Connector; FPGA shall supply required reference clock for the Video encoder IC; Video encoder IC shall be configured by FPGA.",
+    "DVI Video Output: FPGA shall provide 1x DVI video output interfaced to DVI equalizer IC.",
+    "ARINC 818 Interface: ARINC 818 high speed video protocol shall be implemented on FPGA MGT bank; 3x ARINC 818 Video output & input channels shall be implemented. Reference clock from clock generator to FPGA MGT bank will be used for ARINC 818.",
+    "Temperature sensor: FPGA shall read on temperature sensor via I2C interface on IO bank.",
+    "SPI Flash memory interface: FPGA shall implement logic to write & read external SPI Flash memory via SPI interface implemented on IO bank."
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+      "score": 6
+    },
+    {
+      "text": "DVI/TMDS Video Inputs: FPGA shall be interfaced with maximum 3x DVI/TMDS Video inputs.",
+      "score": 8
+    },
+    {
+      "text": "Video Encoder Interface: FPGA shall be interfaced with three Video encoder IC via RGB parallel data bus interface on IO bank for Video output from FPGA to XMC Secondary Connector; FPGA shall supply required reference clock for the Video encoder IC; Video encoder IC shall be configured by FPGA.",
+      "score": 9
+    },
+    {
+      "text": "DVI Video Output: FPGA shall provide 1x DVI video output interfaced to DVI equalizer IC.",
+      "score": 8
+    },
+    {
+      "text": "ARINC 818 Interface: ARINC 818 high speed video protocol shall be implemented on FPGA MGT bank; 3x ARINC 818 Video output & input channels shall be implemented. Reference clock from clock generator to FPGA MGT bank will be used for ARINC 818.",
+      "score": 9
+    },
+    {
+      "text": "Temperature sensor: FPGA shall read on temperature sensor via I2C interface on IO bank.",
+      "score": 8
+    },
+    {
+      "text": "SPI Flash memory interface: FPGA shall implement logic to write & read external SPI Flash memory via SPI interface implemented on IO bank.",
+      "score": 8
+    }
+  ]
+}

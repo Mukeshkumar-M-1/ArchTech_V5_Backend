@@ -1,0 +1,15 @@
+{
+  "page": 29,
+  "normalized": [
+    {
+      "text": "This section shall be given with required test equipments, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, Emulators, software environment, programming file etc.",
+      "score": 7,
+      "normalized": "This section shall include required test equipment, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, emulators, software environment, and programming file."
+    },
+    {
+      "text": "This section shall be given with test setup with interconnection details and equipment connectivity.",
+      "score": 6,
+      "normalized": "This section shall be provided with test setup, interconnection details, and equipment connectivity."
+    }
+  ]
+}

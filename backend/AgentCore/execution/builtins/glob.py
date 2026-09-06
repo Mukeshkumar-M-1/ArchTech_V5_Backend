@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 from AgentCore.shared.types import GlobInput
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 
 log = logging.getLogger(__name__)
 

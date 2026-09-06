@@ -90,18 +90,18 @@ sequenceDiagram
     Kernel->>Session: load_session(session_id)
     Session-->>Kernel: AgentStateStore (or None)
     Kernel->>State: update_state("EXECUTE")
-    
+
     Kernel->>Engine: execute_task(task_id, context)
     activate Engine
-    
+
     loop Max Turns
         Engine->>State: increment_loop()
         Engine->>Bus: emit("TurnStarted")
-        
+
         Engine->>LLM: _simulate_or_call_llm(messages)
         LLM-->>Engine: Tool Calls / Text
         Engine->>State: add_tokens(amount)
-        
+
         opt If Tool Calls exist
             loop For each Tool
                 Engine->>Bus: emit("ToolStarted")
@@ -111,18 +111,17 @@ sequenceDiagram
                 Engine->>Bus: emit("ToolFinished")
             end
         end
-        
+
         Engine->>Bus: emit("TurnCompleted")
-        
+
         opt If final text (No tools)
             Engine->>Bus: emit("TaskCompleted")
-            break
         end
     end
-    
+
     Engine-->>Kernel: result
     deactivate Engine
-    
+
     Kernel->>Session: save_session(session_id, State)
     Kernel-->>Client: result
 ```

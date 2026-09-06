@@ -38,7 +38,7 @@ class ReplayEngine:
         In EXACT replay, this intercepts the SandboxManager and returns
         the cached RawResult from the journal, guaranteeing 0 system mutation.
         """
-        log.debug(f"[ReplayEngine] Retrieving cached result for action {action_id}")
+        log.info(f"[ReplayEngine] Retrieving cached result for action {action_id}")
         
         # M4.5 Stub: In reality, we query the journal for the exact action ID
         return {

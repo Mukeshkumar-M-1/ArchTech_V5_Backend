@@ -1,0 +1,18 @@
+{
+  "page": 16,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "DP-XMC-5049-HRS-0026 Commercial / Rugged Rugged",
+    "DP-XMC-5049-HRS-0025 Thermal Dissipation Conduction Cooled",
+    "(If applicable, specification statements shall be elaborated)",
+    "Note : This document is provided with the system requirement traceability number for each requirements as below, <BID/PID/SID>-<HRS/SyRS>-XXX Example: DP-cPCI-7497-HRS-001 for boards and DP-SIPU-8004-SyRS-001 for products.",
+    "DP-XMC-5049-HRS-0026 | Commercial / Rugged | Rugged\nDP-XMC-5049-HRS-0025 | Thermal Dissipation | Conduction Cooled"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6
+    }
+  ]
+}

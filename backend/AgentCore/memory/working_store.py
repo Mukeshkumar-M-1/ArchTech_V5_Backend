@@ -19,7 +19,7 @@ class WorkingMemoryStore:
         self.assumptions: List[str] = []
         self.evidence: List[Dict[str, str]] = []  # List of observation summaries
         self.blockers: List[str] = []
-        log.info("[WorkingMemoryStore] Initialized ephemeral memory.")
+        log.info("[WorkingMemoryStore] Initialized working Memory")
 
     def add_question(self, question: str) -> None:
         if question not in self.open_questions:

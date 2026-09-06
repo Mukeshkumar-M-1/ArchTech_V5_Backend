@@ -1,0 +1,18 @@
+{
+  "page": 15,
+  "segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "DP-XMC-5049-HRS-0016: One optional USB2.0 interface from Micro-controller to XMC secondary connector",
+    "DP-XMC-5049-HRS-0017: XMC Primary Connector requirements: 5V DC supply; 3.3V DC supply; 3.3V-AUX DC supply; Module JTAG Interface; PCIe REFCLK; 1x x8 PCIe Gen 3 link from FPGA MGT bank.",
+    "DP-XMC-5049-HRS-0017: XMC Secondary Connector requirements: DVI channel 1 / 2x ARINC818 TX & 3x ARINC818 RX; 1x ARINC818 TX; DVI channel 2 / RGBHV channel 1 RED - BLUE & RGBHV channel 2 RED \u2013 BLUE; RGBHV CVBS Green channel 1 & 2; RGBHV channel 3 (Red, Green & Blue); One DisplayPort input channel; One optional USB channel from Micro-controller.",
+    "DP-XMC-5049-HRS-0018: Application GUI via USB",
+    "DP-XMC-5049-HRS-0019: Supported OS: Linux / Windows (SBC external module for PCIe enumeration)",
+    "DP-XMC-5049-HRS-0020: Driver: Standard Drivers",
+    "DP-XMC-5049-HRS-0021: Dimension (LxBxH): 143.74\u00d774\u00d713.46 mm",
+    "DP-XMC-5049-HRS-0022: Weight: <800g",
+    "DP-XMC-5049-HRS-0015: Operating Temperature: -40\u00b0C to +71\u00b0C (Card Edge)",
+    "DP-XMC-5049-HRS-0023: Storage Temperature: -55\u00b0C to +95\u00b0C",
+    "DP-XMC-5049-HRS-0024: Relative Humidity: 95% RH"
+  ],
+  "raw_text_length": 1254
+}

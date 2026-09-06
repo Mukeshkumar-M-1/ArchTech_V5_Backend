@@ -1,0 +1,61 @@
+{
+  "page": 19,
+  "explained": [
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces.",
+      "explanation": "**Meaning :** The Kintex Ultrascale+ FPGA must be capable of communicating using five specific interface standards: STANAG3350, RGB, VGA, DVI, and ARINC818.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n- STANAG3350 interface\n- RGB interface\n- VGA interface\n- DVI interface\n- ARINC818 interface"
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.333,
+      "text": "The FPGA shall be interfaced with a maximum of 3 DVI/TMDS video inputs.",
+      "explanation": "**Meaning :** The FPGA connection is limited to accepting no more than three DVI or TMDS video signals as inputs.\n\n**Parameters :**\n- Maximum of 3 DVI/TMDS video inputs\n\n**Purpose :** Defines the input capacity for video signals processed by the FPGA."
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.667,
+      "text": "The FPGA shall be interfaced with three Video encoder ICs via an RGB parallel data bus interface on an IO bank for Video output from the FPGA to the XMC Secondary Connector. The FPGA shall supply the required reference clock for the Video encoder ICs. The Video encoder ICs shall be configured by the FPGA.",
+      "explanation": "**Meaning :** The FPGA sends video data to three Video encoder ICs using an RGB parallel data bus. The FPGA provides the necessary reference clock to these ICs and controls their configuration. The output is routed to the XMC Secondary Connector.\n\n**Components :**\n- FPGA\n- Three Video encoder ICs\n- RGB parallel data bus interface\n- IO bank\n- XMC Secondary Connector\n- Reference clock\n\n**Purpose :** To encode video data from the FPGA for output via the XMC connector, with the FPGA managing clocking and configuration of the encoders."
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.333,
+      "text": "DVI Video Output: FPGA shall provide 1x DVI video output interfaced to DVI equalizer IC.",
+      "explanation": "**Meaning :** The FPGA provides one DVI video output signal, which is connected to a DVI equalizer IC to condition the signal.\n\n**Components :**\n- FPGA\n- DVI video output\n- DVI equalizer IC\n\n**Purpose :** To output a single DVI video signal that is equalized for proper transmission."
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.667,
+      "text": "ARINC 818 Interface: ARINC 818 high speed video protocol shall be implemented on FPGA MGT bank; 3x ARINC 818 Video output and input channels shall be implemented. Reference clock from clock generator to FPGA MGT bank shall be used for ARINC 818.",
+      "explanation": "**Meaning :** The FPGA implements the ARINC 818 high-speed video protocol using its MGT (Multi-Gigabit Transceiver) bank. It handles three ARINC 818 channels for both video input and output. The reference clock for this protocol is supplied from a clock generator to the FPGA MGT bank.\n\n**Components :**\n- FPGA MGT bank\n- ARINC 818 high speed video protocol\n- Clock generator\n- Reference clock\n\n**Parameters :**\n- 3x ARINC 818 Video output channels\n- 3x ARINC 818 Video input channels\n\n**Purpose :** To enable high-speed video data transfer using the ARINC 818 standard with dedicated input and output channels."
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "I2C",
+      "sem_conf": 0.98,
+      "kw_conf": 0.333,
+      "text": "The FPGA shall read the temperature sensor via the I2C interface on the IO bank.",
+      "explanation": "**Meaning :** The FPGA reads temperature data from a sensor using the I2C communication protocol on an IO bank.\n\n**Components :**\n- FPGA\n- Temperature sensor\n- I2C interface\n- IO bank\n\n**Purpose :** To monitor the temperature of the system hardware."
+    },
+    {
+      "category": "Hardware/Interface",
+      "sub_category": "SPI",
+      "sem_conf": 0.98,
+      "kw_conf": 0.333,
+      "text": "SPI Flash memory interface: FPGA shall implement logic to write and read external SPI Flash memory via SPI interface implemented on IO bank.",
+      "explanation": "**Meaning :** The FPGA implements logic to read from and write to external SPI Flash memory using the SPI protocol on an IO bank.\n\n**Components :**\n- FPGA\n- External SPI Flash memory\n- SPI interface\n- IO bank\n\n**Purpose :** To store and retrieve data or configuration information in external non-volatile memory."
+    }
+  ]
+}

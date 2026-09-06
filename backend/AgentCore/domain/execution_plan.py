@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from enum import Enum, auto
 
-from .decision import ActionDefinition
+from .action_decision import ActionDefinition
 
 log = logging.getLogger(__name__)
 

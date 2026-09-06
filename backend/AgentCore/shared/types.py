@@ -47,53 +47,6 @@ class GrepInput(BaseModel):
     glob: Optional[str] = Field(None, description="Glob filter like *.js")
     output_mode: Optional[str] = Field("files_with_matches", description="content | files_with_matches | count")
 
-
-class TodoWriteInput(BaseModel):
-    todos: list[dict] = Field(..., description="Tasks with content, status, activeForm")
-
-
-class SkillInput(BaseModel):
-    skill: str = Field(..., description="Skill name (e.g., 'review', 'simplify')")
-    args: Optional[str] = Field(None, description="Optional arguments")
-
-
-class TaskCreateInput(BaseModel):
-    subject: str = Field(..., description="Brief actionable title in imperative form")
-    description: str = Field(..., description="What needs to be done")
-    activeForm: Optional[str] = Field(None, description="Present continuous form for spinner")
-    metadata: Optional[dict] = Field(None, description="Arbitrary metadata")
-
-
-class TaskUpdateInput(BaseModel):
-    taskId: str = Field(..., description="Task ID to update")
-    subject: Optional[str] = None
-    description: Optional[str] = None
-    activeForm: Optional[str] = None
-    status: Optional[str] = Field(None, description="pending | in_progress | completed | deleted")
-    addBlocks: Optional[list] = None
-    addBlockedBy: Optional[list] = None
-    owner: Optional[str] = None
-    metadata: Optional[dict] = None
-
-
-class TaskListInput(BaseModel):
-    pass
-
-
-class TaskGetInput(BaseModel):
-    taskId: str = Field(..., description="The ID of the task to retrieve")
-
-
-class TaskOutputInput(BaseModel):
-    task_id: str = Field(..., description="The task ID to get output from")
-    block: bool = Field(True, description="Whether to wait for completion")
-    timeout: int = Field(30000, description="Max wait time in ms (0-600000)")
-
-
-class TaskStopInput(BaseModel):
-    task_id: Optional[str] = Field(None, description="The task ID to stop")
-
-
 class SendMessageInput(BaseModel):
     to: str = Field(..., description="Recipient agent ID, name, or '*' for broadcast")
     message: str = Field(..., description="Message text to send")
@@ -101,7 +54,16 @@ class SendMessageInput(BaseModel):
 
 
 class RequestUserInputInput(BaseModel):
-    prompt: str = Field(..., description="The question or instruction for the user")
-    ui_type: str = Field(..., description="One of: select, radio, checkbox")
-    options: list[str] = Field(..., description="The available options (2-8 recommended)")
-    title: str = Field(default="", description="Optional card title")
+    prompt: str = Field(..., description="The question or instruction for the user (supports markdown: lists, line breaks, bold)")
+    ui_type: str = Field(..., description="One of: select, radio, checkbox, text")
+    options: Optional[list[str]] = Field(None, description="The available options (2-8 recommended). Required for select/radio/checkbox. Omit for text type.")
+    title: str = Field(default="", description="Short plain-text label for what the question is about")
+
+
+class ProposeContentEditInput(BaseModel):
+    section_filename: str = Field(description="The filename of the section being edited (e.g., '01_project_table.md')")
+    version: int = Field(description="The version of the section block being edited")
+    block_number: int = Field(description="The numeric block number that is being edited")
+    original_text: str = Field(description="The exact original text content of the block")
+    proposed_text: str = Field(description="The new proposed text for this block")
+    rationale: str = Field(description="A brief explanation of why this edit is being proposed", default="")

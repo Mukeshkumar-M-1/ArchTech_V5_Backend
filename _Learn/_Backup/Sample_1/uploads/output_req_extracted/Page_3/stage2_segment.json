@@ -1,0 +1,9 @@
+{
+  "page": 3,
+  "segments": [
+    "using Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+    "NAMING CONVENTION",
+    "The following naming convention is followed while giving the document reference number. <PRODUCT_ID>-<FG>-<DOC_NAME>-<VERSION>. Where, PRODUCT_ID : Denotes the product ID. For example \u2013 DP-SPL-5656 FG : Denotes the finished good number. Where, For document common for all FGs - 000 For document configurable for individual FGs \u2013 300, 600 etc. DOC_NAME : Denotes the short form or acronym of document name. For example : \u201cHRS\u201d for Hardware Requirements Specification VERSION : Denotes version of the document. For example \u201c1V00\u201d For example, document reference number : Common FG - DP-SPL-5656-000-HRS-1V00 Individual FG - DP-SPL-5656-300-HRS-1V00"
+  ],
+  "raw_text_length": 772
+}

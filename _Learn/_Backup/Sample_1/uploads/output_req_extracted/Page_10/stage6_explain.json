@@ -1,0 +1,45 @@
+{
+  "page": 10,
+  "explained": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049 shall be a XMC PCIe based video converter module using XILINX Kintex Ultrascale FPGA Supporting STANAG3350 / RGB / VGA, DVI, ARINC818 and PCIe Interfaces. It shall be a Single-Width Mezzanine Card with the primary XMC connector occupying connector location P15 and secondary XMC connector occupying connector location P16. Module Kintex Ultrascale FPGA shall be interfaced with two 32-bit 4GB DDR4 SDRAM controllers, 64MB SPI NOR configuration Flash and 256MB SPI NOR storage flash.",
+      "explanation": "**Meaning :** The module is a hardware card that converts video signals, built around a specific high-performance FPGA chip. It connects to a carrier board via two specific XMC connector locations and includes dedicated memory components for configuration and data storage.\n\n**Components :**\n- XMC PCIe based video converter module\n- XILINX Kintex Ultrascale FPGA\n- Single-Width Mezzanine Card form factor\n- Primary XMC connector (location P15)\n- Secondary XMC connector (location P16)\n- Two 32-bit 4GB DDR4 SDRAM controllers\n- 64MB SPI NOR configuration Flash\n- 256MB SPI NOR storage flash\n\n**Parameters :**\n- Supported video standards: STANAG3350, RGB, VGA, DVI, ARINC818, PCIe\n- Connector locations: P15 (primary), P16 (secondary)\n\n**Purpose :** To provide a standardized, high-capacity video conversion and processing unit that integrates with a carrier system via XMC interfaces, using the FPGA for signal processing and memory for system operation."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.9,
+      "kw_conf": 0.667,
+      "text": "The module shall support DisplayPort video input from secondary XMC Connector which are electrically translated to the 3 no.s of TMDS level DP++/DVI outputs using DP to DP++/DVI splitter. The DP++ Video splitter shall be interfaced with a 2MB SPI NOR Flash.",
+      "explanation": "**Meaning :** The module takes DisplayPort video input from the secondary connector and converts it into three separate DVI or DP++ outputs. This conversion process uses a splitter component, which is managed by its own small flash memory chip.\n\n**Components :**\n- Secondary XMC Connector\n- DP to DP++/DVI splitter\n- 3 TMDS level DP++/DVI outputs\n- 2MB SPI NOR Flash\n\n**Parameters :**\n- 3 outputs\n- 2MB Flash size\n\n**Purpose :** To distribute a single DisplayPort video signal into multiple compatible display outputs (DVI/DP++) while storing necessary configuration data for the splitter."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.333,
+      "text": "The module shall support high speed communication interface such as PCIe on XMC primary connector for video raw data reception / transmission. The XMC Primary connector interfaces x8 PCIe lines from the carrier module. Module shall optionally support 3x ARINC 818 Transmitter(Tx) and 3x ARINC 818 Receiver(Rx) interfaces from the secondary XMC connector to the MGT bank of FPGA.",
+      "explanation": "**Meaning :** The module uses the primary XMC connector for high-speed data transfer via PCIe lines to send or receive raw video data. It also optionally supports ARINC 818 interfaces on the secondary connector, connecting them to the FPGA's high-speed transceiver bank.\n\n**Components :**\n- XMC primary connector\n- Carrier module\n- XMC secondary connector\n- MGT bank of FPGA\n- 3x ARINC 818 Transmitter (Tx)\n- 3x ARINC 818 Receiver (Rx)\n\n**Parameters :**\n- x8 PCIe lines\n\n**Purpose :** To enable high-bandwidth video data transmission/reception via PCIe and provide optional specialized ARINC 818 communication interfaces for avionics or similar applications."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.9,
+      "kw_conf": 0.333,
+      "text": "The module shall support 1x single link DVI output via DVI equalizer interfaced from either FPGA or DP to DVI splitter to XMC secondary connector. The module shall additionally support 1x single link DVI output from DP to DVI splitter interfaced to the DVI Connector on the Front panel via DVI equalizer. The module shall also support 1x DVI output from DP to DVI splitter interfaced to the XMC secondary connector on the Front panel via DVI equalizer. The module shall support RGBHV / VGA / STANAG 3350 analog video standard output on XMC Secondary connector using Video encoder with recommended front end.",
+      "explanation": "**Meaning :** The module provides multiple analog and digital video outputs. It supports single-link DVI outputs routed through equalizers to either the XMC secondary connector or a front panel connector. It also supports analog video standards (RGBHV/VGA/STANAG 3350) on the XMC secondary connector using a video encoder.\n\n**Components :**\n- DVI equalizer\n- DP to DVI splitter\n- XMC secondary connector\n- DVI Connector on the Front panel\n- Video encoder\n- Recommended front end\n\n**Parameters :**\n- 1x single link DVI output (via XMC secondary)\n- 1x single link DVI output (via Front panel)\n- 1x DVI output (via XMC secondary on Front panel)\n- Standards: RGBHV, VGA, STANAG 3350\n\n**Purpose :** To offer flexible video output options, allowing users to connect displays via both the backplane (XMC) and front panel, supporting both digital DVI and various analog video standards."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Module shall support on board clock generation and power supply generation as per design requirements. Module shall be powered by 5V, 3.3V and 3.3V-AUX via XMC Connector as per VITA 42 standard.",
+      "explanation": "**Meaning :** The module generates its own necessary clock and power signals internally. It receives its main power supply from the XMC connector, adhering to a specific industry standard for voltage levels.\n\n**Components :**\n- On board clock generation circuitry\n- On board power supply generation circuitry\n- XMC Connector\n\n**Parameters :**\n- Voltages: 5V, 3.3V, 3.3V-AUX\n- Standard: VITA 42\n\n**Purpose :** To ensure the module has stable internal timing and power distribution while complying with standard power delivery specifications for XMC modules."
+    }
+  ]
+}

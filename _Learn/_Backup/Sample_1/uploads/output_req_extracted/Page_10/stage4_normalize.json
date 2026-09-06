@@ -1,0 +1,30 @@
+{
+  "page": 10,
+  "normalized": [
+    {
+      "text": "DP-XMC-5049 shall be a XMC PCIe based video converter module using XILINX Kintex Ultrascale FPGA Supporting STANAG3350 / RGB / VGA, DVI, ARINC818 and PCIe Interfaces. It is a Single-Width Mezzanine Card with the primary XMC connector occupying connector location P15 and secondary XMC connector occupying connector location P16. Module Kintex Ultrascale FPGA is interfaced with two 32-bit 4GB DDR4 SDRAM controllers, 64MB SPI NOR configuration Flash & 256MB SPI NOR storage flash.",
+      "score": 10,
+      "normalized": "DP-XMC-5049 shall be a XMC PCIe based video converter module using XILINX Kintex Ultrascale FPGA Supporting STANAG3350 / RGB / VGA, DVI, ARINC818 and PCIe Interfaces. It shall be a Single-Width Mezzanine Card with the primary XMC connector occupying connector location P15 and secondary XMC connector occupying connector location P16. Module Kintex Ultrascale FPGA shall be interfaced with two 32-bit 4GB DDR4 SDRAM controllers, 64MB SPI NOR configuration Flash and 256MB SPI NOR storage flash."
+    },
+    {
+      "text": "The module supports DisplayPort video input from secondary XMC Connector which are electrically translated to the 3 no.s of TMDS level DP++/DVI outputs using DP to DP++/DVI splitter. The DP++ Video splitter shall be interfaced with a 2MB SPI NOR Flash.",
+      "score": 9,
+      "normalized": "The module shall support DisplayPort video input from secondary XMC Connector which are electrically translated to the 3 no.s of TMDS level DP++/DVI outputs using DP to DP++/DVI splitter. The DP++ Video splitter shall be interfaced with a 2MB SPI NOR Flash."
+    },
+    {
+      "text": "The module supports high speed communication interface such as PCIe on XMC primary connector for video raw data reception / transmission. The XMC Primary connector interfaces x8 PCIe lines from the carrier module. Module shall optionally support 3x ARINC 818 Transmitter(Tx) & 3x ARINC 818 Receiver(Rx) interfaces from the secondary XMC connector to the MGT bank of FPGA.",
+      "score": 8,
+      "normalized": "The module shall support high speed communication interface such as PCIe on XMC primary connector for video raw data reception / transmission. The XMC Primary connector interfaces x8 PCIe lines from the carrier module. Module shall optionally support 3x ARINC 818 Transmitter(Tx) and 3x ARINC 818 Receiver(Rx) interfaces from the secondary XMC connector to the MGT bank of FPGA."
+    },
+    {
+      "text": "The module support 1x single link DVI output via DVI equalizer interfaced from either FPGA or DP to DVI splitter to XMC secondary connector. The module shall additionally support 1x single link DVI output from DP to DVI splitter interfaced to the DVI Connector on the Front panel via DVI equalizer. Module shall also support 1x DVI output from DP to DVI splitter interfaced to the XMC secondary connector on the Front panel via DVI equalizer. Module shall support RGBHV / VGA / STANAG 3350 analog video standard output on XMC Secondary connector using Video encoder with recommended front end.",
+      "score": 9,
+      "normalized": "The module shall support 1x single link DVI output via DVI equalizer interfaced from either FPGA or DP to DVI splitter to XMC secondary connector. The module shall additionally support 1x single link DVI output from DP to DVI splitter interfaced to the DVI Connector on the Front panel via DVI equalizer. The module shall also support 1x DVI output from DP to DVI splitter interfaced to the XMC secondary connector on the Front panel via DVI equalizer. The module shall support RGBHV / VGA / STANAG 3350 analog video standard output on XMC Secondary connector using Video encoder with recommended front end."
+    },
+    {
+      "text": "Module shall support on board clock generation & power supply generation as per design requirements. Module shall be powered by 5V,3.3V & 3.3V-AUX via XMC Connector as per VITA 42 standard.",
+      "score": 8,
+      "normalized": "Module shall support on board clock generation and power supply generation as per design requirements. Module shall be powered by 5V, 3.3V and 3.3V-AUX via XMC Connector as per VITA 42 standard."
+    }
+  ]
+}

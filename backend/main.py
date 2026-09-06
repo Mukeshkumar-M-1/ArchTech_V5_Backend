@@ -43,16 +43,6 @@ logging.basicConfig(
     level=logging.INFO,
     handlers=[stream_handler, file_handler]
 )
-
-# logging.basicConfig(
-#     level=logging.INFO, 
-#     format="\n\n %(asctime)s [%(name)s.%(funcName)s] \n [%(levelname)s] %(message)s", 
-#     handlers=[
-#         logging.StreamHandler(), 
-#         logging.FileHandler(r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log5.log", encoding="utf-8", mode="a")
-#         ]
-#     )
-
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 from contextlib import asynccontextmanager
@@ -62,13 +52,13 @@ async def lifespan(app: FastAPI):
     # Startup
     yield
     # Shutdown
-    log.info("Initiating graceful shutdown...")
+    log.info("[main] Initiating graceful shutdown...")
     try:
         from AgentCore.execution.abort_controller import get_hierarchy
         get_hierarchy().abort_all(reason="Server shutting down")
-        log.info("Graceful shutdown completed successfully.")
+        log.info("[main] Graceful shutdown completed successfully.")
     except Exception as e:
-        log.error("Error during graceful shutdown: %s", e)
+        log.error("[main] Error during graceful shutdown: %s", e)
 
 app = FastAPI(
     title="ArchTech Agent",
@@ -104,6 +94,7 @@ from Routes.chat_routes import router as chat_router
 from Routes.project_routes import router as project_router
 from AgentCore.agents.routes import router as document_generate_router
 from Routes.version_manage_routes import router as version_manage_router
+from Routes.settings_routes import router as settings_router
 
 
 # --- Requirement Extraction Routes (prefix "/") ---
@@ -157,6 +148,14 @@ app.include_router(document_generate_router, prefix="")
 #   GET  /document-version/{project_id}/{filename}/{version} -> get specific version content
 app.include_router(version_manage_router, prefix="")
 
+# --- settings_routes (prefix "") ---
+#   GET  /settings/{project_id}    -> read LLM settings (saved values merged over defaults)
+#   POST /settings/{project_id}    -> save LLM settings to .ArchTech/{project_id}/settings.json
+app.include_router(settings_router, prefix="")
+
+from Routes.document_routes import router as document_router
+app.include_router(document_router, prefix="")
+
 
 
 # -------------------------
@@ -167,5 +166,27 @@ app.include_router(version_manage_router, prefix="")
 # -------------------------
 if __name__ == "__main__":
     import uvicorn
-    print("ArchTech Agent v5.0 (Fixed) - chained document generation active")
-    uvicorn.run("main:app", host="0.0.0.0", port=8015, reload=True)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8015,
+        reload=True,
+        # 1. Restrict watcher to source code subfolder
+        reload_dirs=["backend"], 
+        # 2. Ignore runtime state, databases, logs, and cache
+        reload_excludes=[
+            "*.log",
+            "*.db",
+            "*.db-wal",
+            "*.db-shm",
+            "*.sqlite*",
+            "*.tmp",
+            "*.pyc",
+            "__pycache__/*",
+            ".git/*",
+            "logs/*",
+            "storage/*",
+            "vector_store/*",
+            "artifacts/*",
+        ],
+    )

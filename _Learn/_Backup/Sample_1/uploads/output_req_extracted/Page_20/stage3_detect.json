@@ -1,0 +1,46 @@
+{
+  "page": 20,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "6 DEVELOPMENT PLATFORM",
+    "S.No Parameter Requirement 1 Architecture NA 2 OS Windows (GUI)",
+    "7 FAT VALIDATION REQUIREMENT",
+    "Requirement ID: DP-XMC-5049-HRS-003; Requirement: Micro-controller USB based GUI application shall be developed. Using GUI the Micro-controller peripherals such as SPI & I2C which are used for on board external IC\u2019s shall be configured; Testing Plan: Test application shall be updated from USB based GUI of DP- VPX-6005",
+    "Requirement ID: DP-XMC-5049-HRS-0016; Requirement: USB2.0; Testing Plan: NA",
+    "Requirement ID: DP-XMC-5049-HRS-004; Requirement: All Voltages shall be measured by the Multi-meter, un-sequenced voltages shall be monitored through voltage monitor section.; Testing Plan: NA",
+    "Requirement ID: DP-XMC-5049-HRS-005; Requirement: The supply current shall be measured by power analysis of module components; Testing Plan: NA",
+    "Requirement ID: DP-XMC-5049-HRS-006; Requirement: Power dissipation shall be measured by power analysis of module components; Testing Plan: NA",
+    "Requirement ID: DP-XMC-5049-HRS-007; Requirement: DDR4 full memory test shall be performed; Testing Plan: Refer DP- VPX-5792 test application"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 8
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-003; Requirement: Micro-controller USB based GUI application shall be developed. Using GUI the Micro-controller peripherals such as SPI & I2C which are used for on board external IC\u2019s shall be configured; Testing Plan: Test application shall be updated from USB based GUI of DP- VPX-6005",
+      "score": 9
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-0016; Requirement: USB2.0; Testing Plan: NA",
+      "score": 6
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-004; Requirement: All Voltages shall be measured by the Multi-meter, un-sequenced voltages shall be monitored through voltage monitor section.; Testing Plan: NA",
+      "score": 7
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-005; Requirement: The supply current shall be measured by power analysis of module components; Testing Plan: NA",
+      "score": 7
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-006; Requirement: Power dissipation shall be measured by power analysis of module components; Testing Plan: NA",
+      "score": 7
+    },
+    {
+      "text": "Requirement ID: DP-XMC-5049-HRS-007; Requirement: DDR4 full memory test shall be performed; Testing Plan: Refer DP- VPX-5792 test application",
+      "score": 7
+    }
+  ]
+}

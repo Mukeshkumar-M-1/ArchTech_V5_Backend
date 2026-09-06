@@ -11,18 +11,12 @@ import json
 import logging
 from pydantic import BaseModel, Field
 
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from .request_user_input import AWAITING_MARKER
+from AgentCore.shared.types import ProposeContentEditInput
 
 log = logging.getLogger(__name__)
 
-class ProposeContentEditInput(BaseModel):
-    section_filename: str = Field(description="The filename of the section being edited (e.g., '01_project_table.md')")
-    version: int = Field(description="The version of the section block being edited")
-    block_number: int = Field(description="The numeric block number that is being edited")
-    original_text: str = Field(description="The exact original text content of the block")
-    proposed_text: str = Field(description="The new proposed text for this block")
-    rationale: str = Field(description="A brief explanation of why this edit is being proposed", default="")
 
 def _execute(
     section_filename: str, 
@@ -57,7 +51,7 @@ def _execute(
         "options": [payload],
         "title": "Proposed Edit"
     }
-    return f"{AWAITING_MARKER}|{json.dumps(interaction_data)}"
+    return f"{AWAITING_MARKER}{json.dumps(interaction_data)}"
 
 
 ProposeContentEdit = ToolDefinition(

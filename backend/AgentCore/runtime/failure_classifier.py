@@ -28,7 +28,7 @@ class FailureClassifier:
         In a full implementation, this could use heuristics or small LLM calls.
         """
         error_msg = error_msg.lower()
-        log.debug(f"[FailureClassifier] Classifying error: {error_type} - {error_msg}")
+        log.info(f"[FailureClassifier] Classifying error: {error_type} - {error_msg}")
         
         if "timeout" in error_msg:
             return RecoveryStrategy.RETRY

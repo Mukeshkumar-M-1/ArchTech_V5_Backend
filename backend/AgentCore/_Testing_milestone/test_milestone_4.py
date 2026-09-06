@@ -4,8 +4,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from AgentCore.domain.policy import RuntimePolicy
-from AgentCore.domain.decision import Decision, ActionDefinition
+from AgentCore.domain.runtime_policy import RuntimePolicy
+from AgentCore.domain.action_decision import ActionDecision, ActionDefinition
 from AgentCore.domain.action_result import ActionResultStatus
 
 from AgentCore.platform.llm.adapter import MockLLMAdapter
@@ -13,29 +13,29 @@ from AgentCore.platform.llm.parser import DecisionParser
 from AgentCore.platform.llm.builder import MessageBuilder
 from AgentCore.platform.llm.renderer import PromptRenderer
 
-from AgentCore.action.planner import ActionPlanner
-from AgentCore.action.executor import ActionExecutor
+from AgentCore.action.action_planner import ActionPlanner
+from AgentCore.action.action_executor import ActionExecutor
 from AgentCore.action.tool_router import ToolRouter
 
-from AgentCore.platform.execution.registry import ToolRegistry
-from AgentCore.platform.execution.sandbox import SandboxManager
+from AgentCore.execution.tool_registry import ToolRegistry
+from AgentCore.platform.execution.sandbox_manager import SandboxManager
 
-from AgentCore.platform.artifacts.manager import ArtifactManager
+from AgentCore.platform.artifacts.artifact_manager import ArtifactManager
 from AgentCore.platform.artifacts.diff_engine import DiffEngine
 
 from AgentCore.knowledge.observation_bus import ObservationBus
 from AgentCore.knowledge.observation_parser import ObservationParser
-from AgentCore.knowledge.evidence import EvidenceExtractor
+from AgentCore.knowledge.evidence_manager import EvidenceManager
 from AgentCore.journal.execution_journal import ExecutionJournal
 
-from AgentCore.infrastructure.telemetry import TelemetryCollector, CostTracker
+from AgentCore.infrastructure.telemetry_manager import TelemetryManager, CostTracker
 
 logging.basicConfig(
     level=logging.INFO, 
     format="\n\n %(asctime)s [%(name)s.%(funcName)s] \n [%(levelname)s] %(message)s", 
     handlers=[
         logging.StreamHandler(), 
-        logging.FileHandler(r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log6.log", encoding="utf-8", mode="a")
+        logging.FileHandler(r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log8.log", encoding="utf-8", mode="a")
         ]
     )
 
@@ -51,7 +51,7 @@ def main():
     
     # 1. Telemetry
     cost_tracker = CostTracker()
-    telemetry = TelemetryCollector(cost_tracker)
+    telemetry = TelemetryManager(cost_tracker)
     
     # 2. Artifacts
     diff_engine = DiffEngine()
@@ -77,10 +77,10 @@ def main():
     # 5. Observation & Knowledge
     bus = ObservationBus()
     obs_parser = ObservationParser(bus)
-    evidence_extractor = EvidenceExtractor()
+    evidence_manager = EvidenceManager()
     journal = ExecutionJournal("mission_m4")
     
-    bus.subscribe(evidence_extractor.process_observation)
+    bus.subscribe(evidence_manager.process_observation)
     bus.subscribe(journal.record_observation)
     
     print("\n=== Testing Boundries ===")

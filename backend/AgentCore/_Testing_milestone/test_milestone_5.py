@@ -30,17 +30,17 @@ from AgentCore.orchestration.worker_management import (
     WorkerLifecycle,
     FailureDetector,
 )
-from AgentCore.orchestration.queue_and_dispatch import (
+from AgentCore.orchestration.lease_manager import (
     TaskQueue,
     LeaseManager,
     AssignmentTracker,
     Dispatcher,
     RetryManager,
 )
-from AgentCore.orchestration.scheduling import (
+from AgentCore.orchestration.scheduling_manager import (
     CapabilityResolver,
     LeastBusyPolicy,
-    Scheduler,
+    SchedulerManager,
 )
 from AgentCore.orchestration.mission_layer import (
     TaskGraph,
@@ -60,7 +60,7 @@ logging.basicConfig(
     handlers=[
         logging.StreamHandler(),
         logging.FileHandler(
-            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log8.log",
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log10.log",
             encoding="utf-8",
             mode="a",
         ),

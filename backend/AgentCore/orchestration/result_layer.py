@@ -6,7 +6,7 @@ Processes execution results, resolves leases, updates mission graphs, and aggreg
 
 import logging
 from AgentCore.orchestration.contracts import RuntimeResult, RuntimeLifecycleStatus, AgentStatus
-from AgentCore.orchestration.queue_and_dispatch import LeaseManager, AssignmentTracker
+from AgentCore.orchestration.lease_manager import LeaseManager, AssignmentTracker
 from AgentCore.orchestration.mission_layer import TaskGraph, MissionStateManager
 from AgentCore.orchestration.worker_management import WorkerDirectory
 

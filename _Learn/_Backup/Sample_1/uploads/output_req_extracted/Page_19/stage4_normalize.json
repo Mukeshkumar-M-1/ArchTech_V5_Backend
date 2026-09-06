@@ -1,0 +1,40 @@
+{
+  "page": 19,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+      "score": 6,
+      "normalized": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces."
+    },
+    {
+      "text": "DVI/TMDS Video Inputs: FPGA shall be interfaced with maximum 3x DVI/TMDS Video inputs.",
+      "score": 8,
+      "normalized": "The FPGA shall be interfaced with a maximum of 3 DVI/TMDS video inputs."
+    },
+    {
+      "text": "Video Encoder Interface: FPGA shall be interfaced with three Video encoder IC via RGB parallel data bus interface on IO bank for Video output from FPGA to XMC Secondary Connector; FPGA shall supply required reference clock for the Video encoder IC; Video encoder IC shall be configured by FPGA.",
+      "score": 9,
+      "normalized": "The FPGA shall be interfaced with three Video encoder ICs via an RGB parallel data bus interface on an IO bank for Video output from the FPGA to the XMC Secondary Connector. The FPGA shall supply the required reference clock for the Video encoder ICs. The Video encoder ICs shall be configured by the FPGA."
+    },
+    {
+      "text": "DVI Video Output: FPGA shall provide 1x DVI video output interfaced to DVI equalizer IC.",
+      "score": 8,
+      "normalized": "DVI Video Output: FPGA shall provide 1x DVI video output interfaced to DVI equalizer IC."
+    },
+    {
+      "text": "ARINC 818 Interface: ARINC 818 high speed video protocol shall be implemented on FPGA MGT bank; 3x ARINC 818 Video output & input channels shall be implemented. Reference clock from clock generator to FPGA MGT bank will be used for ARINC 818.",
+      "score": 9,
+      "normalized": "ARINC 818 Interface: ARINC 818 high speed video protocol shall be implemented on FPGA MGT bank; 3x ARINC 818 Video output and input channels shall be implemented. Reference clock from clock generator to FPGA MGT bank shall be used for ARINC 818."
+    },
+    {
+      "text": "Temperature sensor: FPGA shall read on temperature sensor via I2C interface on IO bank.",
+      "score": 8,
+      "normalized": "The FPGA shall read the temperature sensor via the I2C interface on the IO bank."
+    },
+    {
+      "text": "SPI Flash memory interface: FPGA shall implement logic to write & read external SPI Flash memory via SPI interface implemented on IO bank.",
+      "score": 8,
+      "normalized": "SPI Flash memory interface: FPGA shall implement logic to write and read external SPI Flash memory via SPI interface implemented on IO bank."
+    }
+  ]
+}

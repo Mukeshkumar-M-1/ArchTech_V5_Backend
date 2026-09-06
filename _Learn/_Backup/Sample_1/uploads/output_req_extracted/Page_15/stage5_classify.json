@@ -1,0 +1,82 @@
+{
+  "page": 15,
+  "classified": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "category": "Functional",
+      "sub_category": "General",
+      "sem_conf": 0.0,
+      "kw_conf": 0.0,
+      "text": "DP-XMC-5049-HRS-0016: One optional USB2.0 interface from Micro-controller to XMC secondary connector"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-0017: XMC Primary Connector requirements: 5V DC supply; 3.3V DC supply; 3.3V-AUX DC supply; Module JTAG Interface; PCIe REFCLK; 1x x8 PCIe Gen 3 link from FPGA MGT bank."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.2,
+      "kw_conf": 0.6666666666666666,
+      "text": "DP-XMC-5049-HRS-0017: XMC Secondary Connector requirements: DVI channel 1 / 2x ARINC818 TX & 3x ARINC818 RX; 1x ARINC818 TX; DVI channel 2 / RGBHV channel 1 RED - BLUE & RGBHV channel 2 RED \u2013 BLUE; RGBHV CVBS Green channel 1 & 2; RGBHV channel 3 (Red, Green & Blue); One DisplayPort input channel; One optional USB channel from Micro-controller."
+    },
+    {
+      "category": "Software",
+      "sub_category": "Application",
+      "sem_conf": 0.2,
+      "kw_conf": 0.6666666666666666,
+      "text": "DP-XMC-5049-HRS-0018: Application GUI via USB"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0019: Supported OS: Linux / Windows (SBC external module for PCIe enumeration)"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Mechanical",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0021: Dimension (LxBxH): 143.74\u00d774\u00d713.46 mm"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Mechanical",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0022: Weight: <800g"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0015: Operating Temperature: -40\u00b0C to +71\u00b0C (Card Edge)"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0023: Storage Temperature: -55\u00b0C to +95\u00b0C"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0024: Relative Humidity: 95% RH"
+    }
+  ]
+}

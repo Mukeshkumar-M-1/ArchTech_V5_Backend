@@ -1,0 +1,11 @@
+{
+  "page": 27,
+  "segments": [
+    "Annexure C : Validation Matrix",
+    "Table C 1 : Validation Matrix",
+    "Requirement ID | Description | Verification Method | Note\nTSET LAUQ | PTA | NOITARGETNI | OMED | NOITCEPSNI | SISYLANA\nDP-XMC-5049-HRS-001 | Type |  |  |  |  | Y |  | \nDP-XMC-5049-HRS-002 | FPGA |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-003 | Micro-controller |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-004 | Voltage |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-005 | Current |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-006 | Power Dissipation |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-007 | SDRAM |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-008 | Configuration Flash Memory |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-009 | Storage Flash Memory |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0011 | ARINC 818 |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0012 | DP++ Video Input |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0010 | DVI Video Output |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0013 | STANAG 3350 / VGA Video |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0014 | PCIe |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0017 | XMC Connector |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0018 | Application |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0019 | Supported OS |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0020 | Driver |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0021 | Dimension (LxBxH) in mm (Proto) |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0022 | Weight (g) (Proto) |  | Y |  |  |  |  | \nDP-XMC-5049-HRS-0015 | Operating Temperature | Y |  |  |  |  |  | \nDP-XMC-5049-HRS-0023 | Storage Temperature | Y |  |  |  |  |  | \nDP-XMC-5049-HRS-0024 | Relative Humidity | Y |  |  |  |  |  | \nDP-XMC-5049-HRS-0026 | Commercial / Rugged | Y |  |  |  |  |  | \nDP-XMC-5049-HRS-0025 | Thermal Dissipation | Y |  |  |  |  |  |",
+    "QUAL TEST \u2013 If the requirement is complied with any qualification testing it comes under Qual Test. (Eg. Environment Specification).",
+    "FAT \u2013 If the requirement is complied with normal functional testing, it comes in ATP. (all the requirement which can be validated can comes under this category)."
+  ],
+  "raw_text_length": 1409
+}

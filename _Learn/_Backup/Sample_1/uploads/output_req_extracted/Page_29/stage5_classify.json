@@ -1,0 +1,19 @@
+{
+  "page": 29,
+  "classified": [
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.85,
+      "kw_conf": 0.333,
+      "text": "This section shall include required test equipment, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, emulators, software environment, and programming file."
+    },
+    {
+      "category": "Functional",
+      "sub_category": "General",
+      "sem_conf": 0.9,
+      "kw_conf": 0.0,
+      "text": "This section shall be provided with test setup, interconnection details, and equipment connectivity."
+    }
+  ]
+}

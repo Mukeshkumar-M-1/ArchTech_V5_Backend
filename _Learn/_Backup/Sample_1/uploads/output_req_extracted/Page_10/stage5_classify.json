@@ -1,0 +1,40 @@
+{
+  "page": 10,
+  "classified": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049 shall be a XMC PCIe based video converter module using XILINX Kintex Ultrascale FPGA Supporting STANAG3350 / RGB / VGA, DVI, ARINC818 and PCIe Interfaces. It shall be a Single-Width Mezzanine Card with the primary XMC connector occupying connector location P15 and secondary XMC connector occupying connector location P16. Module Kintex Ultrascale FPGA shall be interfaced with two 32-bit 4GB DDR4 SDRAM controllers, 64MB SPI NOR configuration Flash and 256MB SPI NOR storage flash."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.9,
+      "kw_conf": 0.667,
+      "text": "The module shall support DisplayPort video input from secondary XMC Connector which are electrically translated to the 3 no.s of TMDS level DP++/DVI outputs using DP to DP++/DVI splitter. The DP++ Video splitter shall be interfaced with a 2MB SPI NOR Flash."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.333,
+      "text": "The module shall support high speed communication interface such as PCIe on XMC primary connector for video raw data reception / transmission. The XMC Primary connector interfaces x8 PCIe lines from the carrier module. Module shall optionally support 3x ARINC 818 Transmitter(Tx) and 3x ARINC 818 Receiver(Rx) interfaces from the secondary XMC connector to the MGT bank of FPGA."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.9,
+      "kw_conf": 0.333,
+      "text": "The module shall support 1x single link DVI output via DVI equalizer interfaced from either FPGA or DP to DVI splitter to XMC secondary connector. The module shall additionally support 1x single link DVI output from DP to DVI splitter interfaced to the DVI Connector on the Front panel via DVI equalizer. The module shall also support 1x DVI output from DP to DVI splitter interfaced to the XMC secondary connector on the Front panel via DVI equalizer. The module shall support RGBHV / VGA / STANAG 3350 analog video standard output on XMC Secondary connector using Video encoder with recommended front end."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Module shall support on board clock generation and power supply generation as per design requirements. Module shall be powered by 5V, 3.3V and 3.3V-AUX via XMC Connector as per VITA 42 standard."
+    }
+  ]
+}

@@ -14,11 +14,12 @@ from AgentCore.orchestration.contracts import (
     RuntimeResult, 
     RuntimeLifecycleStatus
 )
-from AgentCore.infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from AgentCore.runtime.state_machine import RuntimeStateMachine, RuntimeState
 from AgentCore.runtime.cancellation_manager import CancellationManager
 from AgentCore.runtime.interrupt_manager import InterruptManager
-from AgentCore.core.agent_kernel import AgentKernel
+from AgentCore.observability.agent_kernel import GenerationAgentKernel
+from AgentCore.execution.message_manager import SSEGenerationMessageManager
 from system_config import get_session_transcript_dir
 
 log = logging.getLogger(__name__)
@@ -29,14 +30,17 @@ class RuntimeAdapter(IAgentRuntime):
     while internally managing the complex M4.5 execution loop components.
     """
     
-    def __init__(self, agent_id: str, project_id: str):
-        
+    def __init__(self, agent_id: str, project_id: str, message_manager: SSEGenerationMessageManager | None=None):
         self.agent_id = agent_id
+        self._message_manager = message_manager
         self.event_bus = EventBus()
         self.state_machine = RuntimeStateMachine(event_bus=self.event_bus)
         self.cancellation_manager = CancellationManager(event_bus=self.event_bus, state_machine=self.state_machine)
         self.interrupt_manager = InterruptManager(event_bus=self.event_bus, state_machine=self.state_machine)
-        self.agent_kernel = AgentKernel(get_session_transcript_dir(project_id=project_id))
+        self.agent_kernel = GenerationAgentKernel(
+            get_session_transcript_dir(project_id=project_id),
+            message_manager=self._message_manager,
+        )
         
         log.info(f"[RuntimeAdapter] Initialized for worker {self.agent_id}")
 
@@ -59,9 +63,9 @@ class RuntimeAdapter(IAgentRuntime):
             agent_result = await self.agent_kernel.run_task(
                 task_id=task.task_id,
                 task_contract=task,
-                tools= ["FileRead", "Glob", "Search"],
+                tools= ["FileRead", "Bash", "Glob", "Search", "RequestUserInput"],
                 session_id=task.task_id,
-                max_turns= 20
+                max_turns= 50
             )
 
             self.state_machine.transition(RuntimeState.COMPLETED)

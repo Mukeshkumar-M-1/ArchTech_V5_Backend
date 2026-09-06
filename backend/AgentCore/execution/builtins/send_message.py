@@ -7,7 +7,7 @@ Mirrors CCB's SendMessageTool.ts.
 from __future__ import annotations
 
 import logging
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import SendMessageInput
 
 log = logging.getLogger(__name__)

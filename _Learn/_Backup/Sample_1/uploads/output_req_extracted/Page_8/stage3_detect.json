@@ -1,0 +1,25 @@
+{
+  "page": 8,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "1 INTRODUCTION",
+    "DP-XMC-5049 Shall be a XMC PCIe based video converter module which supports STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces.",
+    "1.1 Scope",
+    "This document will explain how the requirements will meet through the specifications. The targeted audience is HDD. The task for HDD department is as follow, HDD : Preparation and Verification of HRS with respect to the requirement.",
+    "1.2 Acronyms and Abbreviations",
+    "The acronyms and abbreviations used in this document are listed in the below Table 1.1.",
+    "Table 1.1 : List of Acronyms and Abbreviations",
+    "HRS | Hardware Requirements Specification\nBID | Board ID\nID | Identification\nPID | Project/ Product ID\nSID | System ID\nHRS | Hardware Requirement Specification\nSYRS | System Requirement Specification\nXXX | Running Number"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6
+    },
+    {
+      "text": "DP-XMC-5049 Shall be a XMC PCIe based video converter module which supports STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces.",
+      "score": 9
+    }
+  ]
+}

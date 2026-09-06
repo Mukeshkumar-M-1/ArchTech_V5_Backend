@@ -10,11 +10,11 @@ from AgentCore.orchestration.runtime_adapter import RuntimeAdapter
 from AgentCore.orchestration.worker_management import (
     AgentCatalog, WorkerDirectory, HeartbeatMonitor, WorkerLifecycle
 )
-from AgentCore.orchestration.queue_and_dispatch import (
+from AgentCore.orchestration.lease_manager import (
     TaskQueue, LeaseManager, AssignmentTracker, Dispatcher
 )
-from AgentCore.orchestration.scheduling import (
-    CapabilityResolver, LeastBusyPolicy, Scheduler
+from AgentCore.orchestration.scheduling_manager import (
+    CapabilityResolver, LeastBusyPolicy, SchedulerManager
 )
 from AgentCore.orchestration.mission_layer import (
     MissionParser, TaskPlanner, TaskGraphBuilder, MissionStateManager, ReadyTaskSelector
@@ -67,7 +67,7 @@ async def run_mission():
     # 3. Scheduling Layer
     resolver = CapabilityResolver(catalog)
     policy = LeastBusyPolicy()
-    scheduler = Scheduler(resolver, directory, policy, lease_manager, dispatcher, assignment_tracker)
+    scheduler = SchedulerManager(resolver, directory, policy, lease_manager, dispatcher, assignment_tracker)
     
     # 4. Mission Layer
     parser = MissionParser()

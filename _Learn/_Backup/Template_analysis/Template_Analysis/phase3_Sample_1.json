@@ -1,0 +1,2748 @@
+{
+  "document_tree": [
+    {
+      "heading": "01 Project Table",
+      "level": 1,
+      "filename": "01_project_table.md",
+      "subsections": [
+        {
+          "heading": "{{Document-Name}} For {{Project-Version}}",
+          "level": 2,
+          "filename": "01_project_table.md",
+          "subsections": [],
+          "section_number": 1
+        },
+        {
+          "heading": "DOCUMENT CONTROL",
+          "level": 2,
+          "filename": "01_project_table.md",
+          "subsections": [],
+          "section_number": 1
+        }
+      ],
+      "section_number": 1
+    },
+    {
+      "heading": "02 Revision History",
+      "level": 1,
+      "filename": "02_revision_history.md",
+      "subsections": [
+        {
+          "heading": "REVISION HISTORY",
+          "level": 2,
+          "filename": "02_revision_history.md",
+          "subsections": [],
+          "section_number": 2
+        }
+      ],
+      "section_number": 2
+    },
+    {
+      "heading": "03 Introduction",
+      "level": 1,
+      "filename": "03_introduction.md",
+      "subsections": [
+        {
+          "heading": "1. INTRODUCTION",
+          "level": 2,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "1.1 Purpose",
+          "level": 3,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "Table 1.1: Entities Involved in Test Application software",
+          "level": 4,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "1.2 Scope",
+          "level": 3,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "1.3 Definitions, Acronyms, and Abbreviations",
+          "level": 3,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "Table 1.2: List of Definitions, Acronyms, and Abbreviations",
+          "level": 4,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "1.4 References",
+          "level": 3,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "Table 1.3: Internal Documents",
+          "level": 4,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        },
+        {
+          "heading": "1.5 Document Overview",
+          "level": 3,
+          "filename": "03_introduction.md",
+          "subsections": [],
+          "section_number": 3
+        }
+      ],
+      "section_number": 3
+    },
+    {
+      "heading": "04 Overall Description",
+      "level": 1,
+      "filename": "04_overall_description.md",
+      "subsections": [
+        {
+          "heading": "2. OVERALL DESCRIPTION",
+          "level": 2,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.1 Product Perspective",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.2 Product Functions",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.3 User Classes and Characteristics",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.4 Operating Environment",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.5 Design and Implementation Constraints",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.6 User Documentation",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        },
+        {
+          "heading": "2.7 Assumptions and Dependencies",
+          "level": 3,
+          "filename": "04_overall_description.md",
+          "subsections": [],
+          "section_number": 4
+        }
+      ],
+      "section_number": 4
+    },
+    {
+      "heading": "05 External Interfaces",
+      "level": 1,
+      "filename": "05_external_interfaces.md",
+      "subsections": [
+        {
+          "heading": "3. EXTERNAL INTERFACE REQUIREMENTS",
+          "level": 2,
+          "filename": "05_external_interfaces.md",
+          "subsections": [],
+          "section_number": 5
+        },
+        {
+          "heading": "3.1 User Interfaces",
+          "level": 3,
+          "filename": "05_external_interfaces.md",
+          "subsections": [],
+          "section_number": 5
+        },
+        {
+          "heading": "3.2 Hardware Interfaces",
+          "level": 3,
+          "filename": "05_external_interfaces.md",
+          "subsections": [],
+          "section_number": 5
+        },
+        {
+          "heading": "3.3 Software Interfaces",
+          "level": 3,
+          "filename": "05_external_interfaces.md",
+          "subsections": [],
+          "section_number": 5
+        },
+        {
+          "heading": "3.4 Communications Interfaces",
+          "level": 3,
+          "filename": "05_external_interfaces.md",
+          "subsections": [],
+          "section_number": 5
+        }
+      ],
+      "section_number": 5
+    },
+    {
+      "heading": "06 Functional Requirements",
+      "level": 1,
+      "filename": "06_functional_requirements.md",
+      "subsections": [
+        {
+          "heading": "4. FUNCTIONAL REQUIREMENTS",
+          "level": 2,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.1 Host Application",
+          "level": 3,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.1.1 User Authentication",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.1.2 Initialization",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.1.3 User Management",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2 Target Application",
+          "level": 3,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.1 Get Board Details",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.2 FPGA Read & Write",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.3 DDR Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.3.1 DDR Full Memory Test",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.3.2 DDR Data Bus Test",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.3.3 DDR Address Bus Test",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.3.4 DDR Device Test",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.4 Temperature Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.4.1 Local Temperature Read",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.4.2 Remote Temperature Read",
+          "level": 5,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.5 {{Interface/Test}} Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.6 {{Other Component}} Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.2.7 {{Storage}} Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.3 MCU Test",
+          "level": 3,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.{{NO}}.{{NO}} {{Interface}} Test",
+          "level": 4,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        },
+        {
+          "heading": "4.{{NO}} {{Component}} Test",
+          "level": 3,
+          "filename": "06_functional_requirements.md",
+          "subsections": [],
+          "section_number": 6
+        }
+      ],
+      "section_number": 6
+    },
+    {
+      "heading": "07 Software Attributes",
+      "level": 1,
+      "filename": "07_software_attributes.md",
+      "subsections": [
+        {
+          "heading": "5. SOFTWARE SYSTEM ATTRIBUTES",
+          "level": 2,
+          "filename": "07_software_attributes.md",
+          "subsections": [],
+          "section_number": 7
+        },
+        {
+          "heading": "5.1 Performance Requirements",
+          "level": 3,
+          "filename": "07_software_attributes.md",
+          "subsections": [],
+          "section_number": 7
+        },
+        {
+          "heading": "5.2 Safety Requirements",
+          "level": 3,
+          "filename": "07_software_attributes.md",
+          "subsections": [],
+          "section_number": 7
+        },
+        {
+          "heading": "5.4 Software Quality Attributes",
+          "level": 3,
+          "filename": "07_software_attributes.md",
+          "subsections": [],
+          "section_number": 7
+        },
+        {
+          "heading": "5.5 Business Rules",
+          "level": 3,
+          "filename": "07_software_attributes.md",
+          "subsections": [],
+          "section_number": 7
+        }
+      ],
+      "section_number": 7
+    },
+    {
+      "heading": "08 Other Requirements",
+      "level": 1,
+      "filename": "08_other_requirements.md",
+      "subsections": [
+        {
+          "heading": "6. OTHER REQUIREMENTS",
+          "level": 2,
+          "filename": "08_other_requirements.md",
+          "subsections": [],
+          "section_number": 8
+        }
+      ],
+      "section_number": 8
+    },
+    {
+      "heading": "09 Requirements Traceability",
+      "level": 1,
+      "filename": "09_requirements_traceability.md",
+      "subsections": [
+        {
+          "heading": "7. REQUIREMENTS TRACEABILITY",
+          "level": 2,
+          "filename": "09_requirements_traceability.md",
+          "subsections": [],
+          "section_number": 9
+        }
+      ],
+      "section_number": 9
+    },
+    {
+      "heading": "10 Appendix A Kc Mapping",
+      "level": 1,
+      "filename": "10_appendix_a_kc_mapping.md",
+      "subsections": [
+        {
+          "heading": "APPENDIX A: MAPPING KC",
+          "level": 2,
+          "filename": "10_appendix_a_kc_mapping.md",
+          "subsections": [],
+          "section_number": 10
+        }
+      ],
+      "section_number": 10
+    },
+    {
+      "heading": "11 Appendix B Supporting Information",
+      "level": 1,
+      "filename": "11_appendix_b_supporting_information.md",
+      "subsections": [
+        {
+          "heading": "APPENDIX B: SUPPORTING INFORMATION",
+          "level": 2,
+          "filename": "11_appendix_b_supporting_information.md",
+          "subsections": [],
+          "section_number": 11
+        }
+      ],
+      "section_number": 11
+    }
+  ],
+  "table_of_contents": [
+    {
+      "filename": "01_project_table.md",
+      "title": "01 Project Table",
+      "section_number": 1,
+      "level": 2
+    },
+    {
+      "filename": "02_revision_history.md",
+      "title": "02 Revision History",
+      "section_number": 2,
+      "level": 2
+    },
+    {
+      "filename": "03_introduction.md",
+      "title": "03 Introduction",
+      "section_number": 3,
+      "level": 2
+    },
+    {
+      "filename": "04_overall_description.md",
+      "title": "04 Overall Description",
+      "section_number": 4,
+      "level": 2
+    },
+    {
+      "filename": "05_external_interfaces.md",
+      "title": "05 External Interfaces",
+      "section_number": 5,
+      "level": 2
+    },
+    {
+      "filename": "06_functional_requirements.md",
+      "title": "06 Functional Requirements",
+      "section_number": 6,
+      "level": 2
+    },
+    {
+      "filename": "07_software_attributes.md",
+      "title": "07 Software Attributes",
+      "section_number": 7,
+      "level": 2
+    },
+    {
+      "filename": "08_other_requirements.md",
+      "title": "08 Other Requirements",
+      "section_number": 8,
+      "level": 2
+    },
+    {
+      "filename": "09_requirements_traceability.md",
+      "title": "09 Requirements Traceability",
+      "section_number": 9,
+      "level": 2
+    },
+    {
+      "filename": "10_appendix_a_kc_mapping.md",
+      "title": "10 Appendix A Kc Mapping",
+      "section_number": 10,
+      "level": 2
+    },
+    {
+      "filename": "11_appendix_b_supporting_information.md",
+      "title": "11 Appendix B Supporting Information",
+      "section_number": 11,
+      "level": 2
+    }
+  ],
+  "fields": {
+    "fields": [
+      {
+        "name": "Document-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "FG-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FG-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Product-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Product-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Type-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Type-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "FG-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FG-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Product-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Product-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Type-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Type-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Date",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Date",
+        "inferred_from": null
+      },
+      {
+        "name": "Author-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Author-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Technical-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Technical-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Process-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Process-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "FG-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FG-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Product-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Product-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Type-ID",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Type-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Date",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Date",
+        "inferred_from": null
+      },
+      {
+        "name": "Author-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Author-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Technical-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Technical-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Process-Reviewer-Name",
+        "location": "01_project_table.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Process-Reviewer-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-version",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Date",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Date",
+        "inferred_from": null
+      },
+      {
+        "name": "Author-Name",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Author-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-version",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Date",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Date",
+        "inferred_from": null
+      },
+      {
+        "name": "Author-Name",
+        "location": "02_revision_history.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Author-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "FG-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FG-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Product-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Product-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Type-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Type-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Name",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "FG-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FG-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Product-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Product-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Type-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Type-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Name",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Name",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Document-Version",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Document-Version",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "Project-Board-ID",
+        "location": "03_introduction.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Project-Board-ID",
+        "inferred_from": null
+      },
+      {
+        "name": "blank_table_row_67",
+        "location": "03_introduction.md -> table row 67",
+        "field_type": "blank_table",
+        "placeholder_value": null,
+        "inferred_from": null
+      },
+      {
+        "name": "blank_table_row_103",
+        "location": "03_introduction.md -> table row 103",
+        "field_type": "blank_table",
+        "placeholder_value": null,
+        "inferred_from": null
+      },
+      {
+        "name": "2. OVERALL DESCRIPTION",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.1 Product Perspective",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.2 Product Functions",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.3 User Classes and Characteristics",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.4 Operating Environment",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.5 Design and Implementation Constraints",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.6 User Documentation",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "2.7 Assumptions and Dependencies",
+        "location": "04_overall_description.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "04 Overall Description"
+      },
+      {
+        "name": "3. EXTERNAL INTERFACE REQUIREMENTS",
+        "location": "05_external_interfaces.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "05 External Interfaces"
+      },
+      {
+        "name": "3.1 User Interfaces",
+        "location": "05_external_interfaces.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "05 External Interfaces"
+      },
+      {
+        "name": "3.2 Hardware Interfaces",
+        "location": "05_external_interfaces.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "05 External Interfaces"
+      },
+      {
+        "name": "3.3 Software Interfaces",
+        "location": "05_external_interfaces.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "05 External Interfaces"
+      },
+      {
+        "name": "3.4 Communications Interfaces",
+        "location": "05_external_interfaces.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "05 External Interfaces"
+      },
+      {
+        "name": "blank_table_row_20",
+        "location": "05_external_interfaces.md -> table row 20",
+        "field_type": "blank_table",
+        "placeholder_value": null,
+        "inferred_from": null
+      },
+      {
+        "name": "blank_table_row_21",
+        "location": "05_external_interfaces.md -> table row 21",
+        "field_type": "blank_table",
+        "placeholder_value": null,
+        "inferred_from": null
+      },
+      {
+        "name": "Board ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Board ID",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "HOST",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "HOST",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "TARGET",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "TARGET",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "FW or FIRMWARE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FW or FIRMWARE",
+        "inferred_from": null
+      },
+      {
+        "name": "MCU - Microcontroler or other",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "MCU - Microcontroler or other",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "Other COMPONENT",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Other COMPONENT",
+        "inferred_from": null
+      },
+      {
+        "name": "Component Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component Test",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Board ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Board ID",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "FUNC",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FUNC",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-requirement",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-requirement",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "FUNC",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FUNC",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-requirement",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-requirement",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "FUNC",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FUNC",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-requirement",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-requirement",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "COMPONENT Acronyms",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "COMPONENT Acronyms",
+        "inferred_from": null
+      },
+      {
+        "name": "FUNC",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FUNC",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-requirement",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-requirement",
+        "inferred_from": null
+      },
+      {
+        "name": "REF ID or NEW",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REF ID or NEW",
+        "inferred_from": null
+      },
+      {
+        "name": "GUI/command-line",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "GUI/command-line",
+        "inferred_from": null
+      },
+      {
+        "name": "platform: test PC/server",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "platform: test PC/server",
+        "inferred_from": null
+      },
+      {
+        "name": "primary purpose: transmitting commands/receiving data/controlling operations",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "primary purpose: transmitting commands/receiving data/controlling operations",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "FUNC",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FUNC",
+        "inferred_from": null
+      },
+      {
+        "name": "Additional Function",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Additional Function",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "communication interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "communication interface",
+        "inferred_from": null
+      },
+      {
+        "name": "target component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "target component",
+        "inferred_from": null
+      },
+      {
+        "name": "target",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "target",
+        "inferred_from": null
+      },
+      {
+        "name": "interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "interface",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "SBC/Processing Unit",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "SBC/Processing Unit",
+        "inferred_from": null
+      },
+      {
+        "name": "FPGA/Processor",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "FPGA/Processor",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD ID",
+        "inferred_from": null
+      },
+      {
+        "name": "master/slave/controller",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "master/slave/controller",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface Test",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "COMPONENT",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "COMPONENT",
+        "inferred_from": null
+      },
+      {
+        "name": "Component Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component Test",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage Test",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD ID",
+        "inferred_from": null
+      },
+      {
+        "name": "interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "interface",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "N",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "N",
+        "inferred_from": null
+      },
+      {
+        "name": "N",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "N",
+        "inferred_from": null
+      },
+      {
+        "name": "XX",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "XX",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD ID",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "N",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "N",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "N",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "N",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "interface",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface/Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface/Test",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface/Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface/Test",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface/Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface/Test",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface/Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface/Test",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-test 1",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-test 1",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-test 2",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-test 2",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Sub-test 3",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Sub-test 3",
+        "inferred_from": null
+      },
+      {
+        "name": "Other Component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Other Component",
+        "inferred_from": null
+      },
+      {
+        "name": "component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "component",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Other Component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Other Component",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "Component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "STORAGE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "STORAGE",
+        "inferred_from": null
+      },
+      {
+        "name": "Storage",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Storage",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD ID",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD ID",
+        "inferred_from": null
+      },
+      {
+        "name": "MCU MODEL",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "MCU MODEL",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "REQ_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REQ_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface Requirement Name",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface Requirement Name",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "REQ_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "REQ_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "Communication Requirement Name",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Communication Requirement Name",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface Test",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "INTERFACE",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "INTERFACE",
+        "inferred_from": null
+      },
+      {
+        "name": "Interface",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Interface",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component",
+        "inferred_from": null
+      },
+      {
+        "name": "Component Test",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component Test",
+        "inferred_from": null
+      },
+      {
+        "name": "COMPONENT NAME",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "COMPONENT NAME",
+        "inferred_from": null
+      },
+      {
+        "name": "functionality",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "functionality",
+        "inferred_from": null
+      },
+      {
+        "name": "NO",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "NO",
+        "inferred_from": null
+      },
+      {
+        "name": "Component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "Component",
+        "inferred_from": null
+      },
+      {
+        "name": "BOARD_ACRONYM",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "BOARD_ACRONYM",
+        "inferred_from": null
+      },
+      {
+        "name": "functionality",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "functionality",
+        "inferred_from": null
+      },
+      {
+        "name": "component",
+        "location": "06_functional_requirements.md",
+        "field_type": "placeholder",
+        "placeholder_value": "component",
+        "inferred_from": null
+      },
+      {
+        "name": "5. SOFTWARE SYSTEM ATTRIBUTES",
+        "location": "07_software_attributes.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "07 Software Attributes"
+      },
+      {
+        "name": "5.1 Performance Requirements",
+        "location": "07_software_attributes.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "07 Software Attributes"
+      },
+      {
+        "name": "5.2 Safety Requirements",
+        "location": "07_software_attributes.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "07 Software Attributes"
+      },
+      {
+        "name": "5.4 Software Quality Attributes",
+        "location": "07_software_attributes.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "07 Software Attributes"
+      },
+      {
+        "name": "5.5 Business Rules",
+        "location": "07_software_attributes.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "07 Software Attributes"
+      },
+      {
+        "name": "6. OTHER REQUIREMENTS",
+        "location": "08_other_requirements.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "08 Other Requirements"
+      },
+      {
+        "name": "7. REQUIREMENTS TRACEABILITY",
+        "location": "09_requirements_traceability.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "09 Requirements Traceability"
+      },
+      {
+        "name": "APPENDIX A: MAPPING KC",
+        "location": "10_appendix_a_kc_mapping.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "10 Appendix A Kc Mapping"
+      },
+      {
+        "name": "APPENDIX B: SUPPORTING INFORMATION",
+        "location": "11_appendix_b_supporting_information.md -> header",
+        "field_type": "inferred",
+        "placeholder_value": null,
+        "inferred_from": "11 Appendix B Supporting Information"
+      }
+    ]
+  },
+  "dependency_dag": {
+    "02_revision_history.md": [
+      "01_project_table.md"
+    ],
+    "03_introduction.md": [
+      "01_project_table.md",
+      "02_revision_history.md"
+    ],
+    "04_overall_description.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md"
+    ],
+    "05_external_interfaces.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md"
+    ],
+    "06_functional_requirements.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md"
+    ],
+    "07_software_attributes.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md",
+      "06_functional_requirements.md"
+    ],
+    "08_other_requirements.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md",
+      "06_functional_requirements.md",
+      "07_software_attributes.md"
+    ],
+    "09_requirements_traceability.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md",
+      "06_functional_requirements.md",
+      "07_software_attributes.md",
+      "08_other_requirements.md"
+    ],
+    "10_appendix_a_kc_mapping.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md",
+      "06_functional_requirements.md",
+      "07_software_attributes.md",
+      "08_other_requirements.md",
+      "09_requirements_traceability.md"
+    ],
+    "11_appendix_b_supporting_information.md": [
+      "01_project_table.md",
+      "02_revision_history.md",
+      "03_introduction.md",
+      "04_overall_description.md",
+      "05_external_interfaces.md",
+      "06_functional_requirements.md",
+      "07_software_attributes.md",
+      "08_other_requirements.md",
+      "09_requirements_traceability.md",
+      "10_appendix_a_kc_mapping.md"
+    ]
+  },
+  "styling_rules": [
+    {
+      "section": "01_project_table.md",
+      "output_type": "paragraph",
+      "needs_tables": false,
+      "needs_paragraphs": false,
+      "needs_diagrams": false,
+      "table_count": 0
+    },
+    {
+      "section": "01_project_table.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 3
+    },
+    {
+      "section": "02_revision_history.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 1
+    },
+    {
+      "section": "03_introduction.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 4
+    },
+    {
+      "section": "04_overall_description.md",
+      "output_type": "mixed",
+      "needs_tables": false,
+      "needs_paragraphs": true,
+      "needs_diagrams": true,
+      "table_count": 0
+    },
+    {
+      "section": "05_external_interfaces.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 2
+    },
+    {
+      "section": "06_functional_requirements.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 43
+    },
+    {
+      "section": "07_software_attributes.md",
+      "output_type": "paragraph",
+      "needs_tables": false,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 0
+    },
+    {
+      "section": "08_other_requirements.md",
+      "output_type": "paragraph",
+      "needs_tables": false,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 0
+    },
+    {
+      "section": "09_requirements_traceability.md",
+      "output_type": "mixed",
+      "needs_tables": true,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 2
+    },
+    {
+      "section": "10_appendix_a_kc_mapping.md",
+      "output_type": "paragraph",
+      "needs_tables": false,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 0
+    },
+    {
+      "section": "11_appendix_b_supporting_information.md",
+      "output_type": "paragraph",
+      "needs_tables": false,
+      "needs_paragraphs": true,
+      "needs_diagrams": false,
+      "table_count": 0
+    }
+  ],
+  "output_file": ""
+}

@@ -12,7 +12,7 @@ import os
 import tempfile
 from pathlib import Path
 from system_config import get_project_base_dir
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import FileWriteInput
 
 log = logging.getLogger(__name__)

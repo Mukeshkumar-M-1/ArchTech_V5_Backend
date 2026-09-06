@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import FileEditInput
 
 log = logging.getLogger(__name__)

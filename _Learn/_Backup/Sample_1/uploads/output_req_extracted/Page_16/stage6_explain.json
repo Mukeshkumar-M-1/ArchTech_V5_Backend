@@ -1,0 +1,13 @@
+{
+  "page": 16,
+  "explained": [
+    {
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "explanation": "**Meaning :** The specified FPGA chip must be capable of handling multiple video and data transmission standards simultaneously.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818"
+    }
+  ]
+}

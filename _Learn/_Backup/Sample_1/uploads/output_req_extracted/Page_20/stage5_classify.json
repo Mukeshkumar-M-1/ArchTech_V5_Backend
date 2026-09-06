@@ -1,0 +1,54 @@
+{
+  "page": 20,
+  "classified": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    },
+    {
+      "category": "Software",
+      "sub_category": "Application",
+      "sem_conf": 0.9,
+      "kw_conf": 1.0,
+      "text": "Requirement ID: DP-XMC-5049-HRS-003; Requirement: A micro-controller USB based GUI application shall be developed. Using the GUI, the micro-controller peripherals such as SPI and I2C which are used for on-board external ICs shall be configured; Testing Plan: The test application shall be updated from the USB based GUI of DP-VPX-6005"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.95,
+      "kw_conf": 0.0,
+      "text": "Requirement ID: DP-XMC-5049-HRS-0016; Requirement: USB2.0; Testing Plan: NA"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.9,
+      "kw_conf": 0.333,
+      "text": "DP-XMC-5049-HRS-004: All voltages shall be measured by the multi-meter. Un-sequenced voltages shall be monitored through the voltage monitor section."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Requirement ID: DP-XMC-5049-HRS-005; Requirement: The supply current shall be measured by power analysis of module components; Testing Plan: NA"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.95,
+      "kw_conf": 0.667,
+      "text": "DP-XMC-5049-HRS-006 Power dissipation shall be measured by power analysis of module components"
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Memory",
+      "sem_conf": 0.95,
+      "kw_conf": 0.333,
+      "text": "Requirement ID: DP-XMC-5049-HRS-007; Requirement: DDR4 full memory test shall be performed; Testing Plan: Refer DP- VPX-5792 test application"
+    }
+  ]
+}

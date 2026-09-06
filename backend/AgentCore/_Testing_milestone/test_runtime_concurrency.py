@@ -14,12 +14,20 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from AgentCore.infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from AgentCore.journal.execution_journal import ExecutionJournal
 
 logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    level=logging.INFO,
+    format="\n\n %(asctime)s [%(name)s.%(funcName)s]\n [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log11.log",
+            encoding="utf-8",
+            mode="a",
+        ),
+    ],
 )
 log = logging.getLogger("TestRuntimeConcurrency")
 

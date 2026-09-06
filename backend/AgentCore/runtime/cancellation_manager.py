@@ -7,7 +7,7 @@ Ensures that running tools are aborted if possible and state transitions to CANC
 
 import logging
 from typing import Callable, List
-from ..infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from .state_machine import RuntimeStateMachine, RuntimeState
 
 log = logging.getLogger(__name__)

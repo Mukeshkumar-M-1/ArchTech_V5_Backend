@@ -1,0 +1,93 @@
+{
+  "page": 15,
+  "explained": [
+    {
+      "category": "Hardware",
+      "sub_category": "FPGA",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "explanation": "**Meaning :** The system uses a specific type of programmable chip (FPGA) that can handle various video and data standards, including military-grade video, standard computer video, and high-speed serial data links.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n- STANAG3350 interface\n- RGB interface\n- VGA interface\n- DVI interface\n- ARINC818 interface\n\n**Purpose :** To provide a versatile hardware platform capable of processing and transmitting multiple types of video and avionics data signals."
+    },
+    {
+      "category": "Functional",
+      "sub_category": "General",
+      "sem_conf": 0.0,
+      "kw_conf": 0.0,
+      "text": "DP-XMC-5049-HRS-0016: One optional USB2.0 interface from Micro-controller to XMC secondary connector",
+      "explanation": "**Meaning :** There is an optional connection using USB 2.0 technology that links the main micro-controller to a secondary connector on the module.\n\n**Components :**\n- USB2.0 interface\n- Micro-controller\n- XMC secondary connector\n\n**Purpose :** To allow optional communication or configuration between the micro-controller and external devices via the secondary connector."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Power",
+      "sem_conf": 0.3,
+      "kw_conf": 1.0,
+      "text": "DP-XMC-5049-HRS-0017: XMC Primary Connector requirements: 5V DC supply; 3.3V DC supply; 3.3V-AUX DC supply; Module JTAG Interface; PCIe REFCLK; 1x x8 PCIe Gen 3 link from FPGA MGT bank.",
+      "explanation": "**Meaning :** The primary connector on the module requires specific power supplies, a debugging interface, a clock signal, and a high-speed data link from the FPGA.\n\n**Components :**\n- XMC Primary Connector\n- 5V DC supply\n- 3.3V DC supply\n- 3.3V-AUX DC supply\n- Module JTAG Interface\n- PCIe REFCLK\n- FPGA MGT bank\n- PCIe Gen 3 link (x8)\n\n**Parameters :**\n- 5V DC\n- 3.3V DC\n- 3.3V-AUX DC\n- PCIe Gen 3\n- x8 link width\n\n**Purpose :** To ensure the module receives necessary power, clock synchronization, debugging capabilities, and high-bandwidth data connectivity through the primary connector."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.2,
+      "kw_conf": 0.6666666666666666,
+      "text": "DP-XMC-5049-HRS-0017: XMC Secondary Connector requirements: DVI channel 1 / 2x ARINC818 TX & 3x ARINC818 RX; 1x ARINC818 TX; DVI channel 2 / RGBHV channel 1 RED - BLUE & RGBHV channel 2 RED \u2013 BLUE; RGBHV CVBS Green channel 1 & 2; RGBHV channel 3 (Red, Green & Blue); One DisplayPort input channel; One optional USB channel from Micro-controller.",
+      "explanation": "**Meaning :** The secondary connector supports a complex mix of video outputs, data links, and an optional USB connection, including specific color channels for RGBHV signals.\n\n**Components :**\n- XMC Secondary Connector\n- DVI channel 1\n- DVI channel 2\n- ARINC818 TX (Transmitter)\n- ARINC818 RX (Receiver)\n- RGBHV channel 1 RED - BLUE\n- RGBHV channel 2 RED \u2013 BLUE\n- RGBHV CVBS Green channel 1\n- RGBHV CVBS Green channel 2\n- RGBHV channel 3 (Red, Green & Blue)\n- DisplayPort input channel\n- USB channel from Micro-controller\n\n**Parameters :**\n- 2x ARINC818 TX\n- 3x ARINC818 RX\n- 1x ARINC818 TX\n\n**Purpose :** To provide extensive video output options, avionics data transmission, and optional micro-controller connectivity through the secondary connector."
+    },
+    {
+      "category": "Software",
+      "sub_category": "Application",
+      "sem_conf": 0.2,
+      "kw_conf": 0.6666666666666666,
+      "text": "DP-XMC-5049-HRS-0018: Application GUI via USB",
+      "explanation": "**Meaning :** The application software includes a graphical user interface (GUI) that can be accessed or controlled via a USB connection.\n\n**Components :**\n- Application GUI\n- USB interface\n\n**Purpose :** To allow users to interact with the application's functions through a visual interface connected via USB."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0019: Supported OS: Linux / Windows (SBC external module for PCIe enumeration)",
+      "explanation": "**Meaning :** The module is compatible with both Linux and Windows operating systems, using an external Single Board Computer (SBC) to handle the detection and setup of the PCIe connection.\n\n**Components :**\n- Linux OS\n- Windows OS\n- SBC (Single Board Computer) external module\n- PCIe enumeration system\n\n**Purpose :** To ensure the hardware can operate within standard computing environments by delegating the hardware detection task to an external computer module."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Mechanical",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0021: Dimension (LxBxH): 143.74\u00d774\u00d713.46 mm",
+      "explanation": "**Meaning :** The physical size of the module is strictly defined by its length, width, and height.\n\n**Parameters :**\n- Length: 143.74 mm\n- Width: 74 mm\n- Height: 13.46 mm\n\n**Purpose :** To ensure the module fits into the designated mechanical slot or chassis."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Mechanical",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0022: Weight: <800g",
+      "explanation": "**Meaning :** The total weight of the module must be less than 800 grams.\n\n**Parameters :**\n- Weight: <800g\n\n**Purpose :** To keep the module lightweight, likely for ease of handling or to meet specific transport or mounting constraints."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0015: Operating Temperature: -40\u00b0C to +71\u00b0C (Card Edge)",
+      "explanation": "**Meaning :** The module is designed to function correctly within a specific temperature range at its connection edge.\n\n**Parameters :**\n- Operating Temperature: -40\u00b0C to +71\u00b0C\n- Location: Card Edge\n\n**Purpose :** To ensure reliable operation in harsh environmental conditions where the card connects to the backplane."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0023: Storage Temperature: -55\u00b0C to +95\u00b0C",
+      "explanation": "**Meaning :** The module can be stored safely within a wider temperature range than its operating range, without being powered on.\n\n**Parameters :**\n- Storage Temperature: -55\u00b0C to +95\u00b0C\n\n**Purpose :** To define the safe environmental limits for the module when it is not in use."
+    },
+    {
+      "category": "Hardware",
+      "sub_category": "Environmental",
+      "sem_conf": 0.1,
+      "kw_conf": 0.3333333333333333,
+      "text": "DP-XMC-5049-HRS-0024: Relative Humidity: 95% RH",
+      "explanation": "**Meaning :** The module must withstand high levels of moisture without damage.\n\n**Parameters :**\n- Relative Humidity: 95% RH\n\n**Purpose :** To ensure the hardware remains functional and undamaged in humid environments."
+    }
+  ]
+}

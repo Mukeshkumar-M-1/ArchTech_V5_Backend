@@ -1,0 +1,15 @@
+{
+  "page": 11,
+  "normalized": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+      "score": 6,
+      "normalized": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces."
+    },
+    {
+      "text": "2.1 Features VITA 42 Compliant XMC Module; Kintex Ultrascale series FPGA with two 4GB DDR4 SDRAM controller; x8 PCIe Gen 3 links on XMC Primary Connector; Dual mode displayport video input; 2x Single link DVI outputs on XMC Secondary Connector (FG configurable); 1x Single link DVI output on DVI Connector at Front panel (FG configurable); 3x ARINC 818 Transmitter(Tx & Rx) on XMC Secondary Connector (FG configurable); RGBHV / VGA / STANAG 3350 Output using Encoder on XMC Secondary Connector (FG configurable)",
+      "score": 8,
+      "normalized": "2.1 Features VITA 42 Compliant XMC Module; Kintex Ultrascale series FPGA with two 4GB DDR4 SDRAM controller; x8 PCIe Gen 3 links on XMC Primary Connector; Dual mode displayport video input; 2x Single link DVI outputs on XMC Secondary Connector (FG configurable); 1x Single link DVI output on DVI Connector at Front panel (FG configurable); 3x ARINC 818 Transmitter(Tx & Rx) on XMC Secondary Connector (FG configurable); RGBHV / VGA / STANAG 3350 Output using Encoder on XMC Secondary Connector (FG configurable)"
+    }
+  ]
+}

@@ -10,10 +10,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import FileReadInput
-
-log = logging.getLogger(__name__)
 
 log = logging.getLogger(__name__)
 
@@ -27,28 +25,26 @@ def _execute(file_path: str, **kwargs) -> str:
         **kwargs: Additional parameters.
 
     Returns:
-        File content as string, or error message.
+        File content as string.
     """
     log.info("[FileRead] Reading file: %s", file_path)
     path = Path(file_path)
     if not path.exists():
-        return f"Error: File not found: {file_path}"
+        raise FileNotFoundError(f"File not found: {file_path}")
     if path.is_dir():
-        return f"Error: Path is a directory, not a file: {file_path}"
+        raise IsADirectoryError(f"Path is a directory, not a file: {file_path}")
     try:
         content = path.read_text(encoding="utf-8")
-        truncated = False
-        # Truncate very large files (100k chars) to prevent overwhelming the LLM
-        if len(content) > DEFAULT_FILE_READ_CHAR_SIZE:
-            truncated = True
-            content = content[:DEFAULT_FILE_READ_CHAR_SIZE] + f"\n\n... [truncated, {len(content) - DEFAULT_FILE_READ_CHAR_SIZE} more characters]"
-        if truncated:
-            return content + "\n\n[FILE TRUNCATED -- original file exceeded 100,000 characters]"
-        return content
     except PermissionError:
-        return f"Error: Permission denied reading file: {file_path}"
+        raise
     except UnicodeDecodeError:
-        return f"Error: File is not text: {file_path} (try reading as binary)"
+        raise
+
+    # Truncate very large files (100k chars) to prevent overwhelming the LLM
+    if len(content) > DEFAULT_FILE_READ_CHAR_SIZE:
+        content = content[:DEFAULT_FILE_READ_CHAR_SIZE] + f"\n\n... [truncated, {len(content) - DEFAULT_FILE_READ_CHAR_SIZE} more characters]"
+        return content + "\n\n[FILE TRUNCATED -- original file exceeded 100,000 characters]"
+    return content
 
 
 FileRead = ToolDefinition(

@@ -25,21 +25,14 @@ log = logging.getLogger(__name__)
 # ─── Provider-based model config  ───────────────
 PROVIDER_MODEL_MAP = {
     "haiku45": {
-        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
+        "openai": "claude-fable-5",
     },
     "sonnet46": {
-        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
+        "openai": "claude-fable-5",
     },
     "opus46": {
-        "openai": "qwen2.5-1.5b-instruct-q4_k_m",
+        "openai": "claude-fable-5",
     },
-}
-
-# Default model fallback chain — like CCB's model fallback on overloaded models
-MODEL_FALLBACK_CHAIN = {
-    "haiku": ["qwen2.5-1.5b-instruct-q4_k_m"],
-    "sonnet": ["qwen2.5-1.5b-instruct-q4_k_m"],
-    "opus": ["qwen2.5-1.5b-instruct-q4_k_m"],
 }
 
 # ─── Default Settings ─────────────────────────────────────
@@ -174,20 +167,63 @@ def _resolve_model_name(model: str) -> str:
     Examples:
         >>> _resolve_model_name('sonnet46')
         'claude-sonnet-4-6'
-        >>> _resolve_model_name('claude-opus-4-6')
-        'claude-opus-4-6'  # passed through as-is
+        >>> _resolve_model_name('claude-sonnet-4-6')
+        'claude-sonnet-4-6'  # passed through as-is
     """
     if model in PROVIDER_MODEL_MAP:
         return PROVIDER_MODEL_MAP[model]["openai"]
-    # Already a raw model string — return as-is
     return model
+
+
+def get_project_model_fallback_chain(project_id: Optional[str] = None) -> List[str]:
+    """
+    Build the model fallback chain from the project's saved LLM settings.
+
+    The project's default_model is the primary; the remaining keys of the
+    saved models list (.ArchTech/{project_id}/settings.json) form the
+    fallback chain, in stored order. Returns [] when the project is
+    unknown or has no saved default_model.
+
+    Example — settings.json:
+        "default_model": "claude-sonnet-4-6",
+        "models": [{"key": "claude-haiku-4-5"},
+                   {"key": "claude-opus-4-6"},
+                   {"key": "claude-sonnet-4-6"}]
+    → ["claude-haiku-4-5", "claude-opus-4-6"]
+    """
+    try:
+        from .system_config import load_project_settings
+        from .project_context import ProjectContext
+    except ImportError:
+        from system_config import load_project_settings
+        from project_context import ProjectContext
+
+    if project_id is None:
+        project_id = ProjectContext.get()
+    if not project_id:
+        return []
+
+    project_llm_settings = load_project_settings(project_id)
+    primary_model = str(project_llm_settings.get("default_model") or "")
+    if not primary_model:
+        return []
+
+    saved_model_keys = [
+        str(model_entry.get("key") or "")
+        for model_entry in project_llm_settings.get("models") or []
+        if isinstance(model_entry, dict)
+    ]
+    return [model_key for model_key in saved_model_keys if model_key and model_key != primary_model]
 
 
 def _get_client() -> AsyncOpenAI:
     """
     Create and return the AsyncOpenAI API client.
 
-    Reads API credentials and base URL from system_config:
+    The active project ID is read from ProjectContext. When that project has
+    saved LLM settings (.ArchTech/{project_id}/settings.json), those values
+    take precedence; otherwise falls back to the hardcoded values in
+    system_config:
       - API_KEY:  Bearer token for authentication (hardcoded in system_config)
       - API_URL:  Proxy endpoint, e.g. 'https://llmapi.datapatterns.co.in/v1'
       - API_TIME_OUT: Default timeout per request (120.0 seconds)
@@ -200,15 +236,32 @@ def _get_client() -> AsyncOpenAI:
         rather than cached as a true singleton.
     """
     try:
-        from .system_config import API_URL, API_KEY, API_TIME_OUT
+        from .system_config import API_URL, API_KEY, API_TIME_OUT, load_project_settings
+        from .project_context import ProjectContext
     except ImportError:
-        from system_config import API_URL, API_KEY, API_TIME_OUT
+        from system_config import API_URL, API_KEY, API_TIME_OUT, load_project_settings
+        from project_context import ProjectContext
+
+    active_project_id = ProjectContext.get()
+    project_llm_settings = load_project_settings(active_project_id) if active_project_id else {}
+
+    raw_api_url = str(project_llm_settings.get("api_url") or API_URL).strip()
+    if raw_api_url:
+        if not raw_api_url.endswith("/"):
+            if raw_api_url.endswith("v1"):
+                raw_api_url += "/"
+            else:
+                raw_api_url += "/v1/"
+        else:
+            if not raw_api_url.endswith("v1/"):
+                raw_api_url += "v1/"
 
     return AsyncOpenAI(
-        api_key=str(API_KEY),
-        base_url=str(API_URL),
-        timeout=API_TIME_OUT,
+        api_key=str(project_llm_settings.get("api_key") or API_KEY),
+        base_url=raw_api_url,
+        timeout=float(project_llm_settings.get("timeout") or API_TIME_OUT),
         max_retries=API_DEFAULT_RETRY_LIMIT,
+        default_headers={"Connection": "close"}
     )
 
 
@@ -407,7 +460,10 @@ async def llm_request(
         temperature: Sampling temperature
         timeout: Request timeout in seconds
         system_prompt: Optional system message prepended to messages
-        fallback_chain: List of model names to try if primary fails
+        fallback_chain: List of model names to try if primary fails.
+            When omitted, derived from the project's saved settings —
+            default_model is the primary, the remaining models-list
+            keys are the fallback chain.
         correction_retry: Tuple of (original_prompt, error_message).
             If provided and the initial call succeeds but produces malformed output,
             a second call is made with the error details appended so the LLM can self-correct.
@@ -418,6 +474,13 @@ async def llm_request(
         Content string or None on complete failure
     """
     resolved_model = _resolve_model_name(model)
+
+    if fallback_chain is None:
+        fallback_chain = [
+            fallback_model
+            for fallback_model in get_project_model_fallback_chain()
+            if _resolve_model_name(fallback_model) != resolved_model
+        ] or None
 
     llm_message = list(messages)
     if system_prompt:

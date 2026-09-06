@@ -1,0 +1,12 @@
+{
+  "page": 24,
+  "classified": [
+    {
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "sem_conf": 0.95,
+      "kw_conf": 1.0,
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces"
+    }
+  ]
+}

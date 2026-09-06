@@ -6,8 +6,8 @@ This package provides the core orchestration logic for DocumentGenerationAgent.
 from .contracts import AgentDescriptor, RuntimeResult, RuntimeLifecycleStatus
 from .dependency_graph import DependencyGraph
 from .mission_layer import MissionParser, TaskPlanner, TaskGraphBuilder
-from .queue_and_dispatch import TaskQueue, Dispatcher
-from .scheduling import Scheduler
+from .lease_manager import TaskQueue, Dispatcher
+from .scheduling_manager import SchedulerManager
 from .worker_management import AgentCatalog, WorkerDirectory
 from .orchestrator import MissionOrchestrator
 from .section_registry import SectionRegistry, SectionRegistryEntry
@@ -23,7 +23,7 @@ __all__ = [
     "TaskGraphBuilder",
     "TaskQueue",
     "Dispatcher",
-    "Scheduler",
+    "SchedulerManager",
     "AgentCatalog",
     "WorkerDirectory",
     "MissionOrchestrator",

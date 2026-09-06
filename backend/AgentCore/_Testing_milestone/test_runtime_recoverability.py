@@ -20,8 +20,16 @@ from AgentCore.journal.execution_journal import ExecutionJournal
 from AgentCore.runtime.replay_engine import ReplayEngine, ReplayMode
 
 logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    level=logging.INFO,
+    format="\n\n %(asctime)s [%(name)s.%(funcName)s]\n [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log15.log",
+            encoding="utf-8",
+            mode="a",
+        ),
+    ],
 )
 log = logging.getLogger("TestRuntimeRecoverability")
 

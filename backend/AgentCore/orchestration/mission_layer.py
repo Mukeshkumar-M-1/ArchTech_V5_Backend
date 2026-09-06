@@ -11,7 +11,7 @@ import uuid
 import json
 
 from AgentCore.orchestration.contracts import TaskContract
-from AgentCore.orchestration.queue_and_dispatch import TaskQueue
+from AgentCore.orchestration.lease_manager import TaskQueue
 
 log = logging.getLogger(__name__)
 

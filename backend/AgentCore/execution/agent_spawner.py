@@ -177,7 +177,7 @@ class AgentSpawner:
         from .query_loop import QueryLoop
         from .context_isolation import AgentContext, AgentContextManager
         from .message_manager import MessageManager
-        from .token_tracker import TokenUsageTracker
+        from .token_usage_tracker import TokenTracker
         from .builtins.tasks import get_store, get_running_tasks
         from .transcript import get_transcript_dir, TranscriptWriter
 
@@ -197,7 +197,7 @@ class AgentSpawner:
             message_manager=MessageManager(),
             abort_controller=agent_abort,
             transcript_writer=transcript_writer,
-            token_tracker=TokenUsageTracker(),
+            token_tracker=TokenTracker(),
         )
 
         start_time = time.monotonic()
@@ -220,7 +220,7 @@ class AgentSpawner:
 
                 try:
                     result_text = await loop.run(
-                        messages=messages,
+                        initial_messages=messages,
                         system_prompt=system_prompt,
                         tools=tools,
                         model=model,
@@ -315,7 +315,7 @@ class AgentSpawner:
         # Phase 3: create isolated context for this async agent
         from .context_isolation import AgentContext, AgentContextManager
         from .message_manager import MessageManager
-        from .token_tracker import TokenUsageTracker
+        from .token_usage_tracker import TokenTracker
         from .builtins.tasks import get_store
         from .transcript import get_transcript_dir, TranscriptWriter
 
@@ -330,7 +330,7 @@ class AgentSpawner:
             message_manager=MessageManager(),
             abort_controller=agent_abort,
             transcript_writer=transcript_writer,
-            token_tracker=TokenUsageTracker(),
+            token_tracker=TokenTracker(),
         )
 
         # Phase 4: wrapper with try/finally for cleanup

@@ -1,0 +1,21 @@
+{
+  "page": 29,
+  "explained": [
+    {
+      "category": "Hardware",
+      "sub_category": "Interface",
+      "sem_conf": 0.85,
+      "kw_conf": 0.333,
+      "text": "This section shall include required test equipment, test cables (bought out), test cables (fabricated), test jig, test rig, external modules, JTAG, emulators, software environment, and programming file.",
+      "explanation": "**Meaning :** This section must list all the physical tools, hardware accessories, and software environments needed to perform testing.\n\n**Components :**\n- Test equipment\n- Test cables (bought out)\n- Test cables (fabricated)\n- Test jig\n- Test rig\n- External modules\n- JTAG\n- Emulators\n- Software environment\n- Programming file\n\n**Purpose :** To ensure all necessary resources for testing are identified and available."
+    },
+    {
+      "category": "Functional",
+      "sub_category": "General",
+      "sem_conf": 0.9,
+      "kw_conf": 0.0,
+      "text": "This section shall be provided with test setup, interconnection details, and equipment connectivity.",
+      "explanation": "**Meaning :** This section must describe how the test setup is arranged, including how components are connected and how equipment links together.\n\n**Components :**\n- Test setup\n- Interconnection details\n- Equipment connectivity\n\n**Purpose :** To provide clear instructions on the physical and logical arrangement of the testing infrastructure."
+    }
+  ]
+}

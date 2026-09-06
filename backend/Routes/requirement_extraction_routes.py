@@ -367,7 +367,7 @@ async def submit_selected_requirements(request: SubmitSelectedRequest, project_i
             
         # Fire event to the global event bus
         try:
-            from AgentCore.observability.event_bus import get_global_bus, EventType
+            from AgentCore.event_bus import get_global_bus, EventType
             get_global_bus().publish(
                 EventType.MEMORY_UPDATED, 
                 source="RequirementExtraction", 

@@ -1,0 +1,10 @@
+{
+  "page": 3,
+  "normalized": [
+    {
+      "text": "using Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces HDD/HRS/TP16/1.01",
+      "score": 6,
+      "normalized": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces. HDD/HRS/TP16/1.01"
+    }
+  ]
+}

@@ -15,13 +15,21 @@ import uuid
 # Setup explicit path for the AgentCore module
 sys.path.append(str(Path(__file__).parent.parent))
 
-from AgentCore.infrastructure.event_bus import EventBus
+from AgentCore.event_bus import EventBus
 from AgentCore.runtime.state_machine import RuntimeStateMachine, RuntimeState
 
 # Configure robust logging for clear developer debugging as requested
 logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    level=logging.INFO,
+    format="\n\n %(asctime)s [%(name)s.%(funcName)s]\n [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(
+            r"/home/devusr/Mukesh/ArchTech_V5_1/Frontend/_Logs/Log12.log",
+            encoding="utf-8",
+            mode="a",
+        ),
+    ],
 )
 log = logging.getLogger("TestRuntimeCorrectness")
 

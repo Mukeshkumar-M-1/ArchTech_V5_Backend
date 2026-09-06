@@ -1,0 +1,27 @@
+{
+  "page": 12,
+  "requirements": [
+    {
+      "id": "REQ-0003",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 12,
+      "keywords": [
+        "fpga",
+        "vga"
+      ],
+      "extracted_at": "2026-06-15T09:09:59.069899",
+      "confidence": 0.705,
+      "explanation": "**Meaning :** The specified FPGA chip must be capable of handling multiple video and data transmission standards simultaneously.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n\n**Parameters :**\n- STANAG3350\n- RGB\n- VGA\n- DVI\n- ARINC818",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 86,
+      "rule_score": 1.0,
+      "related_ids": []
+    }
+  ]
+}

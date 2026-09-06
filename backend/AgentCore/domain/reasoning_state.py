@@ -38,4 +38,4 @@ class ReasoningState:
 
     def increment_attempt(self) -> None:
         self.attempt_number += 1
-        log.debug(f"[ReasoningState] Attempt number incremented to {self.attempt_number}")
+        log.info(f"[ReasoningState] Attempt number incremented to {self.attempt_number}")

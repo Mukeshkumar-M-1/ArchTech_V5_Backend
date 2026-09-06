@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from AgentCore.execution.registry import ToolDefinition
+from ..tool_registry import ToolDefinition
 from AgentCore.shared.types import BashInput
 
 log = logging.getLogger(__name__)

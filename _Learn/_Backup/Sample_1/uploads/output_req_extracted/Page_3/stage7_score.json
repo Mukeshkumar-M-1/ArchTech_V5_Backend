@@ -1,0 +1,32 @@
+{
+  "page": 3,
+  "requirements": [
+    {
+      "id": "REQ-0013",
+      "type": null,
+      "category": "Hardware/FPGA",
+      "sub_category": "FPGA",
+      "priority": "High",
+      "text": "The Kintex Ultrascale+ FPGA shall support STANAG3350, RGB, VGA, DVI, and ARINC818 interfaces. HDD/HRS/TP16/1.01",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 3,
+      "keywords": [
+        "kintex ultrascale+",
+        "fpga",
+        "stana3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818"
+      ],
+      "extracted_at": "2026-06-15T09:10:04.191681",
+      "confidence": 0.53,
+      "explanation": "**Meaning :** The Kintex Ultrascale+ FPGA must be capable of handling five specific types of data interfaces: STANAG3350, RGB, VGA, DVI, and ARINC818. This ensures the hardware can connect to and process signals from various external systems or displays.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n- STANAG3350 interface\n- RGB interface\n- VGA interface\n- DVI interface\n- ARINC818 interface\n\n**Parameters :**\n- HDD/HRS/TP16/1.01",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 111,
+      "rule_score": 1.0,
+      "related_ids": []
+    }
+  ]
+}

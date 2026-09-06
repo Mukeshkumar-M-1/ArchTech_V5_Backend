@@ -386,12 +386,12 @@ def cancel_template_generation(project_id: str):
         "[TemplateRoute] Canceling generation for project '%s'",
         project_id,
     )
-    from AgentCore.execution.session_manager import SessionLifecycle
+    from AgentCore import GenerationSessionManager
     from AgentCore.execution.abort_controller import get_hierarchy
 
-    session = SessionLifecycle.find_active(project_id=project_id)
+    session = GenerationSessionManager.find_active(project_id=project_id)
     if session:
-        SessionLifecycle.cancel(session_id=session.session_id, project_id=project_id)
+        GenerationSessionManager.cancel(session_id=session.session_id, project_id=project_id)
 
     try:
         hierarchy = get_hierarchy()
@@ -416,10 +416,10 @@ async def generate_template_section(project_id: str, request: GenerateRequest = 
         "[TemplateRoute] Starting template analysis for project '%s'",
         project_id,
     )
-    from AgentCore.execution.session_manager import SessionLifecycle
+    from AgentCore import GenerationSessionManager
     from Template_analysis.template_analysis_agent import TemplateAnalysisAgent
 
-    session = SessionLifecycle.create_generation(project_id=project_id, target_sections=[request.filename] if request.filename else None)
+    session = GenerationSessionManager.create(project_id=project_id, target_sections=[request.filename] if request.filename else None)
 
     async def _run_analysis():
         try:
@@ -429,7 +429,7 @@ async def generate_template_section(project_id: str, request: GenerateRequest = 
 
             total = len(result.table_of_contents) if result.table_of_contents else 0
 
-            SessionLifecycle.update_progress(
+            GenerationSessionManager.update_progress(
                 project_id=project_id,
                 session_id=session.session_id,
                 status="complete",
@@ -437,7 +437,7 @@ async def generate_template_section(project_id: str, request: GenerateRequest = 
                 current_phase=f"Phase 3 complete — {total} sections analyzed, JSON saved",
             )
         except Exception as e:
-            SessionLifecycle.update_progress(
+            GenerationSessionManager.update_progress(
                 project_id=project_id,
                 session_id=session.session_id,
                 status="error",
@@ -555,8 +555,8 @@ def get_phase3_analysis(project_id: str):
 @router.get("/template-progress/{project_id}")
 def get_generation_progress(project_id: str):
     """Return session progress data for a running generation task."""
-    from AgentCore.execution.session_manager import SessionLifecycle
-    return SessionLifecycle.get_progress(project_id)
+    from AgentCore import GenerationSessionManager
+    return GenerationSessionManager.get_progress(project_id)
 
 
 # ===========================================================================

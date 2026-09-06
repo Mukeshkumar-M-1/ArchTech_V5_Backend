@@ -1,0 +1,22 @@
+{
+  "page": 17,
+  "input_segments": [
+    "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+    "HDD/HRS/TP16/1.01",
+    "5 FPGA DESIGN REQUIREMENT",
+    "5.1 FPGA Description",
+    "Kintex Ultrascale-XCKU035 series FPGA shall be used in the module with sufficient IO count as per design requirement.",
+    "5.2 FPGA Block Diagram",
+    "Figure 5.1 : FPGA Block Diagram of <DP-XMC-5049>"
+  ],
+  "passed": [
+    {
+      "text": "Kintex Ultrascale+ FPGA supporting STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "score": 6
+    },
+    {
+      "text": "Kintex Ultrascale-XCKU035 series FPGA shall be used in the module with sufficient IO count as per design requirement.",
+      "score": 7
+    }
+  ]
+}

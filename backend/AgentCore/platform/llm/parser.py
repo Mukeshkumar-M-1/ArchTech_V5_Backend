@@ -7,7 +7,7 @@ Decision domain object.
 
 import logging
 import json
-from ...domain.decision import Decision, ActionDefinition
+from ...domain.action_decision import ActionDecision, ActionDefinition
 
 log = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ class DecisionParser:
     def __init__(self):
         log.info("[DecisionParser] Initialized.")
 
-    def parse(self, raw_llm_response: str) -> Decision:
-        log.debug("[DecisionParser] Parsing raw LLM response into Decision object.")
+    def parse(self, raw_llm_response: str) -> ActionDecision:
+        log.info("[DecisionParser] Parsing raw LLM response into Decision object.")
         try:
             # In production, this robustly extracts JSON and handles malformed output
             # For this milestone skeleton, we assume perfect JSON
@@ -27,7 +27,7 @@ class DecisionParser:
                 parameters=data.get("parameters", {})
             )
             
-            return Decision(
+            return ActionDecision(
                 hypothesis=data.get("hypothesis", ""),
                 confidence=float(data.get("confidence", 0.0)),
                 chosen_action=action_def,

@@ -1,0 +1,85 @@
+{
+  "page": 18,
+  "requirements": [
+    {
+      "id": "REQ-0010",
+      "type": null,
+      "category": "Hardware/Interface",
+      "sub_category": "Interface",
+      "priority": "High",
+      "text": "Kintex Ultrascale+ FPGA shall support STANAG3350 / RGB / VGA, DVI, ARINC818 interfaces",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 18,
+      "keywords": [
+        "kintex ultrascale+",
+        "fpga",
+        "stana3350",
+        "rgb",
+        "vga",
+        "dvi",
+        "arinc818",
+        "interface"
+      ],
+      "extracted_at": "2026-06-15T09:10:01.937052",
+      "confidence": 0.53,
+      "explanation": "**Meaning :** The Kintex Ultrascale+ FPGA must be capable of handling multiple specific video and data transmission standards simultaneously.\n\n**Components :**\n- Kintex Ultrascale+ FPGA\n- STANAG3350 interface\n- RGB interface\n- VGA interface\n- DVI interface\n- ARINC818 interface\n\n**Purpose :** This ensures the hardware can connect to and process various types of display and avionics data signals.",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 86,
+      "rule_score": 1.0,
+      "related_ids": []
+    },
+    {
+      "id": "REQ-0011",
+      "type": null,
+      "category": "Hardware/Interface",
+      "sub_category": "PCIe",
+      "priority": "High",
+      "text": "PCIe interface: x8 PCIe interface on FPGA MGT bank; Reference clock from clock generator to FPGA MGT bank shall be used for PCIe.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 18,
+      "keywords": [
+        "pcie",
+        "fpga",
+        "mgt bank",
+        "reference clock",
+        "clock generator"
+      ],
+      "extracted_at": "2026-06-15T09:10:02.269849",
+      "confidence": 0.495,
+      "explanation": "**Meaning :** The system requires a high-speed PCIe connection using eight lanes, with its timing signal provided by a dedicated clock generator.\n\n**Components :**\n- PCIe interface (x8 lanes)\n- FPGA MGT (Multi-Gigabit Transceiver) bank\n- Clock generator\n\n**Parameters :**\n- x8 PCIe configuration\n- Reference clock sourced from clock generator to FPGA MGT bank\n\n**Purpose :** The x8 configuration provides high bandwidth for data transfer, while the dedicated reference clock ensures stable and synchronized communication.",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 129,
+      "rule_score": 0.667,
+      "related_ids": []
+    },
+    {
+      "id": "REQ-0012",
+      "type": null,
+      "category": "Hardware/Memory",
+      "sub_category": "DDR",
+      "priority": "High",
+      "text": "DDR4/L SDRAM Interface: One 64 bit DDR4 SDRAM controller IP core shall be implemented in FPGA IO bank; Reference clock from clock generator to FPGA IO bank shall be used for DDR4 controller.",
+      "source": "DP-XMC-5049-000-HRS-0V04.pdf",
+      "page": 18,
+      "keywords": [
+        "ddr4 sdram",
+        "fpga",
+        "io bank",
+        "controller ip core",
+        "reference clock",
+        "clock generator",
+        "64 bit"
+      ],
+      "extracted_at": "2026-06-15T09:10:02.629538",
+      "confidence": 0.495,
+      "explanation": "**Meaning :** The FPGA must include a specific memory controller for DDR4 SDRAM, powered by a reference clock from a generator.\n\n**Components :**\n- DDR4/L SDRAM\n- DDR4 SDRAM controller IP core\n- FPGA IO bank\n- Clock generator\n\n**Parameters :**\n- 64-bit data width\n- One controller IP core implemented in FPGA IO bank\n- Reference clock sourced from clock generator to FPGA IO bank\n\n**Purpose :** This setup allows the FPGA to efficiently manage and access external high-speed memory for data storage and processing.",
+      "has_unit": false,
+      "has_directive": true,
+      "char_count": 190,
+      "rule_score": 0.667,
+      "related_ids": []
+    }
+  ]
+}

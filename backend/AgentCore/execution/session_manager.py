@@ -10,6 +10,10 @@ CCB session management (state.ts, sessionStorage.ts, concurrentSessions.ts):
 6. Session Discovery: PID files for active, project directories for history
 
 Uses .archtech/ directory (not ~/.claude/) as specified.
+
+Split into two managers:
+- ChatSessionManager  — chat sessions (create, resume, clear, discover)
+- GenerationSessionManager   — template/generation tasks (progress, stage logs, tool logs)
 """
 
 from __future__ import annotations
@@ -27,10 +31,9 @@ from uuid import uuid4
 
 log = logging.getLogger(__name__)
 
-
-
 # ─── Per-project session directory cache ─────────────────────────────
 _dir_cache: dict[str, tuple[Path, Path]] = {}
+
 
 def _get_dir_cache(project_id: str) -> tuple[Path, Path]:
     """Return (sessions_dir, projects_dir) for project_id, cached."""
@@ -153,25 +156,26 @@ class SessionRecord:
             raise
 
 
-class SessionLifecycle:
-    """Manages session creation, resume, clear, and discovery."""
+# ─── Chat Session Manager ────────────────────────────────────────────
+class ChatSessionManager:
+    """Manages interactive chat sessions — create, resume, clear, discover.
+
+    Chat sessions live in .ArchTech/{project_id}/chat_sessions/ and
+    store transcripts at .ArchTech/{project_id}/projects/<sanitized-path>/<id>.jsonl
+    """
 
     @staticmethod
     def create(project_path: str, entrypoint: str = "cli", kind: str = "interactive", project_id: str = "") -> SessionRecord:
-        """Create a new session, writing PID file and transcript path.
+        """Create a new chat session, writing PID file and transcript path.
 
         Mirrors CCB state.ts:269 — getInitialState() calls randomUUID() to create sessionId.
-
-        :param project_id: Project identifier. Directories are scoped under .Archtech/{project_id}/.
         """
         session_id = f"chat_{project_id}"
         now = time.time()
         cwd = os.getcwd()
 
-        # Resolve per-project directories
         sessions_dir, projects_dir = _get_dir_cache(project_id)
 
-        # Write session file: .ArchTech/{project_id}/chat_sessions/<session_id>.json
         sessions_dir.mkdir(parents=True, exist_ok=True)
         pid_file = sessions_dir / f"{session_id}.json"
         record = SessionRecord(
@@ -181,47 +185,38 @@ class SessionLifecycle:
             started_at=now,
             kind=kind,
             entrypoint=entrypoint,
-            transcript_path="",  # set below
+            transcript_path="",
         )
 
-        # Determine transcript path: .archtech/{project_id}/projects/{sanitized-project-path}/{sessionId}.jsonl
         sanitized = project_path.replace("/", "_").replace("\\", "_")
         transcript_dir = projects_dir / sanitized
         transcript_dir.mkdir(parents=True, exist_ok=True)
         record.transcript_path = str(transcript_dir / f"{session_id}.jsonl")
 
-        # Write session metadata file
         pid_file.write_text(json.dumps(record.to_dict(), indent=2), encoding="utf-8")
-
-        # Create empty transcript file
         Path(record.transcript_path).touch()
 
         log.info(
-            f"[SessionLifecycle] Created session {session_id} "
+            f"[ChatSessionManager] Created session {session_id} "
             f"project={project_path} transcript={record.transcript_path}"
         )
         return record
 
     @staticmethod
     def resume(project_path: str, project_id: str = "") -> Optional[SessionRecord]:
-        """Resume the latest active (non-terminal) session for a project.
-
-        Mirrors CCB sessionStorage.ts:loadTranscriptFile() — finds latest non-terminal session.
-        """
+        """Resume the latest active (non-terminal) session for a project."""
         _, projects_dir = _get_dir_cache(project_id)
         sanitized = project_path.replace("/", "_").replace("\\", "_")
         project_dir = projects_dir / sanitized
         if not project_dir.exists():
             return None
 
-        # Find latest non-terminal session
         latest = None
         latest_time = 0.0
         sessions_dir, _ = _get_dir_cache(project_id)
         for transcript_file in project_dir.glob("*.jsonl"):
             try:
                 mtime = transcript_file.stat().st_mtime
-                # Check if there's a corresponding session in sessions dir
                 for pid_file in sessions_dir.glob("*.json"):
                     try:
                         data = json.loads(pid_file.read_text(encoding="utf-8"))
@@ -239,23 +234,18 @@ class SessionLifecycle:
                 continue
 
         if latest:
-            log.info(f"[SessionLifecycle] Resumed session {latest.session_id} from {latest.transcript_path}")
+            log.info(f"[ChatSessionManager] Resumed session {latest.session_id} from {latest.transcript_path}")
         return latest
 
     @staticmethod
     def clear(session_id: str, project_path: str, project_id: str = "") -> bool:
-        """Clear current session and create a new one with parent_session_id set.
-
-        Mirrors CCB: new UUID, parentSessionId set, old file untouched.
-        """
+        """Clear current session and create a new one with parent_session_id set."""
         sessions_dir, projects_dir = _get_dir_cache(project_id)
         sanitized = project_path.replace("/", "_").replace("\\", "_")
         project_dir = projects_dir / sanitized
 
-        # Find old session record
         old_record = None
         for transcript_file in project_dir.glob(f"{session_id}.jsonl"):
-            # Try to find PID file
             for pid_file in sessions_dir.glob("*.json"):
                 try:
                     data = json.loads(pid_file.read_text(encoding="utf-8"))
@@ -268,11 +258,10 @@ class SessionLifecycle:
                 break
 
         if old_record is None:
-            log.warning(f"[SessionLifecycle] Session {session_id} not found for clear")
+            log.warning(f"[ChatSessionManager] Session {session_id} not found for clear")
             return False
 
-        # Create new session with parent_session_id
-        new_record = SessionLifecycle.create(
+        new_record = ChatSessionManager.create(
             project_path=project_path,
             entrypoint=old_record.entrypoint,
             kind=old_record.kind,
@@ -281,7 +270,6 @@ class SessionLifecycle:
         new_record.parent_session_id = session_id
         new_record.status = "idle"
 
-        # Update session file with parent_session_id
         pid_file = sessions_dir / f"{session_id}.json"
         if pid_file.exists():
             data = json.loads(pid_file.read_text(encoding="utf-8"))
@@ -289,30 +277,24 @@ class SessionLifecycle:
             pid_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
         log.info(
-            f"[SessionLifecycle] Cleared session {session_id}, "
+            f"[ChatSessionManager] Cleared session {session_id}, "
             f"created new session {new_record.session_id} with parent={session_id}"
         )
         return True
 
     @staticmethod
     def discover_active(project_id: str = "") -> list[SessionRecord]:
-        """Discover all active sessions via PID files.
-
-        Mirrors CCB concurrentSessions.ts:59 — reads .archtech/sessions/<PID>.json.
-        If project_id is provided, only returns sessions for that project.
-        If not, returns ALL active sessions across all projects.
-        """
+        """Discover all active sessions via PID files."""
         sessions = []
-        # If project_id given, only check that project; otherwise scan all
         if project_id:
             targets = [project_id]
         else:
-            # Collect all known project dirs from .Archtech/
             archtech_dir = Path(__file__).resolve().parent.parent.parent / _ROOT_FOLDER_NAME
             if archtech_dir.exists():
                 targets = [d.name for d in archtech_dir.iterdir() if d.is_dir() and d.name not in {"sessions", "None"}]
             else:
                 return sessions
+
         seen_ids = set()
         for pid in targets:
             sessions_dir, _ = _get_dir_cache(pid)
@@ -324,7 +306,6 @@ class SessionLifecycle:
                     sid = data.get("sessionId", "")
                     if sid in seen_ids:
                         continue
-                    # Verify process is alive (best-effort check)
                     pid_check = data.get("pid", 0)
                     is_alive = False
                     try:
@@ -334,42 +315,15 @@ class SessionLifecycle:
                         is_alive = False
                     if not is_alive:
                         continue
-                    if pid not in seen_ids:
-                        seen_ids.add(pid)
-                except (json.JSONDecodeError, OSError):
-                    continue
-        seen_ids = set()
-        for pid in targets:
-            sessions_dir, _ = _get_dir_cache(pid)
-            if not sessions_dir.exists():
-                continue
-            for pid_file in sessions_dir.glob("*.json"):
-                try:
-                    data = json.loads(pid_file.read_text(encoding="utf-8"))
-                    sid = data.get("sessionId", "")
-                    if sid in seen_ids:
-                        continue
-                    # Verify process is alive (best-effort check)
-                    pid_check = data.get("pid", 0)
-                    is_alive = False
-                    try:
-                        os.kill(pid_check, 0)
-                        is_alive = True
-                    except (OSError, ProcessLookupError):
-                        pass
-                    if is_alive:
-                        seen_ids.add(sid)
-                        sessions.append(SessionRecord.from_dict(data))
+                    seen_ids.add(sid)
+                    sessions.append(SessionRecord.from_dict(data))
                 except (json.JSONDecodeError, OSError):
                     continue
         return sessions
 
     @staticmethod
     def discover_history(project_path: str, project_id: str = "") -> list[SessionRecord]:
-        """Discover all sessions for a project from transcript directory.
-
-        Mirrors CCB sessionStorage.ts — reads project transcript directory for history.
-        """
+        """Discover all sessions for a project from transcript directory."""
         _, projects_dir = _get_dir_cache(project_id)
         sanitized = project_path.replace("/", "_").replace("\\", "_")
         project_dir = projects_dir / sanitized
@@ -389,12 +343,61 @@ class SessionLifecycle:
             )
         return records
 
-    # ------------------------------------------------------------------
-    # Generation session helpers (replaces session.py functionality)
-    # ------------------------------------------------------------------
+    @staticmethod
+    def _load(session_id: str, project_id: str) -> Optional[SessionRecord]:
+        """Load a session record by ID. Scans all project session dirs under .Archtech/{project}/sessions/."""
+        current_project_id = project_id
+        candidates: list[tuple[dict, Path]] = []
+        if current_project_id:
+            sessions_dir = get_chat_session_dir(current_project_id)
+            for session_file in sessions_dir.glob("*.json"):
+                try:
+                    data = json.loads(session_file.read_text(encoding="utf-8"))
+                    if data.get("sessionId") == session_id:
+                        candidates.append((data, session_file))
+                except (json.JSONDecodeError, OSError, ValueError):
+                    continue
+        archtech_dir = Path(__file__).resolve().parent.parent.parent / _ROOT_FOLDER_NAME
+        if not archtech_dir.exists():
+            if not candidates:
+                return None
+        else:
+            for project_dir in archtech_dir.iterdir():
+                if not project_dir.is_dir() or project_dir.name in {"sessions", "chat_sessions", "None"}:
+                    continue
+                pid = project_dir.name
+                sessions_dir = get_chat_session_dir(pid)
+                if not sessions_dir.exists():
+                    continue
+                for session_file in sessions_dir.glob("*.json"):
+                    try:
+                        data = json.loads(session_file.read_text(encoding="utf-8"))
+                        if data.get("sessionId") == session_id:
+                            candidates.append((data, session_file))
+                    except (json.JSONDecodeError, OSError, ValueError):
+                        continue
+
+        if not candidates:
+            return None
+        for data, session_file in candidates:
+            try:
+                record = SessionRecord.from_dict({**data, "_path": str(session_file)})
+                return record
+            except (KeyError, ValueError):
+                continue
+        return None
+
+
+# ─── Generation Session Manager ──────────────────────────────────────
+class GenerationSessionManager:
+    """Manages generation-task sessions — progress tracking, stage/tool logging, cancellation.
+
+    Generation sessions store their own IDs under .ArchTech/{project_id}/sessions/
+    and track per-stage progress, tool calls, and token usage.
+    """
 
     @staticmethod
-    def create_generation(project_id: str, target_sections: list[str] | None = None) -> SessionRecord:
+    def create(project_id: str, target_sections: list[str] | None = None) -> SessionRecord:
         """Create a session for a generation task. Stores in .Archtech/{project_id}/sessions/."""
         import hashlib
         if target_sections:
@@ -423,26 +426,16 @@ class SessionLifecycle:
         )
 
         record._path.write_text(json.dumps(record.to_dict(), indent=2, default=str), encoding="utf-8")
-        log.info(f"[SessionLifecycle] Created generation session={session_id} project={project_id}")
+        log.info(f"[GenerationSessionManager] Created generation session={session_id} project={project_id}")
         return record
 
     @staticmethod
     def _load(session_id: str, project_id: str) -> Optional[SessionRecord]:
-        """Load a session record by ID.
-        Scans all project session dirs under .Archtech/{project}/sessions/.
-
-        Args:
-            session_id: The session identifier to load.
-            project_id: Current project ID
-
-        Returns:
-            SessionRecord if found, None otherwise.
-        """
-        current_pid = project_id
+        """Load a session record by ID."""
+        current_project_id = project_id
         candidates: list[tuple[dict, Path]] = []
-        if current_pid:
-            # Fast path: check the current project first
-            sessions_dir = get_chat_session_dir(current_pid)
+        if current_project_id:
+            sessions_dir = get_chat_session_dir(current_project_id)
             for session_file in sessions_dir.glob("*.json"):
                 try:
                     data = json.loads(session_file.read_text(encoding="utf-8"))
@@ -450,7 +443,6 @@ class SessionLifecycle:
                         candidates.append((data, session_file))
                 except (json.JSONDecodeError, OSError, ValueError):
                     continue
-        # Fallback: scan all project session dirs
         archtech_dir = Path(__file__).resolve().parent.parent.parent / _ROOT_FOLDER_NAME
         if not archtech_dir.exists():
             if not candidates:
@@ -470,9 +462,9 @@ class SessionLifecycle:
                             candidates.append((data, session_file))
                     except (json.JSONDecodeError, OSError, ValueError):
                         continue
+
         if not candidates:
             return None
-        # Try to parse candidates; use the first one that succeeds
         for data, session_file in candidates:
             try:
                 record = SessionRecord.from_dict({**data, "_path": str(session_file)})
@@ -486,7 +478,7 @@ class SessionLifecycle:
                         progress: int | None = None, current_phase: str | None = None,
                         status: str | None = None, error: str | None = None) -> Optional[SessionRecord]:
         """Update generation progress fields on a session."""
-        rec = SessionLifecycle._load(session_id=session_id, project_id=project_id)
+        rec = GenerationSessionManager._load(session_id=session_id, project_id=project_id)
         if rec is None:
             return None
         if current_stage is not None:
@@ -506,7 +498,7 @@ class SessionLifecycle:
     def log_stage_complete(project_id: str, session_id: str, stage: str, status: str = "ok",
                            duration_ms: float = 0, tokens_in: int = 0, tokens_out: int = 0) -> None:
         """Record a stage completion in the session's stage_logs."""
-        rec = SessionLifecycle._load(session_id=session_id, project_id=project_id)
+        rec = GenerationSessionManager._load(session_id=session_id, project_id=project_id)
         if rec is None:
             return
         rec.stage_logs.append({
@@ -523,7 +515,7 @@ class SessionLifecycle:
     def log_tool_call(session_id: str, tool_name: str, status: str = "ok",
                       tokens_in: int = 0, tokens_out: int = 0, duration_ms: float = 0) -> None:
         """Record a tool call in the session's tool_calls."""
-        rec = SessionLifecycle._load(session_id)
+        rec = GenerationSessionManager._load(session_id)
         if rec is None:
             return
         rec.tool_calls.append({
@@ -555,12 +547,12 @@ class SessionLifecycle:
     @staticmethod
     def cancel(session_id: str, project_id: str) -> bool:
         """Cancel a session."""
-        rec = SessionLifecycle._load(session_id=session_id, project_id=project_id)
+        rec = GenerationSessionManager._load(session_id=session_id, project_id=project_id)
         if rec is None:
             return False
         rec.status = "cancelled"
         rec._save()
-        log.info(f"[SessionLifecycle] Cancelled: {session_id}")
+        log.info(f"[GenerationSessionManager] Cancelled: {session_id}")
         return True
 
     @staticmethod
@@ -582,7 +574,7 @@ class SessionLifecycle:
     def get_progress(project_id: str) -> dict:
         """Get the latest session's progress for a project (including terminal states)."""
         import datetime as _dt
-        rec = SessionLifecycle.find_latest(project_id)
+        rec = GenerationSessionManager.find_latest(project_id)
         if rec is None:
             return {"status": "idle", "progress": 0}
         total_calls = len(rec.tool_calls)

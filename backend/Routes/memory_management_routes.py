@@ -155,7 +155,7 @@ async def generate_memory(project_id: str):
 
             # Fire event to global event bus
             try:
-                from AgentCore.observability.event_bus import get_global_bus, EventType
+                from AgentCore.event_bus import get_global_bus, EventType
                 get_global_bus().publish(
                     EventType.MEMORY_UPDATED,
                     source="MemoryManagement",

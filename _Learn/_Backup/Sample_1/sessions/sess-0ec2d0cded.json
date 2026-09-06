@@ -1,0 +1,64 @@
+{
+  "pid": 446102,
+  "sessionId": "sess-0ec2d0cded",
+  "cwd": "/home/devusr/Mukesh/ArchTech_V5/Backend",
+  "startedAt": 1782284037.1001668,
+  "kind": "generation",
+  "entrypoint": "cli",
+  "transcriptPath": "",
+  "status": "complete",
+  "parentSessionId": null,
+  "projectId": "Sample_1",
+  "progress": 100,
+  "currentPhase": "Phase 3 complete \u2014 11 sections analyzed, JSON saved",
+  "stageLogs": [
+    {
+      "stage": "3.2 Identify Sections",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:53:58.904310+00:00"
+    },
+    {
+      "stage": "3.1 Parse Template",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:54:09.114206+00:00"
+    },
+    {
+      "stage": "3.3 Identify Fields",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 7300,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:57:02.271324+00:00"
+    },
+    {
+      "stage": "3.4 Build Dependency DAG",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:57:17.278520+00:00"
+    },
+    {
+      "stage": "3.5 Determine Output Types",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:59:07.170344+00:00"
+    },
+    {
+      "stage": "Phase 3 Complete",
+      "status": "ok",
+      "duration_ms": 0,
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "timestamp": "2026-06-24T06:59:07.172021+00:00"
+    }
+  ]
+}
